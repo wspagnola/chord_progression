@@ -6,73 +6,118 @@ library(XML)
 library(xml2)
 library(RCurl)
 library(stringr)
-first_bb_date <- as.Date('1958-08-04') 
+library(jsonlite)
+#Create Vector of Dates for Each week of Top 100 
+#Starts in 1958 and ends on current date
 num_weeks <- ceiling(as.numeric(today() - first_bb_date, 'weeks'))
-as.du
-?as.duration
-as.Date('1958-08-04') 
 dates <- as.Date('1958-08-04') + weeks(1:num_weeks)
 
+# Create vector of URls by year
 baseURL <- "https://www.billboard.com/charts/hot-100/"
-
-# Get Top Songs 
-top_100_list <- lapply(paste0(baseURL, dates[1:5]), function(url) {
+top_100_urls <- paste0(baseURL, dates )
+                       
+#Function to Scrape List for One Week
+extra_hot_100 <- function(url) {
   
   
-    # Get Artists 
-     top_artist <- url %>% 
-          read_html() %>%
-          html_nodes(xpath = "//div[@class='chart-number-one__artist']") %>% 
-          html_text() %>% 
-          str_replace_all('\n', '')
-    top_artists_2_to_100 <- url %>%          
-          read_html() %>%
-          html_nodes(xpath = "//div[@class='chart-list-item__artist']") %>% 
-          html_text() %>% 
-          str_replace_all('\n', '') %>% 
-          str_replace_all('^ ', '')
-     Artist <- c(top_artist, top_artists_2_to_100)
+  'This function takes in a URL for the Billboard Hot 100 website,
+  and then returns a dataframe with the Song, Artist, and Date.'
   
-     # Get Song Titles
-     top_song <- url %>% 
-             read_html() %>%
-             html_nodes(xpath = "//div[@class='chart-number-one__title']") %>% 
-             html_text() %>% 
-             str_replace_all('\n', '')
-     top_songs_2_to_100 <- url %>%          
-             read_html() %>%
-             html_nodes(xpath = "//div[@class='chart-list-item__title']") %>% 
-             html_text() %>% 
-             str_replace_all('\n', '') %>% 
-             str_replace_all('^ ', '')
-      Song <- c(top_song,  top_songs_2_to_100)
-     
-      #Get Date  
-      Week <- as.Date(str_sub(url, start = -10L))
-      Year <- year(Week)
-      df <- data.frame(Artist, Song, Week, Year)
-     
-     
+  # Get Artists 
+  top_artist <- url %>% 
+    read_html() %>%
+    html_nodes(xpath = "//div[@class='chart-number-one__artist']") %>% 
+    html_text() %>% 
+    str_replace_all('\n', '')
+  
+  
+  top_artists_2_to_100 <- url %>%          
+    read_html() %>%
+    html_nodes(xpath = "//div[@class='chart-list-item__artist']") %>% 
+    html_text() %>% 
+    str_replace_all('\n', '') %>% 
+    str_replace_all('^ ', '')
+  Artist <- c(top_artist, top_artists_2_to_100)
+  
+  # Get Song Titles
+  top_song <- url %>% 
+    read_html() %>%
+    html_nodes(xpath = "//div[@class='chart-number-one__title']") %>% 
+    html_text() %>% 
+    str_replace_all('\n', '')
+  top_song <- as.character(top_song)
+  
+  top_songs_2_to_100 <- url %>%          
+    read_html() %>%
+    html_nodes(xpath = "//div[@class='chart-list-item__title']") %>% 
+    html_text() %>% 
+    str_replace_all('\n', '') %>% 
+    str_replace_all('^ ', '')
+  top_songs_2_to_100 <- as.character(top_songs_2_to_100)
+  
+  Song <- as.character(c(top_song,  top_songs_2_to_100))
+  
+  #Get Date  
+  Week <- as.Date(str_sub(url, start = -10L))
+  
+  #Store in Dataframe
+  df <- data.frame(Artist, Song, Week,
+                   stringsAsFactors = F)
+  
   return(df)
-}   )  
-top_100_list[[1]]
-top_artist_list[[1]]  %>%  head()            
-x <- 'abcd'
-str_sub(x, start = -2L)
-top_artists_2_to_100 <- paste0(baseURL, '1958-08-04') %>%
- 
-
-top_artist_100 <- c(top_artist, top_artists_2_to_100)
+}   
 
 
-div.chart-number-one__artist
-
-
-#main > div.chart-detail-header > div.container.container--no-background.chart-number-one >
+#Create List and then store each week's data as data.frame within list
+top_100_list <- list()
+for(i in seq_along(dates[year(dates) <=  max_date])){
   
+  #Extract date of current iteration 
+  week <- dates[i]
+
+  top_100_list[[i]] <- extra_hot_100(top_100_urls[i])
+  
+  #lapply(top_100_urls[dates < = year])
+  print(week)
+}
+  
+#Bind Rows of list into Data.frame
+hot_100_df <- bind_rows(top_100_list)
+hot_100_df$Year <- year(hot_100_df$Week)
+
+#Select year(s), and then sample 'n' songs from year range
+sample_year <- 1958
+n <- 1
+sample_song <- hot_100_df %>% 
+                  dplyr::filter(Year %in% 1958) %>%  
+                  dplyr::sample_n(1)
+
+#### Work with HookTheory API ####
+
+
+api_call <- 'https://api.hooktheory.com/v1/'
+
+#Retrieve ID and activkey
+pars <- list(
+  username = 'wspagnola',
+  password = 'Acadia125!'
+)
+POST(paste0(api_call, 'users/auth'), body = pars) %>%  content
+id <- 187488
+activkey <- "ceb222d144fc6b3b13f9e3dce2b2bd63"
+authorization <- paste("Bearer", activkey)
+
+#Look up songs with 1-2-5 Chord progression 
+GET(paste0(api_call, 'trends/songs?cp=1,2,5'), 
+    add_headers(Authorization = authorization)) %>%  content %>% bind_rows
+
+GET(paste0(api_call, 'trends/songs?cp=1,2,5'), 
+    add_headers(Authorization = authorization)) %>%  content %>% bind_rows
 
 
 
+#### Work with Spotify API  ####
+<span class="js-tab-row" style="display: inline-block">  <span class="gt-chord js-tab-ch js-tapped" data-chord="B">B</span>             <span class="gt-chord js-tab-ch js-tapped" data-chord="Gbm">Gbm</span>                    <span class="gt-chord js-tab-ch js-tapped" data-chord="E">E</span>              <span class="gt-chord js-tab-ch js-tapped" data-chord="F#">F#</span></span>
 library(spotifyr)
 
 get_artists()
