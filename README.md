@@ -1,5 +1,5 @@
-# Changes in American Popular Music Over Time (1958 to 2019)
-Bill Spagnola
+# Changes in American Popular Music Over Time: 1958 to 2019
+Author: Bill Spagnola
 
 # Data
 * Scrape top 100 Billboard songs 
