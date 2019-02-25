@@ -95,6 +95,8 @@ sample_song <- hot_100_df %>%
 #### Work with HookTheory API ####
 
 
+
+
 api_call <- 'https://api.hooktheory.com/v1/'
 
 #Retrieve ID and activkey
@@ -114,10 +116,37 @@ GET(paste0(api_call, 'trends/songs?cp=1,2,5'),
 GET(paste0(api_call, 'trends/songs?cp=1,2,5'), 
     add_headers(Authorization = authorization)) %>%  content %>% bind_rows
 
+#### Scrape Hook Theory Website ####
+
+
+url <- 'https://www.hooktheory.com/theorytab/view'
+
+artist <- 'bj-thomas'
+song <- 'raindrops-keep-fallin-on-my-head'
+
+# Get Artists 
+chords <- paste(url, artist, song, sep = '/') %>% 
+  read_html() %>%    html_text() %>% 
+  str_detect('tspan')
+  html_nodes(css = '.gotham')
+ %>% 
+  str_extract_all(pattern = 'tspan')
+  str_replace_all('\n', '')
+library(stringr)
+  
+url <- 'https://www.hooktheory.com/theorytab/view/the-beatles/hey-jude'
+read_html(url)  %>% 
+  html_text() %>%  str_extract("[^svg]+")
+
+    read_json('https://www.hooktheory.com/theorytab/view/the-beatles/hey-jude') %>%  str_extract_all('chord')
+
+?
+      
+      "/theorytab/view/the-beatles/hey-jude#verse"
+      <a href="/theorytab/view/the-beatles/hey-jude#verse" title="Jump to the verse"><span class="tight-top tight">Verse</span></a>
 
 
 #### Work with Spotify API  ####
-<span class="js-tab-row" style="display: inline-block">  <span class="gt-chord js-tab-ch js-tapped" data-chord="B">B</span>             <span class="gt-chord js-tab-ch js-tapped" data-chord="Gbm">Gbm</span>                    <span class="gt-chord js-tab-ch js-tapped" data-chord="E">E</span>              <span class="gt-chord js-tab-ch js-tapped" data-chord="F#">F#</span></span>
 library(spotifyr)
 
 get_artists()
