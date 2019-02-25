@@ -1,12 +1,12 @@
 require(lubridate) # I like this because it does not reload the loaded package
-library(dplyr)
-library(httr)
-library(rvest)
-library(XML)
-library(xml2)
-library(RCurl)
-library(stringr)
-library(jsonlite)
+require(dplyr)
+require(httr)
+require(rvest)
+require(XML)
+require(xml2)
+require(RCurl)
+require(stringr)
+require(jsonlite)
 #Create Vector of Dates for Each week of Top 100 
 #Starts in 1958 and ends on current date
 num_weeks <- ceiling(as.numeric(today() - first_bb_date, 'weeks'))
@@ -132,7 +132,7 @@ chords <- paste(url, artist, song, sep = '/') %>%
  %>% 
   str_extract_all(pattern = 'tspan')
   str_replace_all('\n', '')
-library(stringr)
+require(stringr)
   
 url <- 'https://www.hooktheory.com/theorytab/view/the-beatles/hey-jude'
 read_html(url)  %>% 
@@ -147,7 +147,7 @@ read_html(url)  %>%
 
 
 #### Work with Spotify API  ####
-library(spotifyr)
+require(spotifyr)
 
 get_artists()
 get_album_tracks()
@@ -164,7 +164,7 @@ radiohead_uri <- get_artists('radiohead', access_token = access_token)[1,2]
 GET("https://api.spotify.com/v1/search", query = list(q = 'beatles', 
                          type = "artist", access_token = my_token)) %>% content
 
-library(purrr)
+require(purrr)
 songs <- as.character(top_100_list[[1]]$Song)
 get_track_uri(songs[1])
 get_track_uri(track_name = '')
@@ -248,7 +248,7 @@ get_artists(artist_name = df$Artist[1],access_token = my_token )
 df$Artist %>%  class()
 [1,2] %>% 
   pull()
-library(lubridate)
+require(lubridate)
 albums <- get_albums(artist_uri, access_token = my_token) %>%
                         mutate(year =  year(album_release_year)) %>% 
                         filter(year == 1958) 
