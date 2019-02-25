@@ -1,4 +1,4 @@
-library(lubridate)
+require(lubridate) # I like this because it does not reload the loaded package
 library(dplyr)
 library(httr)
 library(rvest)
