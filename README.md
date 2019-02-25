@@ -6,7 +6,7 @@ Author: Bill Spagnola
 * Match songs with features from Spotify API 
 * Scrape lyrics
 
-# Statistical Technies
+# Statistical Techniques
 * Cluster music features to identify compare genres over time 
 * Classify of  genres based on features
 * Text Analysis of lyrics over time
