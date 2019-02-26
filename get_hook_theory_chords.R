@@ -48,7 +48,7 @@ retrieve_by_cp <- function(cp, page_num = 100){
     if( song_request_list[[i]] %>%  nrow == 0) {
       break
     } else{
-      Sys.sleep(1) 
+      Sys.sleep(3) 
     }
   }
   
@@ -63,17 +63,32 @@ retrieve_by_cp <- function(cp, page_num = 100){
 
 #### Retrieve Common Chord Progressions ####
 cp_125 <- retrieve_by_cp(cp = c(1,2,5)) 
+cp_125 %>%  as.data.frame %>%  head
 cp_14 <- retrieve_by_cp(cp = c(1,4), page_num = 150) 
 cp_14 %>%  View
+cp_1565 <- retrieve_by_cp(cp = c(1,5,6, 5), page_num = 150)
+View(cp_1565)
 
-cp_14 <- retrieve_by_cp(cp = c(1,4), page_num = 1) 
+cp_156 <- retrieve_by_cp(cp = c(1,5,6), page_num = 150)
+View(cp_156)
+
+
+cp_156 <- retrieve_by_cp(cp = c(1,2), page_num = 150)
+View(cp_156)
+cp_14 <- retrieve_by_cp(cp = c(1,4), page_num = 100) 
 cp_14 %>%  View
 
+cp_145 <- retrieve_by_cp(cp = c(1,4, 5), page_num = 100) 
+cp_145 %>%  View
 
+cp_1454 <- retrieve_by_cp(cp = c(1,4, 5, 4), page_num = 100) 
+cp_1454 %>%  dim
+cp_1454 %>% View
+cp_14 %>%  filter(artist == 'The Beatles') %>%  print(n=40)
 cp_1464 <- retrieve_by_cp(cp = c(1,5, 6, 4), page_num = 11) 
 cp_1464 %>%  as.data.frame %>% head
 
-
+#vi – IV – I – 
 
 #### Retrieve One Page at a Time  ####
 
@@ -88,62 +103,5 @@ GET(paste0(api_call, url),
   bind_rows
 
 
-#### Scrape Hook Theory Website (DOESN'T WORK) ####
 
-
-#Step 1: Fire up Selenium
-
-library('RSelenium')
-rsDriver()
-checkForServer() # search for and download Selenium Server java binary.  Only need to run once.
-startServer() # run Selenium Server binary
-remDr <- remoteDriver(browserName="firefox", port=4444) # instantiate remote driver to connect to Selenium Server
-remDr$open(silent=T) # open web browser
-
-<tspan alignment-baseline="middle">G</tspan>
-  
-  
-  chords <- paste(url, artist, song, sep = '/')
-
-'http://www.hooktheory.com/theorytab/view/3-doors-down/be-like-that#intro' %>% 
-  read_html() %>%  class
-  
-  html_text() %>% 
-  str_detect('tspan')
-html_nodes(css = '.gotham') %>% 
-  str_extract_all(pattern = 'tspan')
-str_replace_all('\n', '')
-require(stringr)  
-  
-  
-#NOTE: This doesn't work
-
-#Does anyone know how to scrape SVG?  
-#Or are SVG's meant to prevent scraping?
-
-url <- 'https://www.hooktheory.com/theorytab/view'
-
-artist <- 'bj-thomas'
-song <- 'raindrops-keep-fallin-on-my-head'
-
-# Get Artists 
-chords <- paste(url, artist, song, sep = '/') %>% 
-  read_html() %>%    html_text() %>% 
-  str_detect('tspan')
-html_nodes(css = '.gotham') %>% 
-  str_extract_all(pattern = 'tspan')
-str_replace_all('\n', '')
-require(stringr)
-
-url <- 'https://www.hooktheory.com/theorytab/view/the-beatles/hey-jude'
-read_html(url)  %>% 
-  html_text() %>%  str_extract("[^svg]+")
-
-read_json('https://www.hooktheory.com/theorytab/view/the-beatles/hey-jude') %>%  str_extract_all('chord')
-
-?
-  
-  "/theorytab/view/the-beatles/hey-jude#verse"
-<a href="/theorytab/view/the-beatles/hey-jude#verse" title="Jump to the verse"><span class="tight-top tight">Verse</span></a>
-  
   
