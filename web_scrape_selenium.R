@@ -37,6 +37,21 @@ extract_song_parts <- function(txt) {
 }
 
 
+remove_dup_seqs <- function(v){
+  #Takes a vector and removes duplicated sequences (e.g. repeated chords)
+  
+  if(sum(is.na(v) > 0)){
+    warning('Vector cannot contain NAs. ')
+    
+  } else if(sum(is.na(v)==0)){
+    idx <- c(NA, v) != c(v, NA)
+    idx <- idx[!is.na(idx)]
+    return(v[idx])
+  }
+}
+
+
+
 #### Open Selenium ####
 
 #Set up Driver ? 
@@ -77,7 +92,7 @@ names <- remDr$findElements(using="css selector", value = "h2")
 namestxt <- sapply(names, function(x) 
                       {x$getElementAttribute("outerHTML")[[1]]})
 song_parts <- extract_song_parts(txt=namestxt)
-
+song_parts
 #### Get Chords ####
 elem <- remDr$findElements(using="class", value="app-content-score")
 
@@ -145,39 +160,65 @@ x %>%
 
 
 #### Scroll to Bottom ####
-remDr$executeScript("window.scrollTo(0,1500);")
+remDr$executeScript("window.scrollTo(0,0);") #Scroll down page 
+remDr$executeScript("window.scrollTo(0,600);") #Scroll down page 
 
+remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page 
+#remDr$executeScript('window.scrollTo(0, document.body.scrollHeight);') 
 elem <- remDr$findElement("css", "body")
 
-elem$screenshot(display = T)
-#elem$sendKeysToElement(list(key = "end")) 
+elem$screenshot(display = T) #Print screen shot to find current location on page
+
 
 elemtxt <- elem$getElementAttribute("outerHTML")[[1]]
 elemxml <- htmlTreeParse(elemtxt, useInternalNodes=T)
-xpath1 <- '//svg//g//tspan[@alignment-baseline]'
-xpath2 <- '//tspan[@class="gotham"][@baseline-shift = "sub"][@font-size = 11]'
-xpath <- paste(xpath1, xpath2, sep = '|')
 
-x <- xpathApply(elemxml, xpath)
-chords <- sapply(x,xmlValue) %>% paste(sep = '', collapse = ' ') %>% 
-  str_replace_all(' 4', '4') %>% 
-  str_replace_all(' 6', '6') %>% 
-  str_replace_all(' 7', '7') %>% 
-  str_replace_all('  7', '7') %>%
-  str_replace_all(' 9', '9') %>% 
-  str_replace_all(' b', 'b') %>% 
-  str_replace_all(' m', 'm') %>% 
-  str_replace_all(' #', '#') %>% 
-  str_replace_all('  sus', 'sus') %>% 
-  str_replace_all('C 7', 'C7') %>% 
-  str_replace_all('F 7', 'F7')  %>% 
-  str_split(pattern = ' ') %>% 
-  unlist
 
-chords <- chords[chords != '']
+idx <- 1:length(song_parts)*3
+xpath <- paste0('(//svg)[', idx, ']//tspan[@alignment-baseline]',
+                 '|(//svg)[', idx, ']//tspan[@class][@baseline-shift]')
 
+#="gotham"
+# = "sub"
+#xpath1 <- '(//svg)//g//tspan[@alignment-baseline]'
+#xpath <- paste(xpath1, xpath2, sep = '|')
+chords <- rep(NA, length(song_parts))
+
+for(i in 1:length(chords)){
+  x <- xpathApply(elemxml, xpath[i])  
+  
+  chord_string <- character()
+  chord_string <- sapply(x,xmlValue) %>% paste(sep = '', collapse = ' ') %>% 
+    str_replace_all(' 4', '4') %>% 
+    str_replace_all(' 6', '6') %>% 
+    str_replace_all(' 7', '7') %>% 
+    str_replace_all('  7', '7') %>%
+    str_replace_all(' 9', '9') %>% 
+    str_replace_all(' b', 'b') %>% 
+    str_replace_all(' m', 'm') %>% 
+    str_replace_all(' #', '#') %>% 
+    str_replace_all('  sus', 'sus') %>% 
+    str_replace_all('A 7', 'A7') %>% 
+    str_replace_all('B 7', 'B7') %>% 
+    str_replace_all('C 7', 'C7') %>% 
+    str_replace_all('D 7', 'D7') %>% 
+    str_replace_all('E 7', 'E7') %>% 
+    str_replace_all('F 7', 'F7') %>% 
+    str_replace_all('G 7', 'G7') %>% 
+    str_split(pattern = ' ') %>% 
+    unlist
+  
+  chord_string <- chord_string[chord_string != '']
+  chord_string <- remove_dup_seqs(chord_string)
+  chord_string <- paste(chord_string, collapse = '-')
+  chords[i] <-  chord_string 
+  
+}
 chords
 
+
+data.frame(song_parts, chords)
+chords[3]
 #### Try to Separate by Song Part ###
 remDr$executeScript("window.scrollTo(0,500);")
 
