@@ -8,7 +8,7 @@ library(XML)
 library(tidyverse)
 library(seleniumPipes)
 library(RSelenium)
-
+library(httr)
 #Extract Song Parts
 extract_song_parts <- function(txt) {
   
@@ -62,7 +62,7 @@ url <- paste0(baseURL, 'john-mellencamp/pink-houses')
 url <- paste0(baseURL, 'the-beatles/julia')
 url <- paste0(baseURL, 'men-at-work/land-down-under')
 url <- paste0(baseURL, 'the-beatles/help')
-
+url <- paste0(baseURL, 'the-beatles/hey-jude')
 
 #Navigate to Url
 remDr$navigate(url)
@@ -78,8 +78,6 @@ extract_song_parts(txt=namestxt)
 
 #### Get Chords ####
 elem <- remDr$findElements(using="class", value="app-content-score")
-#elem <- remDr$findElements(using="css", value='div[class="app-content-score"')
-#elem <- remDr$findElement(using="css", value='div[class="app-content-score"')
 
 #For Single Song Part
 #elemtxt <- elem$getElementAttribute("outerHTML")[1]
@@ -91,6 +89,7 @@ elemtxt <- lapply(elem, function(x)
 
 # parse string into HTML tree to allow for querying with XPath
 elemxml <- htmlTreeParse(elemtxt, useInternalNodes=T)
+
 
 #### Extract 7th and Major Chords "
 
@@ -144,6 +143,85 @@ x %>%
 #### Extract Slash Chords and Suspended Chords ####
 
 #????
+
+
+#### Scroll to Bottom ####
+remDr$executeScript("window.scrollTo(0,document.body.scrollHeight);")
+elem <- remDr$findElement("css", "body")
+#elem <- remDr$findElement(using="class", value="app-content-score")
+
+
+#elem$sendKeysToElement(list(key = "end"))  
+
+elemtxt <- elem$getElementAttribute("outerHTML")[[1]]
+elemxml <- htmlTreeParse(elemtxt, useInternalNodes=T)
+xpath1 <- '//svg//g//tspan[@alignment-baseline]'
+xpath2 <- '//tspan[@class="gotham"][@baseline-shift = "sub"][@font-size = 11]'
+xpath <- paste(xpath1, xpath2, sep = '|')
+
+x <- xpathApply(elemxml, xpath)
+sapply(x,xmlValue) %>% paste(sep = '', collapse = ' ') %>% 
+  str_replace_all(' 4', '4') %>% 
+  str_replace_all(' 6', '6') %>% 
+  str_replace_all(' 7', '7') %>% 
+  str_replace_all('  7', '7') %>%
+  str_replace_all(' 9', '9') %>% 
+  str_replace_all(' b', 'b') %>% 
+  str_replace_all(' m', 'm') %>% 
+  str_replace_all(' #', '#') %>% 
+  str_replace_all('  sus', 'sus') %>% 
+  str_replace_all('C 7', 'C7') %>% 
+  str_replace_all('F 7', 'F7') 
+  str_sub(start = 5, end = 17)
+
+?str_sub
+  
+  
+  str_remove_all
+#fundList <- unlist(xpathApply(elemxml, xpath))
+
+#Convert from XML to Character
+x <- fundList %>% 
+  sapply( saveXML) 
+x  %>%  unlist
+#Clean Text and Collapse
+x %>%
+  str_remove_all("baseline") %>% 
+  str_remove_all("alignment") %>% 
+  str_remove_all("middle") %>% 
+  str_remove_all("tspan") %>% 
+  str_remove_all("quot") %>% 
+  str_remove_all('dx') %>% 
+  str_remove_all('ex') %>% 
+  str_remove_all('class') %>% 
+  str_remove_all('scale') %>% 
+  str_remove_all('degrees') %>% 
+  str_remove_all('maj') %>% 
+  str_remove_all(as.character(75)) %>% 
+  str_extract_all('[A-G]|[a-g]|6|7|>sus<|m|#') %>%               
+  unlist %>% 
+  paste(collapse= ' ') %>% 
+  str_replace_all(' 6', '6') %>% 
+  str_replace_all(' 7', '7') %>% 
+  str_replace_all(' 9', '9') %>% 
+  str_replace_all(' b', 'b') %>% 
+  str_replace_all(' m', 'm') %>% 
+  str_replace_all(' #', '#') %>% 
+  str_replace_all ('am', ' am') %>% 
+  str_replace_all ('bm', ' bm') %>% 
+  str_replace_all ('cm', ' cm') %>% 
+  str_replace_all ('dm', ' dm') %>% 
+  str_replace_all ('em', ' em') %>% 
+  str_replace_all ('fm', ' fm') %>% 
+  str_replace_all ('gm', ' gm') %>% 
+  str_replace_all ('am7', ' am7') %>% 
+  str_replace_all ('bm7', ' bm7') %>% 
+  str_replace_all ('cm7', ' cm7') %>% 
+  str_replace_all ('dm7', ' dm7') %>% 
+  str_replace_all ('em7', ' em7') %>% 
+  str_replace_all ('fm7', ' fm7') %>% 
+  str_replace_all ('gm7', ' gm7')
+
 
 
 #### NOTES ####
