@@ -200,7 +200,7 @@ chords
 elem <- remDr$findElement("css", "body")
 elem$sendKeysToElement(list(key = "down_arrow")) 
 elem$errorDetails()$message
-#elem <- remDr$executeScript("window.scrollTo(0,document.body.scrollHeight);")
+# remDr$executeScript("window.scrollTo(0,document.body.scrollHeight);")
 #elem <- remDr$findElement(using="class", value="app-content-score")
 
 ?findElement
