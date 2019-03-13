@@ -23,7 +23,7 @@ extract_song_parts <- function(txt) {
   
   #Character Vector of Types of Song Parts
   part_types <- c('Intro', 'Verse', 'Pre-Chorus', 'Bridge', 
-                  'Chorus', 'Outro', 'Pre-Chorus')
+                  'Chorus', 'Outro', 'Instrumental')
   
   #Extract Each of the 
   song_parts <- lapply(txt,  function(x) {str_extract(x, part_types)}) 
@@ -94,13 +94,22 @@ song_urls <- paste0(baseURL, url_ends)
 # url <- paste0(baseURL, 'the-beatles/lucy-in-the-sky-with-diamonds')
 # url <- paste0(baseURL, 'daft-punk/get-lucky')
 df_row_list <- list()
-for(i in 1:length(song_urls)){
+for(i in 5:6){
+      #print(i)
         
-      Sys.sleep(15)
+      sleep_time <- sample(1:5, 1)
+      print(paste('Sleep for ', sleep_time, ' seconds...'))
+      #Sys.sleep(sleep_time)
       #Navigate to Url
-      remDr$navigate(song_urls[5])
-      #remDr$getCurrentUrl()
-      remDr$screenshot(display = T)
+    
+      remDr$navigate(song_urls[6])
+      print(remDr$getCurrentUrl())
+      
+    
+      
+      
+
+      #remDr$screenshot(display = T)
       
       #### Extract Song Parts ####
       song_parts <- NA
@@ -109,7 +118,8 @@ for(i in 1:length(song_urls)){
       namestxt <- sapply(names, function(x) 
                             {x$getElementAttribute("outerHTML")[[1]]})
       song_parts <- extract_song_parts(txt=namestxt)
-  
+      song_parts
+      
       if(length(song_parts)==0){
         df_row_list[[i]] <- data.frame(song_parts = NA, chords = NA)
       } else if(length(song_parts) > 0) {
@@ -119,21 +129,27 @@ for(i in 1:length(song_urls)){
         
         
         if(length(song_parts)==1){
-          remDr$executeScript("window.scrollTo(0,300);") 
+          remDr$executeScript("window.scrollTo(0,300);")
         } else if(length(song_parts)==2){
-          remDr$executeScript("window.scrollTo(0,600);") #Scroll down page 
-        } else if(length(song_parts) > 2){
-          remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page 
+          remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+        } else if(length(song_parts) == 3){
+          remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+        }else if(length(song_parts) == 4){
+          remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
+          
+          sleep_time <- sample(1:3, 1)
+          print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+          
         }
-        
+
         
         #remDr$executeScript('window.scrollTo(0, document.body.scrollHeight);')
         elem <-  elemtxt <- elemxml<- idx <- NA
        
         elem <- remDr$findElement("css", "body")
-        
+        remDr$getCurrentUrl()
          #Print screen shot to find current location on page
-        
+        elem$screenshot(display =T)
         
         elemtxt <- elem$getElementAttribute("outerHTML")[[1]]
         elemxml <- htmlTreeParse(elemtxt, useInternalNodes=T)
@@ -146,10 +162,10 @@ for(i in 1:length(song_urls)){
        
         chords <- rep(NA, length(song_parts))
         x <- NA
-        i <- 1
-        for(i in 1:length(chords)){
+     
+        for(j in 1:length(chords)){
       
-          x <- xpathApply(elemxml, xpath[i])  
+          x <- xpathApply(elemxml, xpath[j])  
           
           chord_string <- character()
           chord_string <- sapply(x,xmlValue) %>% paste(sep = '', collapse = ' ') %>% 
@@ -162,6 +178,7 @@ for(i in 1:length(song_urls)){
             str_replace_all(' m', 'm') %>% 
             str_replace_all(' #', '#') %>% 
             str_replace_all('  sus', 'sus') %>% 
+            str_replace_all('   sus', 'sus') %>% 
             str_replace_all('A 7', 'A7') %>% 
             str_replace_all('B 7', 'B7') %>% 
             str_replace_all('C 7', 'C7') %>% 
@@ -177,17 +194,15 @@ for(i in 1:length(song_urls)){
           chord_string <- chord_string[chord_string != '']
           chord_string <- remove_dup_seqs(chord_string)
           chord_string <- paste(chord_string, collapse = '-')
-          chords[i] <-  chord_string 
+          chords[j] <-  chord_string 
           
         }
         
-        df_row_list[[i]] <- data.frame(artist = d$Artist[i],
-                                       song = d$Song[i],
-                                       song_parts,
-                                       chords)
+        df_row_list[[i]] <- data.frame(song_parts,chords)
     }
+  
 }
-chords
+df_row_list
 
 
 data.frame(song_parts, chords) %>%  View

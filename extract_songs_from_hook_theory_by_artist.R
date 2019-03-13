@@ -1,10 +1,12 @@
 require(tidyverse)
 require(rvest)
 
-artist <- 'tom petty'
-$artist <- 'the beatles'
-#artist <- 'elvis presley'
+#artist <- 'tom petty'
+#artist <- 'the beatles'
+#artist <- 'led zeppelin'
+artist <- 'elvis presley'
 #artist <- 'the pixies'
+#artist <- 'ray charles'
 baseURL <- 'https://www.hooktheory.com/theorytab/results/path/'
 
 url <- paste0(baseURL, artist)
