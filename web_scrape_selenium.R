@@ -73,7 +73,7 @@ remDr$open()
 
 #### Navigate to URL ####
 
-baseURL <- 'https://www.hooktheory.com/theorytab/view/'
+baseURL <- 'http://www.hooktheory.com/theorytab/view/'
 
 url_ends <- paste(d$Artist,'/', d$Songs) %>%  
                   tolower %>% 
@@ -96,12 +96,11 @@ song_urls <- paste0(baseURL, url_ends)
 df_row_list <- list()
 for(i in 1:length(song_urls)){
         
-      print(i)
- 
+      Sys.sleep(15)
       #Navigate to Url
-      remDr$navigate(song_urls[i])
+      remDr$navigate(song_urls[5])
       #remDr$getCurrentUrl()
-      
+      remDr$screenshot(display = T)
       
       #### Extract Song Parts ####
       song_parts <- NA
@@ -120,7 +119,7 @@ for(i in 1:length(song_urls)){
         
         
         if(length(song_parts)==1){
-          remDr$executeScript("window.scrollTo(0,0);") 
+          remDr$executeScript("window.scrollTo(0,300);") 
         } else if(length(song_parts)==2){
           remDr$executeScript("window.scrollTo(0,600);") #Scroll down page 
         } else if(length(song_parts) > 2){
@@ -147,7 +146,9 @@ for(i in 1:length(song_urls)){
        
         chords <- rep(NA, length(song_parts))
         x <- NA
+        i <- 1
         for(i in 1:length(chords)){
+      
           x <- xpathApply(elemxml, xpath[i])  
           
           chord_string <- character()
