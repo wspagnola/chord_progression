@@ -1,6 +1,7 @@
 require(tidyverse)
 require(rvest)
 
+artist <- 'michael jackson'
 #artist <- 'tom petty'
 #artist <- 'the beatles'
 #artist <- 'led zeppelin'

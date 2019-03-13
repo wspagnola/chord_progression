@@ -16,6 +16,38 @@ require(tidyverse)
 require(seleniumPipes)
 require(RSelenium)
 require(httr)
+
+#Clean song_contents
+clean_song_contents <- function(x){
+  require(tidyverse)
+  clean_x <- x %>% 
+                str_replace_all(' 4', '4') %>% 
+                str_replace_all(' 6', '6') %>% 
+                str_replace_all(' 7', '7') %>% 
+                str_replace_all('  7', '7') %>%
+                str_replace_all(' 9', '9') %>% 
+                str_replace_all(' b', 'b') %>% 
+                str_replace_all(' m', 'm') %>% 
+                str_replace_all(' #', '#') %>% 
+                str_replace_all('  sus', 'sus') %>% 
+                str_replace_all('   sus', 'sus') %>% 
+                str_replace_all('A 7', 'A7') %>% 
+                str_replace_all('B 7', 'B7') %>% 
+                str_replace_all('C 7', 'C7') %>% 
+                str_replace_all('D 7', 'D7') %>% 
+                str_replace_all('E 7', 'E7') %>% 
+                str_replace_all('F 7', 'F7') %>% 
+                str_replace_all('G 7', 'G7') %>% 
+                str_replace_all('# 7', '#7') %>% 
+                str_replace_all('b 7', 'b7') %>% 
+                str_replace_all('     \\( ', '(') %>% 
+                str_replace_all(' \\) ', ') ') 
+              
+  return(clean_x)
+}
+
+
+
 #Extract Song Parts
 extract_song_parts <- function(txt) {
   
@@ -81,20 +113,9 @@ url_ends <- paste(d$Artist,'/', d$Songs) %>%
                   str_replace_all(pattern = ' ', replacement = '-') %>% 
                   str_remove_all("'")
 song_urls <- paste0(baseURL, url_ends)
-#URLs to Test 
-# url <- paste0(baseURL, 'the-beatles/here-comes-the-sun')
-# url <- paste0(baseURL, 'the-beatles/eight-days-a-week')
-# url <- paste0(baseURL, 'the-beatles/i-want-to-hold-your-hand')
-# url <- paste0(baseURL, 'taylor-swift/shake-it-off')
-# url <- paste0(baseURL, 'john-mellencamp/pink-houses')
-# url <- paste0(baseURL, 'the-beatles/julia')
-# #url <- paste0(baseURL, 'men-at-work/land-down-under') No Data
-# url <- paste0(baseURL, 'the-beatles/help')
-# url <- paste0(baseURL, 'the-beatles/hey-jude')
-# url <- paste0(baseURL, 'the-beatles/lucy-in-the-sky-with-diamonds')
-# url <- paste0(baseURL, 'daft-punk/get-lucky')
+
 df_row_list <- list()
-for(i in 5:6){
+for(i in 1:length(song_urls)){
       #print(i)
         
       sleep_time <- sample(1:5, 1)
@@ -102,13 +123,8 @@ for(i in 5:6){
       #Sys.sleep(sleep_time)
       #Navigate to Url
     
-      remDr$navigate(song_urls[6])
+      remDr$navigate(song_urls[i])
       print(remDr$getCurrentUrl())
-      
-    
-      
-      
-
       #remDr$screenshot(display = T)
       
       #### Extract Song Parts ####
@@ -168,28 +184,11 @@ for(i in 5:6){
           x <- xpathApply(elemxml, xpath[j])  
           
           chord_string <- character()
-          chord_string <- sapply(x,xmlValue) %>% paste(sep = '', collapse = ' ') %>% 
-            str_replace_all(' 4', '4') %>% 
-            str_replace_all(' 6', '6') %>% 
-            str_replace_all(' 7', '7') %>% 
-            str_replace_all('  7', '7') %>%
-            str_replace_all(' 9', '9') %>% 
-            str_replace_all(' b', 'b') %>% 
-            str_replace_all(' m', 'm') %>% 
-            str_replace_all(' #', '#') %>% 
-            str_replace_all('  sus', 'sus') %>% 
-            str_replace_all('   sus', 'sus') %>% 
-            str_replace_all('A 7', 'A7') %>% 
-            str_replace_all('B 7', 'B7') %>% 
-            str_replace_all('C 7', 'C7') %>% 
-            str_replace_all('D 7', 'D7') %>% 
-            str_replace_all('E 7', 'E7') %>% 
-            str_replace_all('F 7', 'F7') %>% 
-            str_replace_all('G 7', 'G7') %>% 
-            str_replace_all('     \\( ', '(') %>% 
-            str_replace_all(' \\) ', ') ') %>% 
-            str_split(pattern = ' ') %>% 
-            unlist
+          chord_string <- sapply(x,xmlValue) %>% 
+                              paste(sep = '', collapse = ' ') %>%
+                              clean_song_contents %>% 
+                              str_split(pattern = ' ') %>% 
+                              unlist
           
           chord_string <- chord_string[chord_string != '']
           chord_string <- remove_dup_seqs(chord_string)
@@ -198,24 +197,17 @@ for(i in 5:6){
           
         }
         
-        df_row_list[[i]] <- data.frame(song_parts,chords)
+        df_row_list[[i]] <- data.frame(artist = d$Artist[i], 
+                                       song = d$Songs[i], 
+                                       song_parts,
+                                       chords)
     }
   
 }
-df_row_list
-
-
-data.frame(song_parts, chords) %>%  View
-
-#### Try to Separate by Song Part ###
-remDr$executeScript("window.scrollTo(0,500);")
-
-elemtxt <- elem$getElementAttribute("outerHTML")[[1]]
-elemxml <- htmlTreeParse(elemtxt, useInternalNodes=T)
-xpath1 <- '//svg//g//tspan[@alignment-baseline]'
-xpath2 <- '//tspan[@class="gotham"][@baseline-shift = "sub"][@font-size = 11]'
-xpath <- paste(xpath1, xpath2, sep = '|')
-
+df_row_list %>%  
+  lapply(function(x) mutate_all(x, as.character)) %>% 
+  bind_rows %>% 
+  View
 
 #### NOTES ####
 
@@ -256,45 +248,6 @@ xpath <- paste(xpath1, xpath2, sep = '|')
 # #Convert from XML to Character
 # x <- fundList %>% 
 #   sapply( saveXML) 
-# 
-# #Clean Text and Collapse
-# x %>%
-#   str_remove_all("baseline") %>% 
-#   str_remove_all("alignment") %>% 
-#   str_remove_all("middle") %>% 
-#   str_remove_all("tspan") %>% 
-#   str_remove_all("quot") %>% 
-#   str_remove_all('dx') %>% 
-#   str_remove_all('ex') %>% 
-#   str_remove_all('class') %>% 
-#   str_remove_all('scale') %>% 
-#   str_remove_all('degrees') %>% 
-#   str_remove_all('maj') %>% 
-#   str_remove_all(as.character(75)) %>% 
-#   str_extract_all('[A-G]|[a-g]|6|7|sus|m|#') %>%               
-#   unlist %>% 
-#   paste(collapse= ' ') %>% 
-#   str_replace_all(' 6', '6') %>% 
-#   str_replace_all(' 7', '7') %>% 
-#   str_replace_all(' 9', '9') %>% 
-#   str_replace_all(' b', 'b') %>% 
-#   str_replace_all(' m', 'm') %>% 
-#   str_replace_all(' #', '#') %>% 
-#   str_replace_all ('am', ' am') %>% 
-#   str_replace_all ('bm', ' bm') %>% 
-#   str_replace_all ('cm', ' cm') %>% 
-#   str_replace_all ('dm', ' dm') %>% 
-#   str_replace_all ('em', ' em') %>% 
-#   str_replace_all ('fm', ' fm') %>% 
-#   str_replace_all ('gm', ' gm') %>% 
-#   str_replace_all ('am7', ' am7') %>% 
-#   str_replace_all ('bm7', ' bm7') %>% 
-#   str_replace_all ('cm7', ' cm7') %>% 
-#   str_replace_all ('dm7', ' dm7') %>% 
-#   str_replace_all ('em7', ' em7') %>% 
-#   str_replace_all ('fm7', ' fm7') %>% 
-#   str_replace_all ('gm7', ' gm7')
-
 
 
 
