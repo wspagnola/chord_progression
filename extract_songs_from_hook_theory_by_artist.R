@@ -1,3 +1,5 @@
+require(tidyverse)
+require(rvest)
 
 artist <- 'tom petty'
 $artist <- 'the beatles'
