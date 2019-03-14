@@ -1,27 +1,21 @@
 source(file = 'source.R')
 
-#SINGLE ARTIST
-#artist <- 'michael jackson'
-#artist <- 'tom petty'
-#artist <- 'the beatles'
-#artist <- 'led zeppelin'
-#artist <- 'elvis presley'
-#artist <- 'the pixies'
-#artist <- 'ray charles'
+#Create data.frame 
+#Cols: artists, songs = available songs on hooktheory, links = links to pages with chords for each song
 
-#
-artist <- c('michael jackson',  'tom petty', 
-            'led zeppelin', 'elvis presley', 'ray charles')
-baseURL <- 'https://www.hooktheory.com/theorytab/results/path/'
-url <- paste0(baseURL, artist)
-url <- url %>% 
-          str_replace(pattern = ' ', replacement = '+')
+#OBTAIN LINKS FOR VECTOR OF ARTISTS: artist %>% lapply(extract_song_links) %>%  bind_rows
+#SEARCH FOR SINGLE ARTIST: extract_song_links(artist) 
+
+#Create a vector of artists 
+artist <- c('tom petty', 
+            'led zeppelin', 'elvis presley', 'ray charles', 'the beatles')
 
 #Create Data.frame of available songs
-d <- url%>%  
+d <- artist %>%  
         lapply(extract_song_links) %>%  
         bind_rows
 
+
 #Filter Out Cover Songs
 ## Watch out for Singers with Different Bands
-d[str_detect(tolower(d$Artist), pattern = artist) ,]
+d <- d[tolower(d$Artist) %in% artist ,]

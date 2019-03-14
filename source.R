@@ -8,17 +8,35 @@ require(httr)
 #Clean song_contents
 clean_song_contents <- function(x){
   require(tidyverse)
-  clean_x <- x %>% 
-    str_replace_all(' 4', '4') %>% 
-    str_replace_all(' 6', '6') %>% 
-    str_replace_all(' 7', '7') %>% 
-    str_replace_all('  7', '7') %>%
-    str_replace_all(' 9', '9') %>% 
-    str_replace_all(' b', 'b') %>% 
-    str_replace_all(' m', 'm') %>% 
-    str_replace_all(' #', '#') %>% 
-    str_replace_all('  sus', 'sus') %>% 
-    str_replace_all('   sus', 'sus') %>% 
+
+    clean_x <- x %>% 
+    str_replace_all('\\s+\\) ', ') ') %>% 
+    str_replace_all('\\s+\\( ', '(') %>% 
+    str_replace_all('\\s+2', '2') %>% 
+    str_replace_all('\\s+4', '4') %>% 
+    str_replace_all('\\s+6', '6') %>% 
+    str_replace_all('\\s+7', '7') %>% 
+    str_replace_all('\\s+9', '9') %>% 
+    str_replace_all('A\\s+b', 'Ab') %>% 
+    str_replace_all('B\\s+b', 'Bb') %>% 
+    str_replace_all('C\\s+b', 'Cb') %>% 
+    str_replace_all('D\\s+b', 'Db') %>% 
+    str_replace_all('E\\s+b', 'Eb') %>% 
+    str_replace_all('F\\s+b', 'Fb') %>% 
+    str_replace_all('G\\s+b', 'Gb') %>% 
+    str_replace_all('a\\s+b', 'ab') %>% 
+    str_replace_all('b\\s+b', 'bb') %>% 
+    str_replace_all('c\\s+b', 'cb') %>% 
+    str_replace_all('d\\s+b', 'db') %>% 
+    str_replace_all('e\\s+b', 'eb') %>% 
+    str_replace_all('f\\s+b', 'fb') %>% 
+    str_replace_all('g\\s+b', 'gb') %>% 
+    str_replace_all('\\s+m', 'm') %>% 
+    str_replace_all('\\s+#', '#') %>% 
+    str_replace_all('\\s+o', 'o') %>% 
+    str_replace_all('\\s+sus', 'sus') %>% 
+    str_replace_all('\\s+sus2', 'sus2') %>% 
+    str_replace_all('\\s_sus4', 'sus4') %>% 
     str_replace_all('A 7', 'A7') %>% 
     str_replace_all('B 7', 'B7') %>% 
     str_replace_all('C 7', 'C7') %>% 
@@ -26,10 +44,11 @@ clean_song_contents <- function(x){
     str_replace_all('E 7', 'E7') %>% 
     str_replace_all('F 7', 'F7') %>% 
     str_replace_all('G 7', 'G7') %>% 
+    str_replace_all('b 5', 'b5') %>% 
     str_replace_all('# 7', '#7') %>% 
-    str_replace_all('b 7', 'b7') %>% 
-    str_replace_all('     \\( ', '(') %>% 
-    str_replace_all(' \\) ', ') ') 
+    str_replace_all('b 7', 'b7')  %>% 
+    str_replace_all('bb\\s+b', 'b bb') 
+  
   
   return(clean_x)
 }
@@ -75,18 +94,26 @@ remove_dup_seqs <- function(v){
 }
 
 
-
-#Takes the Name of an Artist
+#Input a vector of artist a names 
 #Gets all the song names & links on Hooktheory for said Artists
 #Returns dataframe with Artist, Song, Links
-extract_song_links <- function(url){
+extract_song_links <- function(artist){
+  
+  #Convert to lower case
+  artist <- tolower(artist) 
+  
+  #Attach name to baseURL to create a vector of urls to search
+  baseURL <- 'https://www.hooktheory.com/theorytab/results/path/'
+  url <- paste0(baseURL, artist)
+  url <- url %>% 
+    str_replace(pattern = ' ', replacement = '+')
+  
+  
   page_vec <- NA
   page_vec <- url %>% 
     read_html %>%
     html_nodes(xpath = '//a[@class="button button-xs button-browse button-primary-open "]') %>% 
     html_text()
-  
-  
   
   if(length(page_vec) == 0) {
     
@@ -115,23 +142,33 @@ extract_song_links <- function(url){
     
     url <- url %>% paste0('/page/', 1:num_pages )
     
-    songs <- lapply(url,  function(url){
-      url %>% 
-        read_html %>% 
-        html_nodes(xpath = '//p[@class ="song"]') %>% 
-        html_text()})
+    song_list <- url %>%  lapply(function(x){x %>% 
+                                              read_html %>% 
+                                              html_nodes(xpath = '//p[@class ="song"]') %>% 
+                                              html_text()}
+    )
     
+    artist_list <- url %>% 
+                    lapply(function(x){x %>% 
+                                        read_html %>% 
+                                        html_nodes(xpath = '//p[@class ="artist"]') %>% 
+                                        html_text()}
+    )
+                                      
+    href_list <-  url %>%  
+                    lapply(function(x){x %>% 
+                                        read_html %>% 
+                                        html_nodes(xpath = '//li/a[@class="a-no-decoration"]') %>% 
+                                        html_attr(name = 'href')}
+    )
+  
     
-    artist_list <- lapply(url,  function(url){
-      url %>% 
-        read_html %>% 
-        html_nodes(xpath = '//p[@class ="artist"]') %>% 
-        html_text()})
-    
-    songs <- unlist(songs)
-    
+    songs <- unlist(song_list)
+      
     artist_list <- artist_list %>% lapply(function(x) str_remove(x, pattern = 'by '))
     artist_vec <- unlist(artist_list)
+    
+    href_vec <- unlist(href_list)
   } else if(is.na(page_vec)){
     artist_vec <- artist
     songs <- NA

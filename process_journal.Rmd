@@ -1,0 +1,43 @@
+---
+title: 'APSTA-2017: Process Journal'
+author: "William Spagnola"
+date: "3/14/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+### 3/14/19 *Happy $\pi$ Day*
+
+#### What I've done this week
+1) I learned the basic functions in the RSelenium package, and I created a webcrawler to scrape chord information from a dynamic webpage (www.hooktheory.com)
+2) I learned how to scroll down to load svg images located toward the bottom of page.  Alan helped me to understand the basic concept of webcrawlers during our group discussion on Monday.  Previously, I could not understand why I was only able to scrape the first two svg images from each page.  The reason was that only the first two images load unless you scroll down. 
+3) I learned how to scrape songs and links from hooktheory.com, so I can determine which songs are available for each artist.  I can now create a vector of links for the exact locations of the pages containing the chords of each song.
+
+#### Example Dataframe
+```{r echo = F}
+library(knitr)
+example_df <- read.csv('data/sample_data_frame.csv')
+example_df %>% 
+  select(-X, -link) 
+```
+
+#### Goals for next week
+1) Adjust webcrawler scrolling to load 4, 5, and 6 part songs.  Currently I have been able to load up to 3 parts of a song if a song has 3 parts. 
+2) Match songs scraped with website with another database in order to determine genre, year produced, and possibly key. Song keys can be determined based on the chords, but it might be easier if I can just get this info from another source such as the Spotify API. 
+3) Engineer features to assess songs.  I was thinking of creating indicator variables of 1-grams, bigrams and trigrams.  This would include information on common chord changes in each of the songs.  Then I could apply some machine learning algorithm to find clusters of songs based on the chord change features.  
+4) I'm not sure if I want to include slash chords yet.  Slash chords are simply chords where the bass note (lowest note) is different from the root.  For example, a C-major chord is constructed using C-E-B with C (the root) typically being the lowest note in the chord.  If I played the same chord with E or B as the lowest note, I would write the chord either as C/E or C/B respectively.  However, it still would be considered a C major chord.
+5) Convert chords into scale degrees using  **[roman numerical analysis](https://en.wikipedia.org/wiki/Roman_numeral_analysis)**.  This will help compare two songs that feature similar chord progressions but are written in different keys. 
+
+#### Challenges
+1) Hooktheory.com includes around 12,000 songs in total.  This is a lot of data; however, it doesn't include all the songs in the Billboard Hot100 from the past 50 years.
+2) Hooktheory.com is skewed toward modern songs.  For example, it contains over 50 songs by Taylor Swift but only around 8 songs for Elvis.  The sparsity of songs from earlier decades may make it difficult to compare trends across different decades.  
+3) Another issue is that the same song can be written differently.  Furthermore, sometimes the listed artist name includes the band name as well as the singer's, and other times it only includes the lead singer's (e.g. 'Tom Petty' vs. 'Tom Petty & the Heartbreakers').  These differences can complicate the task of linking this dataset to other sources.  
+4) Need advice on how to scrape data without overloading server.  What is an appropriate wait time betwen each request?
+
+#### Idea for Analysis
+1) Start by taking the Hot100 Billboard dataset (Jaejin found a csv of this) and determine the top 5 artists from each decade (1950s to 2010s) measured by number of appearances in Hot100 grouped by decade and artist.  Then build a datset with hooktheory data based around these artists. 
+
