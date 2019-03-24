@@ -4,6 +4,13 @@ require(tidyverse)
 require(seleniumPipes)
 require(RSelenium)
 require(httr)
+require(lubridate)
+require(spotifyr)
+
+#Get Spotify Token
+my_token <- get_spotify_access_token(client_id = 'b7e786e6e51541e7b0e39a1c547e3434', 
+                                     client_secret = '7164828c5b29439882806d654c6cfd73')
+
 
 #Clean song_contents
 clean_song_contents <- function(x){

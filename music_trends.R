@@ -95,15 +95,132 @@ sample_song <- hot_100_df %>%
 
 
 #### Work with Spotify API  ####
-require(spotifyr)
 
 get_artists()
 get_album_tracks()
 
-my_token <- get_spotify_access_token(client_id = 'b7e786e6e51541e7b0e39a1c547e3434', 
-                         client_secret = '7164828c5b29439882806d654c6cfd73')
+
+sample_df <- read.csv('data/sample_data_frame.csv')
+sample_artists <- as.character(unique(sample_df$artist))
+
+get_album_tracks()
+?get_albums
+
+options(access_token = my_token)
+
+artist_uri_list <- list()
+for(i in 1:length(sample_artists)){
+  
+  artist_uri_list[i] <- get_artists(sample_artists[i],
+                                    access_token = my_token)[, 2]
+  
+  
+}
 
 
+length()
+length(artist_uri_list)
+
+artist_uri_list[[6]]
+
+
+get_albums(artist_uri_list[[1]][1],
+           access_token = my_token)
+
+#Get List of Albums for Each Artist
+album_uri_list <- list()
+for(i in 1:length(artist_uri_list)){
+  
+  
+     print(sample_artists[i])
+  
+       print('error 1')
+      num_artist_names <- length(artist_uri_list[[i]]) #Get Number of Artist
+      album_tibbles <- list()
+  
+      print('error 2')
+     for(j in 1:num_artist_names){
+        Sys.sleep(2)
+        album_tibble <- get_albums(artist_uri_list[[i]][j],
+                                    access_token = my_token)
+        
+        print('error 3')
+        
+        if(ncol(album_tibble) > 0){
+              album_tibbles[j] <-    album_tibble[, 1]
+            print('error 4')
+
+        } else{
+          print('error 5')
+              album_tibbles[j] <- NULL
+        }
+        
+     }
+      
+      print('error 6')
+        album_tibbles <- compact(album_tibbles )
+        album_num <- length(unlist(album_tibbles))
+        
+        album_uri_vec <- rep(NA, album_num)
+      
+        album_uri_vec <- unlist(album_tibbles)
+        album_uri_vec <-  album_uri_vec[!is.na( album_uri_vec)]
+        names(album_uri_vec) <- NULL
+        
+        #Creates data frame with album uris and artist name
+        d <- data.frame(artist = sample_artists[i], album_uri = album_uri_vec )
+  
+    album_uri_list[[i]] <-  d
+    
+  
+}
+
+
+#Get Tracks Uris from Each album
+track_uris <- list()
+for(i in 1:length(  album_uri_list)){
+    i <- 1
+    albums <-  as.data.frame(album_uri_list[[i]])
+    d <- albums %>%  select(album_uri)
+    d$album_uri <- as.character(d$album_uri)
+    for(j in 1:length(albums)){
+        j <- 2
+     get_album_tracks(d, access_token = my_token)
+      
+    }
+  class(d$album_uri)
+  
+}
+
+get_ar
+albums[1]
+?get_album_tracks()
+artists <- get_artists('Tom Petty', access_token = my_token) 
+albums <- get_albums(artists$artist_uri[1], access_token = my_token )
+get_album_tracks(albums, access_token = my_token)
+  pull(artist_uri) %>% 
+  get_albums(access_token = my_token)
+  get_albums()
+get_albums('Tom Petty', access_token = my_token)
+album_uri_list(arti)
+
+album_tibble<- get_albums(artist_uri_list[[3]][1], access_token = my_token)
+ncol(album_tibble)
+album_tibble[, 1]
+get_albums(artist_uri_list[[2]][2],
+           access_token = my_token)[, 1]
+artist_uri_list <- list()
+
+
+get_artists(sample_artists[1], access_token = my_token)[, 2]
+get_artists(sample_artists[2], access_token = my_token)[, 2]
+get_artists(sample_artists[3], access_token = my_token)[, 2]
+get_artists(sample_artists[4], access_token = my_token)[, 2]
+get_artists(sample_artists[5], access_token = my_token)[, 2]
+
+artist_uris <- sample_artists %>% 
+                    sapply(function(x) get_albums(x, access_token = my_token))
+) 
 
 radiohead_uri <- get_artists('radiohead', access_token = access_token)[1,2]
 

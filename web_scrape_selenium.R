@@ -7,6 +7,8 @@
 ###docker run -d -p 4445:4444 selenium/standalone-chrome
 
 
+####  docker run -d -p 4445:4444 selenium/standalone-chrome:3.5.3
+
 #LIST DOCKER CONTAINERS: docker container ls
 #STOP DOCKER CONTAINER: docker stop test01
 
@@ -14,26 +16,43 @@
 source(file = 'source.R')
 
 #Set up Driver 
+
 remDr <- remoteDriver(remoteServerAddr = "localhost",
                       port = 4445L, 
-                      browserName = "chrome")
+                      browserName = "firefox")
+remDr$open()
+
+# extraCapabilities=fprof ?
+
 
 #### Get URLs ###
 baseURL <- 'http://www.hooktheory.com'
 song_urls <- paste0(baseURL, d$Links)
 
 ####Extract Chords ####
-remDr$open() #Open Driver
+#remDr$open() #Open Driver
 df_row_list <- list() #Create Blank List
+rm(remDr)
+remDr$close()
+remDr$quit()
+remDr$open()
+remDr$navigate('http:www.google.com')
+remDr$navigate(song_urls[30])
+
+remDr$getCurrentUrl()
+
+remDr$errorDetails()
 
 #Loop through urls
-for(i in 1:length(song_urls)){
+for(i in 1:25){
      
-      sleep_time <- sample(10:20, 1)
-      print(paste('Sleep for ', sleep_time, ' seconds...'))
-      #Sys.sleep(sleep_time)
-      #Navigate to Url
     
+      sleep <- 4:10
+      sleep_time <- sample(sleepe, 1)
+      print(paste('Sleep for ', sleep_time, ' seconds...'))
+      Sys.sleep(sleep_time)
+      #Navigate to Url
+   
       remDr$navigate(song_urls[i])
       print(paste('Loading ',remDr$getCurrentUrl()[[1]]))
       #remDr$screenshot(display = T)
@@ -53,7 +72,7 @@ for(i in 1:length(song_urls)){
      
         
         #### Scroll to Bottom ####
-        scroll_time <- 5:10
+        scroll_time <- 5
         
         if(length(song_parts)==1){
           remDr$executeScript("window.scrollTo(0,300);")
@@ -63,6 +82,12 @@ for(i in 1:length(song_urls)){
           
         } else if(length(song_parts)==2){
           remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+          sleep_time <- sample(scroll_time, 1)     
+          print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+          Sys.sleep(sleep_time)
+          
+          
+          remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
           sleep_time <- sample(scroll_time, 1)     
           print(paste(' Waiting ', sleep_time, ' seconds to load...'))
           Sys.sleep(sleep_time)
@@ -159,10 +184,11 @@ for(i in 1:length(song_urls)){
                                        chords,
                                        link = song_urls[i])
     }
-  
+    #  remDr$close()
 }
-remDr$close()
+
 chords_df <- df_row_list %>%  
+  compact %>% 
   lapply(function(x) mutate_all(x, as.character)) %>% 
   bind_rows 
 View(chords_df)
