@@ -1,3 +1,27 @@
+#Create data.frame 
+#Cols: artists, songs = available songs on hooktheory, links = links to pages with chords for each song
+
+#OBTAIN LINKS FOR VECTOR OF ARTISTS: artist %>% lapply(extract_song_links) %>%  bind_rows
+#SEARCH FOR SINGLE ARTIST: extract_song_links(artist) 
+
+#Create a vector of artists 
+artist <- c('tom petty', 
+            'led zeppelin', 'elvis presley', 'ray charles', 'the beatles')
+artist <- 'ray charles'
+
+#Create Data.frame of available songs
+links <- artist %>%  
+  lapply(extract_song_links) %>%  
+  bind_rows
+
+
+#Filter Out Cover Songs
+## Watch out for Singers with Different Bands
+links <- links[tolower(links$Artist) %in% artist ,]
+
+
+#### Web Scrape Chords ####
+
 #STEPS to Load Dockter in Terminal
 ###docker pull selenium/standalone-firefox
 ###docker run -d -p 4445:4444 selenium/standalone-firefox
@@ -19,7 +43,7 @@ source(file = 'source.R')
 
 remDr <- remoteDriver(remoteServerAddr = "localhost",
                       port = 4445L, 
-                      browserName = "firefox")
+                      browserName = "chrome")
 remDr$open()
 
 # extraCapabilities=fprof ?
@@ -27,28 +51,17 @@ remDr$open()
 
 #### Get URLs ###
 baseURL <- 'http://www.hooktheory.com'
-song_urls <- paste0(baseURL, d$Links)
+song_urls <- paste0(baseURL, links$Links)
 
 ####Extract Chords ####
-#remDr$open() #Open Driver
 df_row_list <- list() #Create Blank List
-rm(remDr)
-remDr$close()
-remDr$quit()
-remDr$open()
-remDr$navigate('http:www.google.com')
-remDr$navigate(song_urls[30])
-
-remDr$getCurrentUrl()
-
-remDr$errorDetails()
 
 #Loop through urls
-for(i in 1:25){
+for(i in 1:length(song_urls)){
      
     
       sleep <- 4:10
-      sleep_time <- sample(sleepe, 1)
+      sleep_time <- sample(sleep, 1)
       print(paste('Sleep for ', sleep_time, ' seconds...'))
       Sys.sleep(sleep_time)
       #Navigate to Url
@@ -152,11 +165,8 @@ for(i in 1:25){
         idx <- 1:length(song_parts)*3
         xpath <- paste0('(//svg)[', idx, ']//tspan[@alignment-baseline]',
                          '|(//svg)[', idx, ']//tspan[@baseline-shift]')
-
         
-        # xpath <- paste0('(//svg)[', idx, ']//tspan[@alignment-baseline]',
-        #                  '|(//svg)[', idx, ']//tspan[@class][@baseline-shift]')
-        # 
+        #Create Empty Vectors to store Xpaths and chords
         chords <- rep(NA, length(song_parts))
         x <- NA
      
@@ -178,13 +188,13 @@ for(i in 1:25){
           
         }
         
-        df_row_list[[i]] <- data.frame(artist = d$Artist[i], 
-                                       song = d$Songs[i], 
+        df_row_list[[i]] <- data.frame(artist = links$Artist[i], 
+                                       song = links$Songs[i], 
                                        song_parts,
                                        chords,
                                        link = song_urls[i])
     }
-    #  remDr$close()
+
 }
 
 chords_df <- df_row_list %>%  

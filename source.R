@@ -7,6 +7,13 @@ require(httr)
 require(lubridate)
 require(spotifyr)
 
+
+#Not sure if I need these
+#require(jsonlite)
+#require(xml2)
+#require(RCurl)
+
+
 #Get Spotify Token
 my_token <- get_spotify_access_token(client_id = 'b7e786e6e51541e7b0e39a1c547e3434', 
                                      client_secret = '7164828c5b29439882806d654c6cfd73')
@@ -17,6 +24,12 @@ clean_song_contents <- function(x){
   require(tidyverse)
 
     clean_x <- x %>% 
+    str_replace_all('\\s+m', 'm') %>% 
+    str_replace_all('\\s+#', '#') %>% 
+    str_replace_all('\\s+o', 'o') %>% 
+    str_replace_all('\\s+sus', 'sus') %>% 
+    str_replace_all('\\s+sus2', 'sus2') %>% 
+    str_replace_all('\\s_sus4', 'sus4') %>% 
     str_replace_all('\\s+\\) ', ') ') %>% 
     str_replace_all('\\s+\\( ', '(') %>% 
     str_replace_all('\\s+2', '2') %>% 
@@ -24,26 +37,20 @@ clean_song_contents <- function(x){
     str_replace_all('\\s+6', '6') %>% 
     str_replace_all('\\s+7', '7') %>% 
     str_replace_all('\\s+9', '9') %>% 
-    str_replace_all('A\\s+b', 'Ab') %>% 
-    str_replace_all('B\\s+b', 'Bb') %>% 
-    str_replace_all('C\\s+b', 'Cb') %>% 
-    str_replace_all('D\\s+b', 'Db') %>% 
-    str_replace_all('E\\s+b', 'Eb') %>% 
-    str_replace_all('F\\s+b', 'Fb') %>% 
-    str_replace_all('G\\s+b', 'Gb') %>% 
-    str_replace_all('a\\s+b', 'ab') %>% 
-    str_replace_all('b\\s+b', 'bb') %>% 
-    str_replace_all('c\\s+b', 'cb') %>% 
-    str_replace_all('d\\s+b', 'db') %>% 
-    str_replace_all('e\\s+b', 'eb') %>% 
-    str_replace_all('f\\s+b', 'fb') %>% 
-    str_replace_all('g\\s+b', 'gb') %>% 
-    str_replace_all('\\s+m', 'm') %>% 
-    str_replace_all('\\s+#', '#') %>% 
-    str_replace_all('\\s+o', 'o') %>% 
-    str_replace_all('\\s+sus', 'sus') %>% 
-    str_replace_all('\\s+sus2', 'sus2') %>% 
-    str_replace_all('\\s_sus4', 'sus4') %>% 
+    str_replace_all('A\\s+b ', 'Ab') %>% 
+    str_replace_all('B\\s+b ', 'Bb') %>% 
+    str_replace_all('C\\s+b ', 'Cb') %>% 
+    str_replace_all('D\\s+b ', 'Db') %>% 
+    str_replace_all('E\\s+b ', 'Eb') %>% 
+    str_replace_all('F\\s+b ', 'Fb') %>% 
+    str_replace_all('G\\s+b ', 'Gb') %>% 
+    str_replace_all('a\\s+b ', 'ab') %>% 
+    str_replace_all('b\\s+b ', 'bb') %>% 
+    str_replace_all('c\\s+b ', 'cb') %>% 
+    str_replace_all('d\\s+b ', 'db') %>% 
+    str_replace_all('e\\s+b ', 'eb') %>% 
+    str_replace_all('f\\s+b ', 'fb') %>% 
+    str_replace_all('g\\s+b ', 'gb') %>% 
     str_replace_all('A 7', 'A7') %>% 
     str_replace_all('B 7', 'B7') %>% 
     str_replace_all('C 7', 'C7') %>% 
@@ -188,4 +195,28 @@ extract_song_links <- function(artist){
           mutate_all(as.character)
   return(d)
   
+}
+
+
+extract_song_key <- function(x) {
+  key <- str_sub(x$chord[1], end = 4L)
+  key <- key %>%  str_remove('-.*') 
+  return(key)
+}
+
+
+
+get_artist_tracks <- function(artist_name, token){
+  
+  require(tidyr)
+  require(dplyr)
+  artists <- get_artists(artist_name, access_token = token) 
+  Sys.sleep(2)
+  albums <- get_albums(artists$artist_uri[1], access_token = token )
+  Sys.sleep(2)
+  songs <- get_album_tracks(albums, access_token = my_token)
+  
+  songs$artist <- artist_name
+  songs <-   songs %>% select(artist, everything())
+  return(songs)
 }
