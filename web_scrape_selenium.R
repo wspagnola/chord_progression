@@ -25,7 +25,6 @@ links <- links[tolower(links$Artist) %in% artist ,]
 ###docker pull selenium/standalone-chrome
 ###docker run -d -p 4445:4444 selenium/standalone-chrome
 
-
 ####  docker run -d -p 4445:4444 selenium/standalone-chrome:3.5.3
 
 #LIST DOCKER CONTAINERS: docker container ls
@@ -37,11 +36,10 @@ links <- links[tolower(links$Artist) %in% artist ,]
 
 remDr <- remoteDriver(remoteServerAddr = "localhost",
                       port = 4445L, 
-                      browserName = "firefox")
+                      browserName = "chrome")
 remDr$open()
-checkForServer() 
+remDr$close()
 # extraCapabilities=fprof ?
-rm(remDr)
 
 #### Get URLs ###
 baseURL <- 'http://www.hooktheory.com'
