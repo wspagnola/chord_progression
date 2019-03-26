@@ -1,13 +1,8 @@
-#Create data.frame 
-#Cols: artists, songs = available songs on hooktheory, links = links to pages with chords for each song
-
-#OBTAIN LINKS FOR VECTOR OF ARTISTS: artist %>% lapply(extract_song_links) %>%  bind_rows
-#SEARCH FOR SINGLE ARTIST: extract_song_links(artist) 
+source(file = 'source.R')
 
 #Create a vector of artists 
 artist <- c('tom petty', 
             'led zeppelin', 'elvis presley', 'ray charles', 'the beatles')
-artist <- 'ray charles'
 
 #Create Data.frame of available songs
 links <- artist %>%  
@@ -37,17 +32,16 @@ links <- links[tolower(links$Artist) %in% artist ,]
 #STOP DOCKER CONTAINER: docker stop test01
 
 #### Set Up ####
-source(file = 'source.R')
 
 #Set up Driver 
 
 remDr <- remoteDriver(remoteServerAddr = "localhost",
                       port = 4445L, 
-                      browserName = "chrome")
+                      browserName = "firefox")
 remDr$open()
-
+checkForServer() 
 # extraCapabilities=fprof ?
-
+rm(remDr)
 
 #### Get URLs ###
 baseURL <- 'http://www.hooktheory.com'
@@ -57,10 +51,10 @@ song_urls <- paste0(baseURL, links$Links)
 df_row_list <- list() #Create Blank List
 
 #Loop through urls
-for(i in 1:length(song_urls)){
+for(i in 24:length(song_urls)){
      
     
-      sleep <- 4:10
+      sleep <- 2
       sleep_time <- sample(sleep, 1)
       print(paste('Sleep for ', sleep_time, ' seconds...'))
       Sys.sleep(sleep_time)
@@ -69,6 +63,8 @@ for(i in 1:length(song_urls)){
       remDr$navigate(song_urls[i])
       print(paste('Loading ',remDr$getCurrentUrl()[[1]]))
       #remDr$screenshot(display = T)
+      Sys.sleep(sleep_time)
+      print(paste('Sleep for ', sleep_time, ' seconds...'))
       
       #### Extract Song Parts ####
       song_parts <- NA
