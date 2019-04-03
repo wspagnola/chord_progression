@@ -6,9 +6,13 @@ options(lubridate.verbose = TRUE)
 hot100$WeekID <- mdy(hot100$WeekID) 
 hot100$Year <- year(hot100$WeekID )
 
+# hot100$Decade <-  hot100$Year %>%  
+#                       str_sub(start= -2, end = -2) %>%  
+#                       str_c('0s')
+
 hot100$Decade <-  hot100$Year %>%  
-                      str_sub(start= -2, end = -2) %>%  
-                      str_c('0s')
+                        str_sub(start= 1L, end = -2) %>%  
+                        str_c('0')
 
 names(hot100)
 hot100_ord <- hot100 %>% 
@@ -21,3 +25,6 @@ hot100_split_list <- hot100_ord %>%
 hot100_sub <- hot100_split_list %>% 
                     lapply(function(x) slice(x, 1:30)) %>% 
                     bind_rows
+#write.csv(x = hot100_sub, file = 'data/artist_list.csv', row.names = F)
+
+?write.csv

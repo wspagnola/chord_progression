@@ -6,7 +6,7 @@ require(RSelenium)
 require(httr)
 require(lubridate)
 require(spotifyr)
-
+require(RCurl)
 
 #Not sure if I need these
 #require(jsonlite)
@@ -61,7 +61,8 @@ clean_song_contents <- function(x){
     str_replace_all('b 5', 'b5') %>% 
     str_replace_all('# 7', '#7') %>% 
     str_replace_all('b 7', 'b7')  %>% 
-    str_replace_all('bb\\s+b', 'b bb') 
+    str_replace_all('bb\\s+b', 'b bb')  %>% 
+    str_replace_all('bbb', 'b bb') 
   
   
   return(clean_x)
@@ -112,7 +113,7 @@ remove_dup_seqs <- function(v){
 #Gets all the song names & links on Hooktheory for said Artists
 #Returns dataframe with Artist, Song, Links
 extract_song_links <- function(artist){
-  
+
   #Convert to lower case
   artist <- tolower(artist) 
   
@@ -122,77 +123,97 @@ extract_song_links <- function(artist){
   url <- url %>% 
     str_replace(pattern = ' ', replacement = '+')
   
+  #Check if URL exists
+  url_exists <- RCurl::url.exists(url)
   
-  page_vec <- NA
-  page_vec <- url %>% 
-    read_html %>%
-    html_nodes(xpath = '//a[@class="button button-xs button-browse button-primary-open "]') %>% 
-    html_text()
   
-  if(length(page_vec) == 0) {
+  if(url_exists == F){
     
-    songs <- NA
-    artist_vec <- NA
-    songs <-  url %>% 
-      read_html %>% 
-      html_nodes(xpath = '//p[@class ="song"]') %>% 
+        artist_vec <- artist
+        songs <- NA
+        href_vec <- NA
+    
+  } else if (url_exists == T){
+    page_vec <- NA
+    page_vec <- url %>% 
+      read_html %>%
+      html_nodes(xpath = '//a[@class="button button-xs button-browse button-primary-open "]') %>% 
       html_text()
     
-    href_vec <-  url %>% 
-      read_html %>% 
-      html_nodes(xpath = '//li/a[@class="a-no-decoration"]') %>% 
-      html_attr(name = 'href')
-    
-    artist_vec <-  url %>% 
-      read_html %>% 
-      html_nodes(xpath = '//p[@class ="artist"]') %>% 
-      html_text()
-    
-    artist_vec <- artist_vec %>%  str_remove('by ')
-    
-  } else if(length(page_vec) > 1){
-    
-    num_pages <- page_vec %>%  as.numeric %>%  max
-    
-    url <- url %>% paste0('/page/', 1:num_pages )
-    
-    song_list <- url %>%  lapply(function(x){x %>% 
-                                              read_html %>% 
-                                              html_nodes(xpath = '//p[@class ="song"]') %>% 
-                                              html_text()}
-    )
-    
-    artist_list <- url %>% 
-                    lapply(function(x){x %>% 
-                                        read_html %>% 
-                                        html_nodes(xpath = '//p[@class ="artist"]') %>% 
-                                        html_text()}
-    )
-                                      
-    href_list <-  url %>%  
-                    lapply(function(x){x %>% 
-                                        read_html %>% 
-                                        html_nodes(xpath = '//li/a[@class="a-no-decoration"]') %>% 
-                                        html_attr(name = 'href')}
-    )
-  
-    
-    songs <- unlist(song_list)
+    if(length(page_vec) == 0) {
       
-    artist_list <- artist_list %>% lapply(function(x) str_remove(x, pattern = 'by '))
-    artist_vec <- unlist(artist_list)
-    
-    href_vec <- unlist(href_list)
-  } else if(is.na(page_vec)){
-    artist_vec <- artist
-    songs <- NA
+      songs <- NA
+      artist_vec <- NA
+      songs <-  url %>% 
+        read_html %>% 
+        html_nodes(xpath = '//p[@class ="song"]') %>% 
+        html_text()
+      
+      href_vec <-  url %>% 
+        read_html %>% 
+        html_nodes(xpath = '//li/a[@class="a-no-decoration"]') %>% 
+        html_attr(name = 'href')
+      
+      artist_vec <-  url %>% 
+        read_html %>% 
+        html_nodes(xpath = '//p[@class ="artist"]') %>% 
+        html_text()
+      
+      artist_vec <- artist_vec %>%  str_remove('by ')
+      
+    } else if(length(page_vec) > 1){
+      
+      num_pages <- page_vec %>%  as.numeric %>%  max
+      
+      url <- url %>% paste0('/page/', 1:num_pages )
+      
+      song_list <- url %>%  lapply(function(x){x %>% 
+          read_html %>% 
+          html_nodes(xpath = '//p[@class ="song"]') %>% 
+          html_text()}
+      )
+      
+      artist_list <- url %>% 
+        lapply(function(x){x %>% 
+            read_html %>% 
+            html_nodes(xpath = '//p[@class ="artist"]') %>% 
+            html_text()}
+        )
+      
+      href_list <-  url %>%  
+        lapply(function(x){x %>% 
+            read_html %>% 
+            html_nodes(xpath = '//li/a[@class="a-no-decoration"]') %>% 
+            html_attr(name = 'href')}
+        )
+      
+      
+      songs <- unlist(song_list)
+      
+      artist_list <- artist_list %>% lapply(function(x) str_remove(x, pattern = 'by '))
+      artist_vec <- unlist(artist_list)
+      
+      href_vec <- unlist(href_list)
+    } 
+    # #else if(is.na(page_vec)){
+    #   artist_vec <- artist
+    #   songs <- NA
+    #   href_vec <- NA
+    #   
+    # }
     
   }
+  
+  #Store Artist, Song and Link in Data.frame
   d <- data.frame(Artist = artist_vec, 
                   Songs = songs, 
                   Links = href_vec)  
   d <- d %>%  
           mutate_all(as.character)
+  
+  
+  Sys.sleep(5)
+  
   return(d)
   
 }
@@ -220,3 +241,172 @@ get_artist_tracks <- function(artist_name, token){
   songs <-   songs %>% select(artist, everything())
   return(songs)
 }
+
+
+scroll_down <- function(scroll_time){
+  
+  max_scroll_time <- scroll_time + 5
+  
+  
+  if(length(song_parts)==1){
+    
+
+    remDr$executeScript("window.scrollTo(0,300);")
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    
+    remDr$executeScript("window.scrollTo(0,600);")
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    
+    # remDr$executeScript("window.scrollTo(0,900);")
+    # sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    # print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+    # Sys.sleep(sleep_time)
+    
+    
+  } else if(length(song_parts)==2){
+    
+    
+    remDr$executeScript("window.scrollTo(0,300);")
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)     
+    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    
+    remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)     
+    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    # remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+    # sleep_time <- sample(scroll_time:max_scroll_time, 1)     
+    # print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+    # Sys.sleep(sleep_time)
+    
+  } else if(length(song_parts) == 3){
+    
+    remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    # remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
+    # sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    # Sys.sleep(sleep_time)
+    
+    
+    
+  }else if(length(song_parts) >= 3){
+    
+    remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    
+    # remDr$executeScript("window.scrollTo(0,1800);") #Scroll down page
+    # sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    # Sys.sleep(sleep_time)
+  }else if(length(song_parts) >= 5){
+    
+    remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    
+    remDr$executeScript("window.scrollTo(0,1800);") #Scroll down page
+    sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    Sys.sleep(sleep_time)
+    
+    
+    # remDr$executeScript("window.scrollTo(0,2100);") #Scroll down page
+    # sleep_time <- sample(scroll_time:max_scroll_time, 1)
+    # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+    # Sys.sleep(sleep_time)
+  }
+}
+

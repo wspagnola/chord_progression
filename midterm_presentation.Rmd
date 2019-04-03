@@ -22,12 +22,10 @@ For this report, I will be using music from the Hot100 Billboard Chart, which ha
 As a starting point, I decided to create a subset of the data that included the 30 most popular artists from each decade.  I did this because there are so many songs that have made it to the Hot100 over the past 70 years, and I am not sure how many of these songs I will be able to find chord data for. I defined popularity of an artist for a given time period as the number of weeks each artist had a song in the Hot100 within each decade.  The artist would get credit for each song in the Hot100.  Consequently, if in the same week, she had two songs on the list, she would get credit for two weeks.  I chose the number 30 by trial and error.  It seemed through visual inspection that choosing this number would produce a fairly representative list of the most popular artists from each decade.  
 
 ```{r Create Subset of Hot100}
-read.csv('data/Hot100.csv')
 
-sub_set_num <- 30
 hot100 <- read_csv('data/Hot100.csv')
 
-
+sub_set_num <- 30
 hot100$WeekID <- mdy(hot100$WeekID) 
 hot100$Year <- year(hot100$WeekID )
 
