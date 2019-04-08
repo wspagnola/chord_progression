@@ -93,7 +93,7 @@ links_df <- bind_rows(link_list)
 links_df <- links_df %>%  dplyr::select(Artist, Songs, Decade, Links) 
 View(links_df)
 
-#
+
 
 ## I have commented this part out because I am afraid of overwriting it
 #write.csv(links_df, file = 'data/links.csv')
@@ -101,6 +101,20 @@ View(links_df)
 
 #Create CSV of missing links 
 #write.csv(links_df[is.na(links_df$Links) , ], file = 'data/missing_links.csv')
+
+
+#### Combine 2 datasets ####
+
+#Run if you want to combine two forms without rerunning scrape
+
+links <- read.csv('data/links.csv')
+missing_links <-read.csv('data/missing_links.csv')
+complete_links <- links %>%  
+                      rbind(missing_links) %>% 
+                      filter(!is.na(Links)) 
+complete_links <- complete_links %>% 
+  select(Decade, Artist, Songs, Links)
+#write.csv(complete_links, file = 'data/complete_links.csv', row.names = F)
 
 #### Notes on Missing Links ####
 

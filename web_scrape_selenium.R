@@ -15,48 +15,42 @@
 
 source(file = 'source.R')
 
-artist_list <- read.csv('data/artist_list.csv')
+#### Import song urls ####
 
-this_decade <- artist_list %>%  filter(Decade == 2010)
+#Use Pre-made Data File 
+# links <- read.csv('data/complete_links.csv')
+# song_urls <- links$Links
 
-artist <- as.character(this_decade$Performer)
-#Create a vector of artists 
 
-#artist <- c('taylor swift', 'justin bieber', 'katy perry', 'drake')
-#artist <- c('tom petty', 'led zeppelin', 'elvis presley', 'ray charles', 'the beatles')
+# OR Select Artist individuall
+artist <- 'Queen'
+links <- artist %>%  
+             lapply(extract_song_links) %>%  
+              bind_rows
 
-#Create Data.frame of available songs
-#artist <- artist[11:20]  ##sub sample artist vector if needed
-links <- artist[1:10] %>%  
-  lapply(extract_song_links) %>%  
-  bind_rows
+#Create Song Urls
+baseURL <- 'http://www.hooktheory.com'
+song_urls <- paste0(baseURL, links$Links[!is.na(links$Links)])
 
-#write.csv(links, file = 'data/links_2010s_1_10.csv')
 
-#### Set Up ####
+#### Set Up Remote Driver ####
 
-#Set up Driver 
-rm(remDr)
 eCaps <- list(chromeOptions = list(
   args = list('--user-agent="music_fan"')
 ))
-
-
-
 remDr <- remoteDriver(remoteServerAddr = "localhost",
                       extraCapabilities = eCaps,
                       port = 4445L, 
                       browserName = "chrome")
 
-#### Get URLs ###
-baseURL <- 'http://www.hooktheory.com'
-song_urls <- paste0(baseURL, links$Links[!is.na(links$Links)])
+#### Web Scraping ####
 
 df_row_list <- list() #Create Blank List
 remDr$open() #Open Driver
 remDr$setTimeout(type = 'page load', milliseconds = 60e3) #Set Timeout time
 start <- 1 #Song in url vector to start at
-end <- length(song_urls)#Song to end at 
+end <- 1 
+#end <- length(song_urls)#Song to end at 
 total_songs <- end - start + 1 #Number of songs to scrape 
 
 #Run Loop and Pray
@@ -93,7 +87,7 @@ for(i in start:end){
     
     #### Scroll to Bottom ####
     scroll_time <- 10
-    scroll_down(scroll_time)
+    scroll_down(scroll_time = scroll_time, song_parts = song_parts)
     
     elem <-  elemtxt <- elemxml<- idx <- NA
     elem <- remDr$findElement("css", "body")
@@ -124,7 +118,7 @@ for(i in start:end){
       chord_string <- chord_string[chord_string != '']
       
       #I was going to remove repeating chords here 
-      #However, this caused problem scraping Bb from Baby by Justin Bieber
+      #However, this caused problem scraping Bb 
       #chord_string <- remove_dup_seqs(chord_string)
       
       
@@ -150,7 +144,7 @@ for(i in start:end){
     remDr$setTimeout(type = 'page load', 
                      milliseconds = 60e3)
     
-    sec <- sample(60:120, 1)
+    sec <- sample(30:60, 1)
     split_secs <- runif(1)
     sleep_long <- sec + split_secs 
     print(paste('Sleep for ', sleep_long, 'secs..'))

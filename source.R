@@ -77,7 +77,7 @@ extract_song_parts <- function(txt) {
   
   #Character Vector of Types of Song Parts
   part_types <- c('Intro', 'Verse', 'Pre-Chorus', 'Bridge', 
-                  'Chorus', 'Outro', 'Instrumental')
+                  'Chorus', 'Instrumental', 'Solo', 'Outro') 
   
   #Extract Each of the 
   song_parts <- lapply(txt,  function(x) {str_extract(x, part_types)}) 
@@ -364,7 +364,7 @@ scroll_down <- function(scroll_time){
     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
     # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
     # Sys.sleep(sleep_time)
-  }else if(length(song_parts) >= 5){
+  }else if(length(song_parts) == 5){
     
     remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
     sleep_time <- sample(scroll_time:max_scroll_time, 1)
@@ -410,3 +410,27 @@ scroll_down <- function(scroll_time){
   }
 }
 
+
+scroll_down <- function(scroll_time, song_parts){
+  
+  scroll_downs <- 1 + length(song_parts)
+  for(i in 1: scroll_downs){
+    
+        #Set sleep time 
+        sleep_time <- 10
+        max_scroll_time <- scroll_time + 5
+        sleep_time <- sample(scroll_time:max_scroll_time, 1)
+        split_secs <- runif(1)
+        sleep_time <- sleep_time +   split_secs
+        print(paste('Waiting ', sleep_time, ' seconds to load...'))
+        Sys.sleep(sleep_time)
+        
+        #Scroll Down 
+        scroll_down_length <- i*300
+        scroll_command <-  paste0('window.scrollTo(0,', scroll_down_length, ');')
+        print(paste('Scrolling down to page to line',  scroll_down_length))
+        remDr$executeScript(scroll_command)
+        
+  }
+
+}
