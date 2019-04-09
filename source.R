@@ -62,7 +62,8 @@ clean_song_contents <- function(x){
     str_replace_all('# 7', '#7') %>% 
     str_replace_all('b 7', 'b7')  %>% 
     str_replace_all('bb\\s+b', 'b bb')  %>% 
-    str_replace_all('bbb', 'b bb') 
+    str_replace_all('bbb', 'b bb') %>%
+    str_replace_all('B b7', 'Bb7')  
   
   
   return(clean_x)
@@ -411,26 +412,34 @@ scroll_down <- function(scroll_time){
 }
 
 
-scroll_down <- function(scroll_time, song_parts){
+scroll_down <- function(min_scroll_time = 15, max_scroll_time = 25, song_parts){
   
-  scroll_downs <- 1 + length(song_parts)
-  for(i in 1: scroll_downs){
+  if(min_scroll_time > max_scroll_time){
     
-        #Set sleep time 
-        sleep_time <- 10
-        max_scroll_time <- scroll_time + 5
-        sleep_time <- sample(scroll_time:max_scroll_time, 1)
-        split_secs <- runif(1)
-        sleep_time <- sleep_time +   split_secs
-        print(paste('Waiting ', sleep_time, ' seconds to load...'))
-        Sys.sleep(sleep_time)
-        
-        #Scroll Down 
-        scroll_down_length <- i*300
-        scroll_command <-  paste0('window.scrollTo(0,', scroll_down_length, ');')
-        print(paste('Scrolling down to page to line',  scroll_down_length))
-        remDr$executeScript(scroll_command)
-        
+    warning('Min Scroll Time must be larger than max scroll time!')
+  } else if(is.numeric(min_scroll_time) == F | is.numeric(max_scroll_time ) == F |
+            min_scroll_time <= 0 | max_scroll_time <= 0){
+    
+    warning('Min Scroll Time and Max Scroll Time must be positive integers!')
+    
+  } else{
+    
+    scroll_downs <- 1 + length(song_parts)
+    for(i in 1: scroll_downs){
+      
+      #Set sleep time 
+      sleep_time <- sample(min_scroll_time:max_scroll_time, 1)
+      split_secs <- runif(1)
+      sleep_time <- sleep_time +   split_secs
+      print(paste('Waiting ', sleep_time, ' seconds to load...'))
+      Sys.sleep(sleep_time)
+      
+      #Scroll Down 
+      scroll_down_length <- i*300
+      scroll_command <-  paste0('window.scrollTo(0,', scroll_down_length, ');')
+      print(paste('Scrolling down to page to line',  scroll_down_length))
+      remDr$executeScript(scroll_command)
+      
+    }
   }
-
 }

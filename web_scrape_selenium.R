@@ -4,7 +4,6 @@
 ###docker pull selenium/standalone-firefox (only need to do this once)
 ###docker run -d -p 4445:4444 selenium/standalone-firefox
 
-
 ###docker pull selenium/standalone-chrome (only need to do this once)
 ###docker run -d -p 4445:4444 selenium/standalone-chrome
 
@@ -18,19 +17,41 @@ source(file = 'source.R')
 #### Import song urls ####
 
 #Use Pre-made Data File 
-# links <- read.csv('data/complete_links.csv')
-# song_urls <- links$Links
+links <- read.csv('data/complete_links.csv')
 
 
-# OR Select Artist individuall
-artist <- 'Queen'
-links <- artist %>%  
-             lapply(extract_song_links) %>%  
-              bind_rows
+# 1970s
+# sub_links <- links %>%
+#               filter(Decade == 1970)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+
+
+# 1960s
+sub_links <- links %>%
+              filter(Decade == 1960) 
+sub_links <- sub_links%>% 
+              slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+# 1950s
+# sub_links <- links %>%  
+#               filter(Decade == 1950) 
+# url_stems <- sub_links %>%  
+#                   pull(Links) %>% 
+#                   as.character
+
+# OR Select Artist individually
+# artist <- 'Queen'
+# sub_links <- artist %>%  
+#              lapply(extract_song_links) %>%  
+#               bind_rows
 
 #Create Song Urls
 baseURL <- 'http://www.hooktheory.com'
-song_urls <- paste0(baseURL, links$Links[!is.na(links$Links)])
+song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
 
 
 #### Set Up Remote Driver ####
@@ -46,55 +67,85 @@ remDr <- remoteDriver(remoteServerAddr = "localhost",
 #### Web Scraping ####
 
 df_row_list <- list() #Create Blank List
+
+#Set Up Scraper
 remDr$open() #Open Driver
 remDr$setTimeout(type = 'page load', milliseconds = 60e3) #Set Timeout time
 start <- 1 #Song in url vector to start at
-end <- 1 
+#start <- 21
 #end <- length(song_urls)#Song to end at 
+end <- 2
 total_songs <- end - start + 1 #Number of songs to scrape 
+
+#Set Load Time for allowing page to load after navigating to url and after each scroll down
+min_load_time <- 15
+max_load_time <- 25
+
+#Set Sleep Time in between songs
+min_sleep_time <- 30
+max_sleep_time <- 60
 
 #Run Loop and Pray
 for(i in start:end){
   
-  current_song <- i - start + 1
+  #Print Out Estimated Time
+  current_song <- start + i - 1
+  est_time <- (total_songs -current_song)*(mean(min_load_time:max_load_time)*3 +
+                                              mean(min_sleep_time:max_sleep_time)) /60
+  if(est_time >= 60){
+    
+    est_time_hour <- floor(est_time / 60)
+    est_time_minute <- ceiling(est_time %% 60)
+    
+    print(paste('Estimate Time Remaining...', est_time_hour, 'hours &',  
+                est_time_minute, 'minutes ....'))
+    
+  } else{
+    est_time_minute <- ceiling(est_time)
+    print(paste('Estimate Time Remaining...', est_time_minute , 'minutes ....'))
+  }
+  
+  
+  #Navigate to  page
   print(paste('Scraping ',  current_song , 'th song out of ', total_songs,
               'songs'))
-  
   remDr$navigate(song_urls[i])
   print(remDr$getCurrentUrl())
   
-  sec <- sample(10:15, 1)
+  #Wait for Page to Load
+  sec <- sample(min_load_time:max_load_time, 1)
   split_secs <- runif(1)
   sleep_short <-  sec +   split_secs
-  print(paste('Sleep for ', sleep_short, 'secs..'))
+  print(paste('Loading page.  Wait for ', sleep_short, 'secs..'))
   Sys.sleep(sleep_short)
   
-  
-  #### Extract Song Parts ####
+  #Extract Song Parts
   song_parts <- NA
   names <- remDr$findElements(using="class", value = 'margin-0')
   names <- remDr$findElements(using="css selector", value = "h2")
   namestxt <- sapply(names, function(x) 
   {x$getElementAttribute("outerHTML")[[1]]})
   song_parts <- extract_song_parts(txt=namestxt)
-  song_parts
-  
-  
+
+  #Extract Chords for Each Song Part
   if(length(song_parts)==0){
     df_row_list[[i]] <- data.frame(song_parts = NA, chords = NA)
+    
   } else if(length(song_parts) > 0) {
     
     
-    #### Scroll to Bottom ####
-    scroll_time <- 10
-    scroll_down(scroll_time = scroll_time, song_parts = song_parts)
+    #Scroll to Bottom; pause after each scroll down to allow page to Load
+    scroll_down(min_scroll_time =  min_load_time, 
+                max_scroll_time = max_load_time,
+                song_parts = song_parts )
     
+    #Scrape Data
     elem <-  elemtxt <- elemxml<- idx <- NA
     elem <- remDr$findElement("css", "body")
     elemtxt <- elem$getElementAttribute("outerHTML")[[1]]
     elemxml <- htmlTreeParse(elemtxt, useInternalNodes=T)
     
-    #Create Xpaths
+    #Create Xpaths for Chord Data
     idx <- 1:length(song_parts)*3
     xpath <- paste0('(//svg)[', idx, ']//tspan[@alignment-baseline]',
                     '|(//svg)[', idx, ']//tspan[@baseline-shift]')
@@ -116,44 +167,44 @@ for(i in start:end){
         unlist
       
       chord_string <- chord_string[chord_string != '']
-      
-      #I was going to remove repeating chords here 
-      #However, this caused problem scraping Bb 
-      #chord_string <- remove_dup_seqs(chord_string)
-      
-      
       chord_string <- paste(chord_string, collapse = '-')
       chords[j] <-  chord_string 
       
     }
     
-    df_row_list[[i]] <- data.frame(artist = links$Artist[i], 
-                                   song = links$Songs[i], 
+    #Store Chord Data into data.frame.  Then Store data.frame in list
+    df_row_list[[i]] <- data.frame(artist = sub_links$Artist[i], 
+                                   song = sub_links$Songs[i], 
                                    song_parts,
                                    chords,
                                    link = song_urls[i])
   }
   
-    ### Close Restart Session  
+    ### Close Session,
     print('Close session')
     remDr$close()
-    print('Open new session')
     
-    remDr$open(silent =T)
-    print('Set time out')
-    remDr$setTimeout(type = 'page load', 
-                     milliseconds = 60e3)
-    
-    sec <- sample(30:60, 1)
-    split_secs <- runif(1)
-    sleep_long <- sec + split_secs 
-    print(paste('Sleep for ', sleep_long, 'secs..'))
-    
-    Sys.sleep(sleep_long)
-  
+    #If not at end of song_urls vector, restart Driver and sleep before loading next page
+    ## Else: end loop 
+    if(i < end) {
+      
+      #Restart Session  
+      print('Open new session')
+      remDr$open(silent =T)
+      remDr$setTimeout(type = 'page load', 
+                       milliseconds = 60e3)
+      
+      #Sleep Before moving to next page
+      sec <- sample( min_sleep_time:max_sleep_time, 1)
+      split_secs <- runif(1)
+      sleep_long <- sec + split_secs 
+      print(paste('Sleeping for ', sleep_long, 'secs..'))
+      Sys.sleep(sleep_long)
+      
+    } else if (i == end){
+      print('Session Complete!')
+    }
 }
-remDr$close()
-
 
 #Store in Data.Frame
 chords_df <- df_row_list %>%  
@@ -162,8 +213,10 @@ chords_df <- df_row_list %>%
   bind_rows 
 View(chords_df) #View Data
 
-
-#write.csv(chords_df, file = 'data/sample_data_frame.csv')
+chords_df %>%  group_by(song) %>%  count() %>% group_by(n) %>%  count()
+chords_df %>%  group_by(song, song_parts) %>%  count()
+nrow(chords_df) / length(unique(chords_df$song))
+#write.csv(chords_df, file = 'data/songs_70s.csv')
 
 #### ERROR MESSAGES ####
 
@@ -230,6 +283,11 @@ View(chords_df) #View Data
 ## Watch out for Singers with Different Bands
 #links <- links[tolower(links$Artist) %in% tolower(artist) ,]
 #Don't Know if Need this
+
+###NOTE ON DUPLICATE CHORD SEQUENCES
+#I was going to remove repeating chords here 
+#However, this caused problem scraping Bb 
+#chord_string <- remove_dup_seqs(chord_string)
 
 
 
