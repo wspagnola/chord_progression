@@ -20,28 +20,67 @@ source(file = 'source.R')
 links <- read.csv('data/complete_links.csv')
 
 
-# 1970s
+# # 2010s
+# sub_links <- links %>%
+#               filter(Decade == 2010)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links) #424
+
+
+# # 2000s
+# sub_links <- links %>%
+#               filter(Decade == 2000)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links) #252
+
+
+
+# # 1990s
+# sub_links <- links %>%
+#               filter(Decade == 1990)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links) #203
+
+# #1980s
+# sub_links <- links %>%
+#               filter(Decade == 1980)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links)  #523
+
+##1970s
 # sub_links <- links %>%
 #               filter(Decade == 1970)
 # url_stems <- sub_links %>%
 #                   pull(Links) %>%
 #                   as.character
-
+# nrow(sub_links) #131
 
 # 1960s
 sub_links <- links %>%
-              filter(Decade == 1960) 
-sub_links <- sub_links%>% 
+              filter(Decade == 1960)
+sub_links <- sub_links%>%
               slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
 url_stems <- sub_links %>%
                   pull(Links) %>%
                   as.character
-# 1950s
-# sub_links <- links %>%  
-#               filter(Decade == 1950) 
-# url_stems <- sub_links %>%  
-#                   pull(Links) %>% 
+nrow(sub_links) #167
+
+#1950s
+# sub_links <- links %>%
+#               filter(Decade == 1950)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
 #                   as.character
+# nrow(sub_links) #21
+
 
 # OR Select Artist individually
 # artist <- 'Queen'
@@ -90,7 +129,7 @@ for(i in start:end){
   
   #Print Out Estimated Time
   current_song <- start + i - 1
-  est_time <- (total_songs -current_song)*(mean(min_load_time:max_load_time)*3 +
+  est_time <- (total_songs -current_song)*(mean(min_load_time:max_load_time)*4 +
                                               mean(min_sleep_time:max_sleep_time)) /60
   if(est_time >= 60){
     
