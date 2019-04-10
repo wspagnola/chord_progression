@@ -1,7 +1,7 @@
 ---
 title: 'APSTA-2017: Process Journal'
 author: "William Spagnola"
-date: "3/14/2019"
+date: "Spring 2019 Semester"
 output: pdf_document
 ---
 
@@ -9,6 +9,52 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
+
+
+
+### 4/9/19
+
+#### What I've done so far
+1) Got scraper to work.  **Note this took forever to figure out!!!**
+2) Got links of top 30 artists from each decade
+3) Started compiling list of songs
+4) Ordered Real Book as supplement.
+* May contain more older songs (50s, 60s, 70s).
+* Can scan and use OCR to extract chords time permitting.
+
+#### Goal for Next Week
+1) Write algorithm to guess key
+* Guessing a song's key based on the chords can be tricky.
+* Will most likely start with Beatles songs and take easy to predict subset.
+2) Convert Selected Beatles Songs to Scale Degree
+3) Write code to convert from long to wide format so that each row represents a single song instead of a song part
+
+#### Other Goals
+1) Extract Features
+* bigrams
+* trigrams
+2) May use two or three sets of features to compare
+* One with scale degree plus major or minor
+* One with scale degree plus major or minor plus other features (e.g. 7th, 6th, 9th, diminished)
+* One with scale degree plus major or minor plus indicator variable for presence of more complicated chords
+3) Extract features from all Beatles songs
+4) Create visualizations based on features
+5) Created indicator for early versus later Beatles.  May use 1962–1966 and 1967-1970 as definining years based on [*The Red Album*](https://en.wikipedia.org/wiki/1962%E2%80%931966) and [*The Blue Album*](https://en.wikipedia.org/wiki/1967%E2%80%931970), which were compilations albums released in 1973. 
+6) Train classification algorithms to identify early from later Beatles.
+* Plan use 80/20 train/test split randomly 
+* Use cross validations to select best model for each set of features using training data. 
+* Use out-of-sample error on test data to compare each set of features. 
+
+#### Another Intermediate Step
+1) Find song years for each song.  May be able to use Spotify API.  This may seem trivial, but it can actually be pretty complicated because:
+* Differences in Capitalization (easier)
+* Differences in spelling (feelin' versus feeling)
+* Differences in song title (Sometimes)
+* Ampersands versus ands
+* Same song recorded by different artists
+* Same song recorded by same artist at different times
+* Same song but remastered in a later year and rereleased on different album
+
 
 ### 3/14/19 *Happy $\pi$ Day*
 
