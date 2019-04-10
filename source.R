@@ -443,3 +443,217 @@ scroll_down <- function(min_scroll_time = 15, max_scroll_time = 25, song_parts){
     }
   }
 }
+
+
+guess_key <- function(x){
+  
+  require(stringr)
+  
+  #Input character string of chords separated by '-'
+  #Return Matrix with Boolean Values for possible keys
+  
+  x <- remove_features(x) #Remove all features except major, minor, and dominant 7th
+  
+  chord_vec <- unlist(str_split(x, pattern = '-'))   #Break chords up into character vector
+
+  #Define Keys
+  C_maj_chords <- c('C', 'dm', 'em', 'F', 'G', 'G7','am', 'B')
+  D_maj_chords <- c('D', 'em', 'f#m', 'G', 'A', 'A7', 'bm', 'C')
+  E_maj_chords <- c('E', 'f#m', 'g#m', 'A', 'B', 'B7', 'c#m', 'D#')
+  F_maj_chords <- c('F', 'gm', 'am', 'Bb', 'C', 'C7', 'dm',  'A')
+  G_maj_chords <- c('G', 'am', 'bm', 'C', 'D', 'D7', 'em', 'F#')
+  A_maj_chords <- c('A', 'bm', 'c#m', 'D', 'E', 'E7', 'f#m', 'G#')
+  B_maj_chords <- c('B', 'c#m', 'd#m', 'E', 'F#', 'F#7', 'g#m', 'A#')
+
+  #Define Flat Keys
+  Db_maj_chords <- c('Db', 'ebm', 'fm', 'Gb', 'Ab', 'Ab7', 'bbm', 'C')
+  Eb_maj_chords <- c('E', 'fm', 'gm', 'Ab', 'Bb', 'Bb7', 'cm', 'D')
+  Gb_maj_chords <- c('Gb', 'abm', 'bbm', 'Cb', 'Db', 'Db7', 'ebm', 'F')
+  Ab_maj_chords <- c('Ab', 'bbm', 'cm', 'Db', 'Eb', 'Eb7', 'fm', 'G')
+  Bb_maj_chords <- c('Bb', 'cm', 'dm', 'Eb', 'F', 'F7', 'gm', 'A')
+  
+  
+  #Guess Key
+  C_maj_pct <- mean(chord_vec %in% C_maj_chords)
+  D_maj_pct <- mean(chord_vec %in% D_maj_chords)
+  E_maj_pct <- mean(chord_vec %in% E_maj_chords)
+  F_maj_pct <- mean(chord_vec %in% F_maj_chords)
+  G_maj_pct <- mean(chord_vec %in% G_maj_chords) 
+  A_maj_pct <- mean(chord_vec %in% A_maj_chords)
+  B_maj_pct <- mean(chord_vec %in% B_maj_chords)
+  
+  #Flats
+  Db_maj_pct <- mean(chord_vec %in% Db_maj_chords)
+  Eb_maj_pct <- mean(chord_vec %in% Eb_maj_chords)
+  Gb_maj_pct <- mean(chord_vec %in% Gb_maj_chords) 
+  Ab_maj_pct <- mean(chord_vec %in% Ab_maj_chords)
+  Bb_maj_pct <- mean(chord_vec %in% Bb_maj_chords)
+  
+  #Note Cb = B & Fb = E
+  
+  #Check C Major
+  if(C_maj_pct==1 ){
+        C_maj <- TRUE
+  } else {
+    C_maj <- FALSE
+    
+  }
+  
+  #Check D Major
+  if(D_maj_pct==1){
+    
+        D_maj <- TRUE
+  } else{
+    D_maj <- FALSE
+  }
+
+  #Check E major
+  if(E_maj_pct==1){
+      
+      E_maj <- TRUE
+  } else{
+    E_maj <- FALSE
+  }
+  
+  #Check F major
+  if(F_maj_pct==1){
+    
+    F_maj <- TRUE
+  } else{
+    F_maj <- FALSE
+  }
+  
+  #Check G Major
+  if(G_maj_pct==1){
+    
+    G_maj <- TRUE
+  } else{
+    G_maj <- FALSE
+  }
+  
+  #Check A major
+  if( A_maj_pct==1){
+    
+    A_maj <- TRUE
+  } else{
+    A_maj <- FALSE
+  }
+  
+  #Check B major
+  if( B_maj_pct ==1){
+    
+    B_maj <- TRUE
+  } else{
+    B_maj <- FALSE
+  }
+  
+  #Check Db Major
+  if(Db_maj_pct==1){
+    
+    Db_maj <- TRUE
+  } else{
+    Db_maj <- FALSE
+  }
+  
+  #Check Eb major
+  if(Eb_maj_pct==1){
+    
+    Eb_maj <- TRUE
+  } else{
+    Eb_maj <- FALSE
+  }
+  
+  #Check G Major
+  if(Gb_maj_pct==1){
+    
+    Gb_maj <- TRUE
+  } else{
+    Gb_maj <- FALSE
+  }
+  
+  #Check A major
+  if( Ab_maj_pct==1){
+    
+    Ab_maj <- TRUE
+  } else{
+    Ab_maj <- FALSE
+  }
+  
+  #Check Bb major
+  if( Bb_maj_pct ==1){
+    
+    Bb_maj <- TRUE
+  } else{
+    Bb_maj <- FALSE
+  }
+      
+  possible_keys <- cbind(C_maj, D_maj, E_maj, F_maj, G_maj, A_maj, B_maj,
+                         Db_maj, Eb_maj, Gb_maj, Ab_maj, Bb_maj )
+  sum_keys <- sum(possible_keys)
+  possible_keys <- as.data.frame(  possible_keys)
+  
+  if(sum_keys == 1){
+    
+    key <- names(possible_keys)[which(possible_keys==T)]
+    return(key)
+    
+  }else if(sum_keys > 1){
+    key <- 'Indeterminate'
+    return(key)
+    
+  } else if(sum_keys == 0){
+   
+    pct_match <- cbind(C_maj_pct, D_maj_pct, E_maj_pct, F_maj_pct, 
+                       G_maj_pct, A_maj_pct, B_maj_pct,
+                       Db_maj_pct, Eb_maj_pct, Gb_maj_pct, Ab_maj_pct, Bb_maj_pct )
+    return(pct_match)
+    
+  }
+
+
+  
+}
+
+
+remove_features <- function(x){
+  
+  #Input character string of chords separated by '-'
+  #Removes all features beyond major and minor and dominant 7
+  #Returns 'simplified' character string
+  
+
+ x <- str_remove_all(x, '6')
+ x <- str_remove_all(x, 'maj7')
+ x <- str_replace_all(x, 'm7', 'm')
+ x <- str_remove_all(x, 'sus4')
+ x <- str_remove_all(x, 'o')
+ x <- str_remove_all(x, '(add9)')
+ x <- str_remove_all(x, '(b5)')
+ 
+ return(x)
+  
+}
+
+chords_df$chords[1]
+guess_key(chords_df$chords[1])
+guess_key(chords_df$chords[2])
+guess_key(chords_df$chords[3])
+guess_key(chords_df$chords[4])
+guess_key(chords_df$chords[5])
+guess_key(chords_df$chords[6])
+guess_key(chords_df$chords[7])
+guess_key(chords_df$chords[8])
+guess_key(chords_df$chords[9])
+guess_key(chords_df$chords[10])
+guess_key(chords_df$chords[98])
+chords_df$song[98]
+remove_features(chords_df$chords[10])
+F_maj_chords <- c('F', 'gm', 'am', 'Bb', 'C', 'C7', 'D',  'Am', 'B')
+
+lapply(chords_df$chords, guess_key)
+%>%  unlist
+guess_key(chords_df$chords[203])
+chords_df$song[203]
+
+chords_df$song[286]
+chords_df$song[209]

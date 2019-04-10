@@ -21,12 +21,12 @@ links <- read.csv('data/complete_links.csv')
 
 
 # # 2010s
-sub_links <- links %>%
-              filter(Decade == 2010)
-url_stems <- sub_links %>%
-                  pull(Links) %>%
-                  as.character
-nrow(sub_links) #424 
+# sub_links <- links %>%
+#               filter(Decade == 2010)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links) #424 
 
 
 # # 2000s
@@ -48,12 +48,12 @@ nrow(sub_links) #424
 # nrow(sub_links) #203
 
 # #1980s
-sub_links <- links %>%
-              filter(Decade == 1980)
-url_stems <- sub_links %>%
-                  pull(Links) %>%
-                  as.character
-nrow(sub_links)  #523
+# sub_links <- links %>%
+#               filter(Decade == 1980)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links)  #523
 
 ##1970s
 # sub_links <- links %>%
@@ -111,10 +111,12 @@ df_row_list <- list() #Create Blank List
 remDr$open() #Open Driver
 remDr$setTimeout(type = 'page load', milliseconds = 60e3) #Set Timeout time
 start <- 1 #Song in url vector to start at
-#start <- 21
 end <- length(song_urls)#Song to end at 
-#end <- 2
 total_songs <- end - start + 1 #Number of songs to scrape 
+
+### Option to set different start/end time
+#start <- 
+#end <- 
 
 #Set Load Time for allowing page to load after navigating to url and after each scroll down
 min_load_time <- 10
