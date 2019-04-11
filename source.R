@@ -634,26 +634,3 @@ remove_features <- function(x){
   
 }
 
-chords_df$chords[1]
-guess_key(chords_df$chords[1])
-guess_key(chords_df$chords[2])
-guess_key(chords_df$chords[3])
-guess_key(chords_df$chords[4])
-guess_key(chords_df$chords[5])
-guess_key(chords_df$chords[6])
-guess_key(chords_df$chords[7])
-guess_key(chords_df$chords[8])
-guess_key(chords_df$chords[9])
-guess_key(chords_df$chords[10])
-guess_key(chords_df$chords[98])
-chords_df$song[98]
-remove_features(chords_df$chords[10])
-F_maj_chords <- c('F', 'gm', 'am', 'Bb', 'C', 'C7', 'D',  'Am', 'B')
-
-lapply(chords_df$chords, guess_key)
-%>%  unlist
-guess_key(chords_df$chords[203])
-chords_df$song[203]
-
-chords_df$song[286]
-chords_df$song[209]

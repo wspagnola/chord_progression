@@ -56,22 +56,22 @@ links <- read.csv('data/complete_links.csv')
 # nrow(sub_links)  #523
 
 ##1970s
-# sub_links <- links %>%
-#               filter(Decade == 1970)
-# url_stems <- sub_links %>%
-#                   pull(Links) %>%
-#                   as.character
-# nrow(sub_links) #131
-
-# 1960s
 sub_links <- links %>%
-              filter(Decade == 1960)
-sub_links <- sub_links%>%
-              slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
+              filter(Decade == 1970)
 url_stems <- sub_links %>%
                   pull(Links) %>%
                   as.character
-nrow(sub_links) #167
+nrow(sub_links) #131
+
+## 1960s
+# sub_links <- links %>%
+#               filter(Decade == 1960)
+# sub_links <- sub_links%>%
+#               slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links) #167
 
 #1950s
 # sub_links <- links %>%
@@ -119,19 +119,20 @@ total_songs <- end - start + 1 #Number of songs to scrape
 #end <- 
 
 #Set Load Time for allowing page to load after navigating to url and after each scroll down
-min_load_time <- 10
-max_load_time <- 15
+min_load_time <- 12
+max_load_time <- 17
 
 #Set Sleep Time in between songs
 min_sleep_time <- 25
 max_sleep_time <- 35
 
+start_time <- Sys.time()
 #Run Loop and Pray
 for(i in start:end){
  
   #Print Out Estimated Time
   current_song <- start + i - 1
-  est_time <- (total_songs -current_song)*(mean(min_load_time:max_load_time)*4 +
+  est_time <- (total_songs - i + 1)*(mean(min_load_time:max_load_time)*4 +
                                               mean(min_sleep_time:max_sleep_time)) /60
   if(est_time >= 60){
     
@@ -244,8 +245,25 @@ for(i in start:end){
       
     } else if (i == end){
       print('Session Complete!')
+  
+      #Calculate Actual Run Time
+      end_time <- Sys.time()
+      run_time <- end_time - start_time
+      run_time <-  as.numeric(as.duration(run_time))
+      run_time_hours <- floor(run_time / 3600)
+      run_time_minutes <- ceiling((run_time /60) %% 60)
+      
+      #Calculate Estimated Run Time 
+      est_time <- (total_songs)*(mean(min_load_time:max_load_time)*4 +
+                                        mean(min_sleep_time:max_sleep_time)) 
+      est_time_hours <- floor(as.numeric(as.duration(est_time), 'hours'))
+      est_time_minutes <- ceiling((est_time /60) %% 60)
+      
+      print(paste('Estimated Run Time:', est_time_hours,'hours &', est_time_minutes, 'minutes' ))
+      print(paste('Actual Run Time:',   run_time_hours, 'hours &', run_time_minutes, 'minutes'))
     }
 }
+
 
 #Store in Data.Frame
 chords_df <- df_row_list %>%  
@@ -254,10 +272,8 @@ chords_df <- df_row_list %>%
   bind_rows 
 View(chords_df) #View Data
 
-chords_df %>%  group_by(song) %>%  count() %>% group_by(n) %>%  count()
-chords_df %>%  group_by(song, song_parts) %>%  count()
-nrow(chords_df) / length(unique(chords_df$song))
-#write.csv(chords_df, file = 'data/songs_70s.csv')
+
+#write.csv(chords_df, file = 'data/songs_80s.csv')
 
 #### ERROR MESSAGES ####
 
