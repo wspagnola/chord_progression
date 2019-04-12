@@ -56,12 +56,12 @@ links <- read.csv('data/complete_links.csv')
 # nrow(sub_links)  #523
 
 ##1970s
-sub_links <- links %>%
-              filter(Decade == 1970)
-url_stems <- sub_links %>%
-                  pull(Links) %>%
-                  as.character
-nrow(sub_links) #131
+# sub_links <- links %>%
+#               filter(Decade == 1970)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links) #131
 
 ## 1960s
 # sub_links <- links %>%
@@ -74,12 +74,12 @@ nrow(sub_links) #131
 # nrow(sub_links) #167
 
 #1950s
-# sub_links <- links %>%
-#               filter(Decade == 1950)
-# url_stems <- sub_links %>%
-#                   pull(Links) %>%
-#                   as.character
-# nrow(sub_links) #21
+sub_links <- links %>%
+              filter(Decade == 1950)
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+nrow(sub_links) #21
 
 
 # OR Select Artist individually
@@ -112,11 +112,10 @@ remDr$open() #Open Driver
 remDr$setTimeout(type = 'page load', milliseconds = 60e3) #Set Timeout time
 start <- 1 #Song in url vector to start at
 end <- length(song_urls)#Song to end at 
-total_songs <- end - start + 1 #Number of songs to scrape 
 
 ### Option to set different start/end time
 #start <- 
-#end <- 
+end <- 2
 
 #Set Load Time for allowing page to load after navigating to url and after each scroll down
 min_load_time <- 12
@@ -126,7 +125,9 @@ max_load_time <- 17
 min_sleep_time <- 25
 max_sleep_time <- 35
 
-start_time <- Sys.time()
+total_songs <- end - start + 1 #Number of songs to scrape 
+start_time <- Sys.time() #Record Start Time
+
 #Run Loop and Pray
 for(i in start:end){
  
@@ -155,11 +156,11 @@ for(i in start:end){
   print(remDr$getCurrentUrl())
   
   #Wait for Page to Load
-  sec <- sample(min_load_time:max_load_time, 1)
-  split_secs <- runif(1)
-  sleep_short <-  sec +   split_secs
-  print(paste('Loading page.  Wait for ', sleep_short, 'secs..'))
-  Sys.sleep(sleep_short)
+  # sec <- sample(min_load_time:max_load_time, 1)
+  # split_secs <- runif(1)
+  # sleep_short <-  sec +   split_secs
+  # print(paste('Loading page.  Wait for ', sleep_short, 'secs..'))
+  # Sys.sleep(sleep_short)
   
   #Extract Song Parts
   song_parts <- NA
@@ -214,12 +215,45 @@ for(i in start:end){
       
     }
     
+
+    
+    #Extract Root (Key Letter) and Tempo(BPM)
+    primary_elem <- remDr$findElements(using="class", value = 'primary')
+    primary_txt <- sapply(primary_elem , function(x) {x$getElementAttribute("outerHTML")[[1]]})
+    primary_html <- htmlTreeParse(primary_txt, useInternalNodes=T)
+    primary_xml <- xpathApply(primary_html,  '//div[@class="primary"]')
+    primary_vec <- sapply(primary_xml,xmlValue) 
+    key_idx <- seq(1, length(primary_vec), 2)
+    beat_idx <- (1:length(primary_vec))[-(key_idx)]
+    key_root <- primary_vec[key_idx]
+    bpm <- as.integer(primary_vec[beat_idx])
+    
+    #Extract Mode 
+    secondary_elem <- remDr$findElements(using="class", value = 'secondary')
+    secondary_txt <- sapply(secondary_elem , function(x) {x$getElementAttribute("outerHTML")[[1]]})
+    secondary_html <- htmlTreeParse(secondary_txt, useInternalNodes=T)
+    secondary_xml <- xpathApply(secondary_html,  '//div[@class="secondary"]')
+    secondary_vec <-sapply(secondary_xml ,xmlValue)
+    mode <- secondary_vec[seq(1, length(key), 2)] #Extract mode (even elems) from BPM (odd elems)
+    
+    #Combine Key with Mode
+    key <- paste0(key_root, mode)
+
+
+    full_song_info_df <-  data.frame(artist = sub_links$Artist[i], 
+                                    song = sub_links$Songs[i], 
+                                    song_parts,
+                                    key = key,
+                                    bpm = bpm,
+                                    chords,
+                                    link = song_urls[i])
+    
+
     #Store Chord Data into data.frame.  Then Store data.frame in list
-    df_row_list[[i]] <- data.frame(artist = sub_links$Artist[i], 
-                                   song = sub_links$Songs[i], 
-                                   song_parts,
-                                   chords,
-                                   link = song_urls[i])
+    df_row_list[[i]] <-   full_song_info_df
+    #df_row_list[[i]] <-   song_info_df
+    
+
   }
   
     ### Close Session,
