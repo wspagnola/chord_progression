@@ -115,7 +115,7 @@ end <- length(song_urls)#Song to end at
 
 ### Option to set different start/end time
 #start <- 
-end <- 2
+#end <- 2
 
 #Set Load Time for allowing page to load after navigating to url and after each scroll down
 min_load_time <- 12
@@ -307,7 +307,7 @@ chords_df <- df_row_list %>%
 View(chords_df) #View Data
 
 
-#write.csv(chords_df, file = 'data/songs_80s.csv')
+#write.csv(chords_df, file = 'data/songs_50s.csv')
 
 #### ERROR MESSAGES ####
 
