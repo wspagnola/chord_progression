@@ -634,3 +634,31 @@ remove_features <- function(x){
   
 }
 
+#Calculate estimated runtime
+
+est_run_time <- function(url_list, 
+                         start= 1, 
+                         end= length(url_list),
+                         return_time = FALSE){
+  
+  #Takes list of song urls
+  #Also can adjust start and end
+  #Prints time in hours and minutes
+  #Returns estimated time in seconds if return_time = TRUE
+  
+  
+  total_songs <- length(url_list[start:end])
+  #Calculate Estimated Run Time 
+  est_time <- (total_songs)*(mean(min_load_time:max_load_time)*4 +
+                               mean(min_sleep_time:max_sleep_time)) 
+  est_time_hours <- floor(as.numeric(as.duration(est_time), 'hours'))
+  est_time_minutes <- ceiling((est_time /60) %% 60)
+  
+  print(paste('Estimated Run Time:', est_time_hours,'hours &',
+              est_time_minutes, 'minutes' ))
+  
+  if(return_time){
+    return(est_time)
+    
+  }
+}

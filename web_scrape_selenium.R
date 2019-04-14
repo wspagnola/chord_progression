@@ -26,8 +26,8 @@ links <- read.csv('data/complete_links.csv')
 # url_stems <- sub_links %>%
 #                   pull(Links) %>%
 #                   as.character
-# nrow(sub_links) #424 
-
+# nrow(sub_links) #424 songs; Est time 9h 12m
+# 
 
 # # 2000s
 # sub_links <- links %>%
@@ -53,7 +53,7 @@ links <- read.csv('data/complete_links.csv')
 # url_stems <- sub_links %>%
 #                   pull(Links) %>%
 #                   as.character
-# nrow(sub_links)  #523
+# nrow(sub_links)  #523 songs; est time: 11h 20m
 
 ##1970s
 # sub_links <- links %>%
@@ -64,22 +64,22 @@ links <- read.csv('data/complete_links.csv')
 # nrow(sub_links) #131
 
 ## 1960s
-# sub_links <- links %>%
-#               filter(Decade == 1960)
-# sub_links <- sub_links%>%
-#               slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
-# url_stems <- sub_links %>%
-#                   pull(Links) %>%
-#                   as.character
-# nrow(sub_links) #167
-
-#1950s
 sub_links <- links %>%
-              filter(Decade == 1950)
+              filter(Decade == 1960)
+sub_links <- sub_links%>%
+              slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
 url_stems <- sub_links %>%
                   pull(Links) %>%
                   as.character
-nrow(sub_links) #21
+nrow(sub_links) #167
+
+#1950s
+# sub_links <- links %>%
+#               filter(Decade == 1950)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# nrow(sub_links) #21
 
 
 # OR Select Artist individually
@@ -122,8 +122,8 @@ min_load_time <- 12
 max_load_time <- 17
 
 #Set Sleep Time in between songs
-min_sleep_time <- 25
-max_sleep_time <- 35
+min_sleep_time <- 15
+max_sleep_time <- 25
 
 total_songs <- end - start + 1 #Number of songs to scrape 
 start_time <- Sys.time() #Record Start Time
@@ -234,7 +234,7 @@ for(i in start:end){
     secondary_html <- htmlTreeParse(secondary_txt, useInternalNodes=T)
     secondary_xml <- xpathApply(secondary_html,  '//div[@class="secondary"]')
     secondary_vec <-sapply(secondary_xml ,xmlValue)
-    mode <- secondary_vec[seq(1, length(key), 2)] #Extract mode (even elems) from BPM (odd elems)
+    mode <- secondary_vec[seq(1, length(secondary_vec), 2)] #Extract mode (even elems) from BPM (odd elems)
     
     #Combine Key with Mode
     key <- paste0(key_root, mode)
