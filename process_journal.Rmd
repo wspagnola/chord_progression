@@ -10,7 +10,25 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
+### 4/15/19
+1) Was able to scrape key directly from site (GOAL Accomplished)
+2) Created function to convert chords to roman numerical analysis
+3) Need to adjust function to account for borrowed chords and mixolydian and dorian modes
 
+**Goals**
+
+1) Edit convert_to_roman() function
+* Allow mixolydian and dorian modes
+* Detect Borrowed chords (from IV, V, and minor scales)
+2) Find years for each song
+* Merge with original Hot100 csv
+* Find other dates by building a dataset from Spotify API with song titles and dates for each artist
+3) Extract Features
+* Create bigrams
+* Create one set with additional features (e.g. 9th, maj7th, min7th, sus, add9) and one plain set
+* May consider using indictator variable for presence of 'complex' chords
+4) Start Analysis
+* Start with classifier for early/late Beatles songs (This could be a more realistic topic for my main analysis)
 
 ### 4/9/19
 
