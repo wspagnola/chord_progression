@@ -215,8 +215,6 @@ for(i in start:end){
       
     }
     
-
-    
     #Extract Root (Key Letter) and Tempo(BPM)
     primary_elem <- remDr$findElements(using="class", value = 'primary')
     primary_txt <- sapply(primary_elem , function(x) {x$getElementAttribute("outerHTML")[[1]]})
@@ -239,7 +237,7 @@ for(i in start:end){
     #Combine Key with Mode
     key <- paste0(key_root, mode)
 
-
+    #Store song info as data.frame
     full_song_info_df <-  data.frame(artist = sub_links$Artist[i], 
                                     song = sub_links$Songs[i], 
                                     song_parts,
@@ -248,13 +246,10 @@ for(i in start:end){
                                     chords,
                                     link = song_urls[i])
     
-
     #Store Chord Data into data.frame.  Then Store data.frame in list
     df_row_list[[i]] <-   full_song_info_df
-    #df_row_list[[i]] <-   song_info_df
-    
 
-  }
+      }
   
     ### Close Session,
     print('Close session')
@@ -287,13 +282,8 @@ for(i in start:end){
       run_time_hours <- floor(run_time / 3600)
       run_time_minutes <- ceiling((run_time /60) %% 60)
       
-      #Calculate Estimated Run Time 
-      est_time <- (total_songs)*(mean(min_load_time:max_load_time)*4 +
-                                        mean(min_sleep_time:max_sleep_time)) 
-      est_time_hours <- floor(as.numeric(as.duration(est_time), 'hours'))
-      est_time_minutes <- ceiling((est_time /60) %% 60)
-      
-      print(paste('Estimated Run Time:', est_time_hours,'hours &', est_time_minutes, 'minutes' ))
+      #Print estimated and actual run times
+      est_run_time(url_list = song_urls, start = start, end = end)
       print(paste('Actual Run Time:',   run_time_hours, 'hours &', run_time_minutes, 'minutes'))
     }
 }
@@ -306,8 +296,7 @@ chords_df <- df_row_list %>%
   bind_rows 
 View(chords_df) #View Data
 
-
-#write.csv(chords_df, file = 'data/songs_50s.csv')
+#write.csv(chords_df, file = 'data/songs_70s.csv')
 
 #### ERROR MESSAGES ####
 

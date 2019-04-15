@@ -614,7 +614,6 @@ guess_key <- function(x){
   
 }
 
-
 remove_features <- function(x){
   
   #Input character string of chords separated by '-'
@@ -627,12 +626,13 @@ remove_features <- function(x){
  x <- str_replace_all(x, 'm7', 'm')
  x <- str_remove_all(x, 'sus4')
  x <- str_remove_all(x, 'o')
- x <- str_remove_all(x, '(add9)')
+ x <- str_remove_all(x, '\\(add9\\)')
  x <- str_remove_all(x, '(b5)')
  
  return(x)
   
 }
+
 
 #Calculate estimated runtime
 
@@ -661,4 +661,170 @@ est_run_time <- function(url_list,
     return(est_time)
     
   }
+}
+
+
+convert_to_roman <- function(chords, key){
+  require(stringr)
+  #Inputs string of chords separated by '-' and key 
+  #Outputs string of chords in roman numerical analysis 
+  ##This means the chords are represented according to their scale degree 
+  ##Helps to compare songs with same progressions but written in different  keys
+  
+  #Remove Features
+  chords_base <-  remove_features(chords)
+
+  #Split chords into vector
+  chord_vec <- unlist(str_split( chords_base , pattern = "-"))
+  
+  
+  #Find Relative Major
+   #key <- 'Fmaj' 
+
+  
+  #Get right chromatic scale (sharp or flat)
+  if(grepl(key, 'b|Fmaj|Fmix')==T){
+    
+    chromatic <- c('C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb',
+                   'G', 'Ab', 'A', 'Bb', 'B')
+    
+    
+  } else{
+    
+    chromatic <- c('C', 'C#', 'D', 'D#', 'E',  'F', 'F#', 'G',
+                   'G#', 'A', 'A#', 'B')
+    
+    
+  }
+  
+  #Determine mode
+  if(grepl('maj', key)==T){
+         mode <-'major'
+  }else if(grepl('min', key)==T){
+          mode <- 'minor'  
+    
+  } else if(grepl('mix', key)==T){
+      mode <- 'mix'} else{
+    mode <- 'undetermined mode'
+    return(mode)
+  }
+
+    #Determine Tonic (Root of Key)
+  key <- str_remove_all(key, 'maj')
+  key <- str_remove_all(key, 'min')
+  key <- str_remove_all(key, 'mix')
+  
+  #Match 
+  root_idx <- match(key, chromatic)
+ # root_idx <- 1
+  
+  #reorder chromatic
+  reorder_chrom <- chromatic[c(root_idx:length(chromatic), 1:(root_idx -1))]
+  
+  
+  #Define Intervals
+  minor_interval <- c(1, 3, 4, 6, 8, 9, 11)
+  major_interval <- c(seq(1, 5, 2), seq(6, 11, 2), 12)
+  mix_interval <- c(1, 3, 5, 6, 8, 10, 11)
+  
+    
+  #Find chords in each key 
+  if(mode == 'major'){
+    scale_degree <-  reorder_chrom[ major_interval]
+    scale_degree[c(2, 3, 6, 7)] <- tolower(scale_degree[c(2, 3, 6, 7)])
+    mode_intervals <- c('', 'm', 'm', '', '', 'm', 'm', '' )
+    scale_degree <- paste0(scale_degree, mode_intervals)
+    
+    #Get dominant 7th idx
+    dom_7_idx <- 5
+    
+    #Borrow Scale
+    borrow_IV_interval <- shift_scale(major_interval, shift =4)
+    borrow_V_interval <- shift_scale(major_interval, shift =5)
+    borrow_IV_scale <- reorder_chrom[borrow_IV_interval]
+    borrow_IV_scale_dom_7 <- borrow_IV_scale 
+    borrow_IV_scale_dom_7[5] <- paste0(borrow_IV_scale[5], '7')
+      
+    borrow_V_scale <- reorder_chrom[borrow_V_interval]
+    borrow_min_scale <- reorder_chrom[minor_interval]
+    
+  } else if(mode == 'minor'){
+    
+    scale_degree <-  reorder_chrom[  minor_interval]
+    
+  } else if(mode == 'mix'){
+    
+    scale_degree <-  reorder_chrom[mix_interval]
+    
+  }
+  
+  
+  
+  #Deal with Dominant 7ths
+  dom_7 <- paste0(scale_degree[dom_7_idx], '7') 
+  scale_degree_dom_7 <- scale_degree
+  scale_degree_dom_7[dom_7_idx] <- paste0(scale_degree[dom_7_idx], '|', dom_7)
+  
+  
+  roman_scale <- as.numeric(match(chord_vec, scale_degree))
+  #roman_scale <- unlist(str_split(roman_scale, pattern = ' '))
+
+ 
+  #Deal with dominant 7ths
+  dom_7_idx <- NA
+  if(!is.na(dom_7)){
+    dom_7_idx <- grep(pattern = dom_7, x = chord_vec)
+    roman_scale[dom_7_idx] <- 5
+    
+  }
+  
+  #Roman Scale Conversion
+  roman <- c('I', 'ii', 'iii', 'IV', 'V', 'vi', 'VII')
+  roman_vec <- roman[roman_scale]
+
+  if(sum(chord_vec[is.na(roman_vec)] %in% borrow_IV_scale)){
+        return('match 1')
+    
+  } else if(sum(chord_vec[is.na(roman_vec)] %in% borrow_IV_scale_dom_7)){
+    
+    
+    borrow_idx <- match(chord_vec[is.na(roman_vec)], borrow_IV_scale_dom_7)
+    
+    fill_idx <- grep(chord_vec, borrow_IV_scale_dom_7[borrow_idx])
+    roman_vec[fill_idx] <- paste0(roman[borrow_idx], 'IV', sep = '/')
+   
+    if(length(borrow_IV_scale_dom_7) > 1){
+      
+      warning('More than 1 borrowed chord!')
+    }
+    return(borrow_idx)
+  }
+     
+  
+  roman_string <- paste(roman_vec, collapse = '-')
+  
+    
+  
+  return(roman_string)
+}
+
+# i <- 2
+# convert_to_roman(chords = chords_df[i ,]$chord, key = chords_df[i ,]$key)
+
+
+#Notes
+#1) Borrow minor chords (Flat 3, 6, 7)
+#2) Borrowed 4th and 5th  notesfrom 4th scale (flat root chord)
+#3) Deal with #m7(b5) (half-dim) and dim 
+#4) Mixolydian mode 
+
+
+
+shift_scale <- function(interval, shift){
+  
+  shift <- shift + 1
+  shift_interval <- ifelse(interval + shift <= 12, 
+                                    interval + shift, 
+                                    interval + shift - 12)
+  return(shift_interval)
 }
