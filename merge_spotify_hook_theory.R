@@ -1,6 +1,25 @@
 source('source.R')
 #### Get Songs from Spotify
 
+artist_name <- 'The Beatles'
+artist_info <- get_artists(artist_name, access_token = my_token)[1, 1:2]
+album_info <- get_albums(artist_info$artist_uri , access_token = my_token ) %>% 
+  filter(year(album_release_date) < 1971 )
+
+View(beatles_track_info)
+beatles_track_info <- split(album_info , album_info$album_name) %>%  
+                              lapply(function(x) get_album_tracks(x, access_token = my_token)) %>% 
+                              bind_rows
+
+beatles_track_info_clean <- beatles_track_info  %>% 
+                          left_join(album_info, by = 'album_name') %>% 
+                          mutate(album_name = str_remove_all(album_name, ' \\(Remastered\\)'),
+                                 track_name = str_remove_all(track_name, ' - Remastered 2009'),
+                                 year = year(album_release_date)) %>% 
+                          select(album_name, track_name, album_release_date, year) 
+
+albums <- get_albums(artists$artist_uri[1], access_token = token )
+
 #Get Artist Tracks
 tom_petty_tracks <- get_artist_tracks(artist_name ='Tom Petty', token = my_token)
 elvis_tracks <- get_artist_tracks(artist_name ='Elvis Presley', token = my_token)
