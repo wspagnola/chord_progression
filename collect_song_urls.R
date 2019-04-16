@@ -58,26 +58,6 @@ for(i in 1:length(decade_vec)){
 
   }
   
-  # 
-  # links_1 <-artist_decade[1:5] %>%  
-  #   lapply(extract_song_links) %>%  
-  #   bind_rows
-  # links_2 <-artist_decade[6:10] %>%  
-  #   lapply(extract_song_links) %>%  
-  #   bind_rows
-  # links_3 <-artist_decade[11:15] %>%  
-  #   lapply(extract_song_links) %>%  
-  #   bind_rows
-  # links_4 <-artist_decade[16:20] %>%  
-  #   lapply(extract_song_links) %>%  
-  #   bind_rows
-  # links_5 <-artist_decade[21:25] %>%  
-  #   lapply(extract_song_links) %>%  
-  #   bind_rows
-  # links_6 <- artist_decade[25:30] %>%  
-  #   lapply(extract_song_links) %>%  
-  #   bind_rows
-  
   #Combine links into one data.frame and 
   decade_link_df <-   decade_link_list %>% 
                                     bind_rows

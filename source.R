@@ -243,173 +243,173 @@ get_artist_tracks <- function(artist_name, token){
   return(songs)
 }
 
-
-scroll_down <- function(scroll_time){
-  
-  max_scroll_time <- scroll_time + 5
-  
-  
-  if(length(song_parts)==1){
-    
-
-    remDr$executeScript("window.scrollTo(0,300);")
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    
-    remDr$executeScript("window.scrollTo(0,600);")
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    
-    # remDr$executeScript("window.scrollTo(0,900);")
-    # sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    # print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-    # Sys.sleep(sleep_time)
-    
-    
-  } else if(length(song_parts)==2){
-    
-    
-    remDr$executeScript("window.scrollTo(0,300);")
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)     
-    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    
-    remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)     
-    print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    # remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
-    # sleep_time <- sample(scroll_time:max_scroll_time, 1)     
-    # print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-    # Sys.sleep(sleep_time)
-    
-  } else if(length(song_parts) == 3){
-    
-    remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    # remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
-    # sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    # Sys.sleep(sleep_time)
-    
-    
-    
-  }else if(length(song_parts) >= 3){
-    
-    remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    
-    # remDr$executeScript("window.scrollTo(0,1800);") #Scroll down page
-    # sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    # Sys.sleep(sleep_time)
-  }else if(length(song_parts) == 5){
-    
-    remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    
-    remDr$executeScript("window.scrollTo(0,1800);") #Scroll down page
-    sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    Sys.sleep(sleep_time)
-    
-    
-    # remDr$executeScript("window.scrollTo(0,2100);") #Scroll down page
-    # sleep_time <- sample(scroll_time:max_scroll_time, 1)
-    # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-    # Sys.sleep(sleep_time)
-  }
-}
+# 
+# scroll_down <- function(scroll_time){
+#   
+#   max_scroll_time <- scroll_time + 5
+#   
+#   
+#   if(length(song_parts)==1){
+#     
+# 
+#     remDr$executeScript("window.scrollTo(0,300);")
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     
+#     remDr$executeScript("window.scrollTo(0,600);")
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     
+#     # remDr$executeScript("window.scrollTo(0,900);")
+#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     # print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+#     # Sys.sleep(sleep_time)
+#     
+#     
+#   } else if(length(song_parts)==2){
+#     
+#     
+#     remDr$executeScript("window.scrollTo(0,300);")
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)     
+#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     
+#     remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)     
+#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     # remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)     
+#     # print(paste(' Waiting ', sleep_time, ' seconds to load...'))
+#     # Sys.sleep(sleep_time)
+#     
+#   } else if(length(song_parts) == 3){
+#     
+#     remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     # remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
+#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     # Sys.sleep(sleep_time)
+#     
+#     
+#     
+#   }else if(length(song_parts) >= 3){
+#     
+#     remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     
+#     # remDr$executeScript("window.scrollTo(0,1800);") #Scroll down page
+#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     # Sys.sleep(sleep_time)
+#   }else if(length(song_parts) == 5){
+#     
+#     remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     
+#     remDr$executeScript("window.scrollTo(0,1800);") #Scroll down page
+#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     Sys.sleep(sleep_time)
+#     
+#     
+#     # remDr$executeScript("window.scrollTo(0,2100);") #Scroll down page
+#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
+#     # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
+#     # Sys.sleep(sleep_time)
+#   }
+# }
 
 
 scroll_down <- function(min_scroll_time = 15, max_scroll_time = 25, song_parts){
@@ -424,8 +424,17 @@ scroll_down <- function(min_scroll_time = 15, max_scroll_time = 25, song_parts){
     
   } else{
     
-    scroll_downs <- 1 + length(song_parts)
-    for(i in 1: scroll_downs){
+    #Set Number of Scroll Downs
+    if(length(song_parts) < 5) {
+      
+      scroll_downs <- 1 + length(song_parts)
+    } else {
+      
+      scroll_downs <- 2 + length(song_parts)
+
+    }
+   
+    for(i in 1:scroll_downs){
       
       #Set sleep time 
       sleep_time <- sample(min_scroll_time:max_scroll_time, 1)
@@ -639,6 +648,10 @@ remove_features <- function(x){
 est_run_time <- function(url_list, 
                          start= 1, 
                          end= length(url_list),
+                         min_load_time,
+                         max_load_time,
+                         min_sleep_time,
+                         max_sleep_time,
                          return_time = FALSE){
   
   #Takes list of song urls
@@ -872,5 +885,204 @@ reorder_chrom_key <- function(key){
   }
   
   
+}
+
+
+#### Function to scrape hook theory
+
+scrape_hook_theory <- function(song_urls, remDr, start = 1, end = NULL,
+                               min_load_time = 12, max_load_time = 17, 
+                               min_sleep_time=15, max_sleep_time = 25) {
+
+  if(is.null(end)){
+    
+      end <- length(song_urls) #Song to end at 
+    
+  }
+  
+  
+  #start, end
+  #Start and end points for which song urls to scrape 
+  
+  #min_load_time,max_load_time
+  #Sets Load Time for allowing page to load after navigating to url and after each scroll down
+  
+  #min_sleep_time, max_sleep_time
+  #Set Sleep Time in between songs
+
+  #Set Up Scraper
+  df_row_list <- list() #Create Blank List
+  remDr$open() #Open Driver
+  remDr$setTimeout(type = 'page load', milliseconds = 60e3) #Set Timeout time
+  total_songs <- end - start + 1 #Number of songs to scrape 
+  start_time <- Sys.time() #Record Start Time
+  
+  #Run Loop and Pray
+  for(i in start:end){
+    
+    #Print Out Estimated Time
+    current_song <-  i - start + 1
+    
+    est_time <- (total_songs -  current_song  + 1)*(mean(min_load_time:max_load_time)*4 +
+                                         mean(min_sleep_time:max_sleep_time)) /60
+    if(est_time >= 60){
+      
+      est_time_hour <- floor(est_time / 60)
+      est_time_minute <- ceiling(est_time %% 60)
+      
+      print(paste('Estimate Time Remaining...', est_time_hour, 'hours &',  
+                  est_time_minute, 'minutes ....'))
+      
+    } else{
+      est_time_minute <- ceiling(est_time)
+      print(paste('Estimate Time Remaining...', est_time_minute , 'minutes ....'))
+    }
+    
+    
+    #Navigate to  page
+    print(paste('Scraping ',  current_song , 'th song out of ', total_songs,
+                'songs'))
+    remDr$navigate(song_urls[i])
+    print(remDr$getCurrentUrl())
+    
+    #Extract Song Parts
+    song_parts <- NA
+    names <- remDr$findElements(using="class", value = 'margin-0')
+    names <- remDr$findElements(using="css selector", value = "h2")
+    namestxt <- sapply(names, function(x) 
+    {x$getElementAttribute("outerHTML")[[1]]})
+    song_parts <- extract_song_parts(txt=namestxt)
+    
+    #Extract Chords for Each Song Part
+    if(length(song_parts)==0){
+      df_row_list[[i]] <- data.frame(song_parts = NA, chords = NA)
+      
+    } else if(length(song_parts) > 0) {
+      
+      
+      #Scroll to Bottom; pause after each scroll down to allow page to Load
+      scroll_down(min_scroll_time =  min_load_time, 
+                  max_scroll_time = max_load_time,
+                  song_parts = song_parts )
+      
+      #Scrape Data
+      elem <-  elemtxt <- elemxml<- idx <- NA
+      elem <- remDr$findElement("css", "body")
+      elemtxt <- elem$getElementAttribute("outerHTML")[[1]]
+      elemxml <- htmlTreeParse(elemtxt, useInternalNodes=T)
+      
+      #Create Xpaths for Chord Data
+      idx <- 1:length(song_parts)*3
+      xpath <- paste0('(//svg)[', idx, ']//tspan[@alignment-baseline]',
+                      '|(//svg)[', idx, ']//tspan[@baseline-shift]')
+      
+      #Create Empty Vectors to store Xpaths and chords
+      chords <- rep(NA, length(song_parts))
+      x <- NA
+      
+      #### Extract Chords
+      for(j in 1:length(chords)){
+        
+        x <- xpathApply(elemxml, xpath[j])  
+        
+        chord_string <- character()
+        chord_string <- sapply(x,xmlValue) %>% 
+          paste(sep = '', collapse = ' ') %>%
+          clean_song_contents %>% 
+          str_split(pattern = ' ') %>% 
+          unlist
+        
+        chord_string <- chord_string[chord_string != '']
+        chord_string <- paste(chord_string, collapse = '-')
+        chords[j] <-  chord_string 
+        
+      }
+      
+      #Extract Root (Key Letter) and Tempo(BPM)
+      primary_elem <- remDr$findElements(using="class", value = 'primary')
+      primary_txt <- sapply(primary_elem , function(x) {x$getElementAttribute("outerHTML")[[1]]})
+      primary_html <- htmlTreeParse(primary_txt, useInternalNodes=T)
+      primary_xml <- xpathApply(primary_html,  '//div[@class="primary"]')
+      primary_vec <- sapply(primary_xml,xmlValue) 
+      key_idx <- seq(1, length(primary_vec), 2)
+      beat_idx <- (1:length(primary_vec))[-(key_idx)]
+      key_root <- primary_vec[key_idx]
+      bpm <- as.integer(primary_vec[beat_idx])
+      
+      #Extract Mode 
+      secondary_elem <- remDr$findElements(using="class", value = 'secondary')
+      secondary_txt <- sapply(secondary_elem , function(x) {x$getElementAttribute("outerHTML")[[1]]})
+      secondary_html <- htmlTreeParse(secondary_txt, useInternalNodes=T)
+      secondary_xml <- xpathApply(secondary_html,  '//div[@class="secondary"]')
+      secondary_vec <-sapply(secondary_xml ,xmlValue)
+      mode <- secondary_vec[seq(1, length(secondary_vec), 2)] #Extract mode (even elems) from BPM (odd elems)
+      
+      #Combine Key with Mode
+      key <- paste0(key_root, mode)
+      
+      #Store song info as data.frame
+      full_song_info_df <-  data.frame(artist = sub_links$Artist[i], 
+                                       song = sub_links$Songs[i], 
+                                       song_parts,
+                                       key = key,
+                                       bpm = bpm,
+                                       chords,
+                                       link = song_urls[i])
+      
+      #Store Chord Data into data.frame.  Then Store data.frame in list
+      df_row_list[[i]] <-   full_song_info_df
+      
+    }
+    
+    ### Close Session,
+    print('Close session')
+    remDr$close()
+    
+      #If not at end of song_urls vector, restart Driver and sleep before loading next page
+      ## Else: end loop 
+      if(i < end) {
+        
+        #Restart Session  
+        print('Open new session')
+        remDr$open(silent =T)
+        remDr$setTimeout(type = 'page load', 
+                         milliseconds = 60e3)
+        
+        #Sleep Before moving to next page
+        sec <- sample( min_sleep_time:max_sleep_time, 1)
+        split_secs <- runif(1)
+        sleep_long <- sec + split_secs 
+        print(paste('Sleeping for ', sleep_long, 'secs..'))
+        Sys.sleep(sleep_long)
+        
+      } else if (i == end){
+        print('Session Complete!')
+        
+        #Calculate Actual Run Time
+        end_time <- Sys.time()
+        run_time <- end_time - start_time
+        run_time <-  as.numeric(as.duration(run_time))
+        run_time_hours <- floor(run_time / 3600)
+        run_time_minutes <- ceiling((run_time /60) %% 60)
+        
+        #Print estimated and actual run times
+        est_run_time(url_list = song_urls, 
+                     min_load_time = min_load_time,
+                     max_load_time = max_load_time,
+                     min_sleep_time = min_sleep_time,
+                     max_sleep_time = max_sleep_time,
+                     start = start, 
+                     end = end)
+        print(paste('Actual Run Time:',   run_time_hours, 'hours &', run_time_minutes, 'minutes'))
+      
+        #Bind list into data.frame
+        chords_df <- df_row_list %>%  
+                            compact %>%
+                            lapply(function(x) mutate_all(x, as.character)) %>%
+                            bind_rows
+        return(chords_df)
+      }
+    }
+
 }
 

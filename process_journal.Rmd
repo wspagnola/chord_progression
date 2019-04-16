@@ -8,7 +8,22 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(knitr)
 ```
+
+
+
+### 4/16/19 Data Visualization Examples
+
+Here is a link to a data visualization example **[2018 House Forecast](https://projects.fivethirtyeight.com/2018-midterm-election-forecast/house/)**
+I won't tell if I think that one is good or bad.
+
+I also think the graph below is interesting.  
+```{r  out.width = "100%"}
+include_graphics('img/2016_election_map.png') 
+```
+
+
 
 ### 4/15/19
 1) Was able to scrape key directly from site (GOAL Accomplished)

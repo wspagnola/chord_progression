@@ -1,0 +1,142 @@
+#### Set Up Docker ####
+
+#STEPS to Load Dockter in Terminal
+###docker pull selenium/standalone-firefox (only need to do this once)
+###docker run -d -p 4445:4444 selenium/standalone-firefox
+
+###docker pull selenium/standalone-chrome (only need to do this once)
+###docker run -d -p 4445:4444 selenium/standalone-chrome
+
+#LIST DOCKER CONTAINERS: docker container ls
+#STOP DOCKER CONTAINER: docker stop test01
+
+#### Import Source File ####
+
+source(file = 'source.R')
+
+#### Set Up Remote Driver ####
+
+eCaps <- list(chromeOptions = list(
+  args = list('--user-agent="music_fan"')
+))
+remDr <- remoteDriver(remoteServerAddr = "localhost",
+                      extraCapabilities = eCaps,
+                      port = 4445L, 
+                      browserName = "chrome")
+
+
+
+#### Import song urls ####
+links <- read.csv('data/complete_links.csv') #Use Pre-made Data File 
+baseURL <- 'http://www.hooktheory.com' #Save base URL
+
+#### Scrape Each Decade  ####
+
+#1950s (21 songs)
+sub_links <- links %>%
+              filter(Decade == 1950)
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
+songs_50s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
+#write.csv(songs_60s, file = 'Data/song_50s.csv')
+
+# 1960s (167 songs)
+sub_links <- links %>%
+              filter(Decade == 1960)
+sub_links <- sub_links%>%
+              slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
+songs_60s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
+#write.csv(songs_60s, file = 'Data/song_60s.csv')
+
+##1970s (131 songs)
+sub_links <- links %>%
+              filter(Decade == 1970)
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
+songs_70s <- scrape_hook_theory(song_urls = song_urls, 
+                                remDr = remDr) 
+#write.csv(songs_70s, file = 'data/songs_70s.csv')
+
+# #1980s (523 songs,  11h 20m)
+sub_links <- links %>%
+              filter(Decade == 1980)
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+half_1 <- round(nrow(sub_links) / 2)
+songs_80s_1 <- scrape_hook_theory(song_urls = song_urls, 
+                                  remDr = remDr, 
+                                  end = half_1) 
+#write.csv(songs_80s_1, file = 'data/songs_80s_1.csv)
+songs_80s_2 <- scrape_hook_theory(song_urls = song_urls, 
+                                  remDr = remDr, 
+                                  start= half_1 +1) 
+#write.csv(songs_80s_2, file = 'data/songs_80s_2.csv)
+
+# 1990s
+sub_links <- links %>%
+              filter(Decade == 1990)
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
+songs_90s <- scrape_hook_theory(song_urls = song_urls, 
+                                remDr = remDr)
+#write.csv(song_90s, file = 'data/songs_90s.csv)
+
+# Scrape 2000s (252 Songs)
+sub_links <- links %>%
+              filter(Decade == 2000)
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+songs_2000s <- scrape_hook_theory(song_urls = song_urls, 
+                                remDr = remDr)
+#write.csv(song_2000s, file = 'data/songs_2000s.csv)
+
+# 2010s (424 songs) (Est time 9h 12m)
+sub_links <- links %>%
+              filter(Decade == 2010)
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+songs_2000s <- scrape_hook_theory(song_urls = song_urls, 
+                                  remDr = remDr)
+#write.csv(song_2010s, file = 'data/songs_2010s.csv)
+
+
+
+#Remove Remote Driver
+rm(remDr)
+
+
+
+#### NOTES ####
+
+#Filter Out Cover Songs
+## Watch out for Singers with Different Bands
+#links <- links[tolower(links$Artist) %in% tolower(artist) ,]
+#Don't Know if Need this
+
+#NOTE ON DUPLICATE CHORD SEQUENCES
+#I was going to remove repeating chords here 
+#However, this caused problem scraping Bb 
+#chord_string <- remove_dup_seqs(chord_string)
+
+
+# SELECT INDIVIDUAL ARTIST
+# artist <- 'Queen'
+# sub_links <- artist %>%  
+#              lapply(extract_song_links) %>%  
+#               bind_rows
+
+#Create Song Urls
+
