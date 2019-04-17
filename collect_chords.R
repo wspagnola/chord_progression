@@ -31,39 +31,39 @@ links <- read.csv('data/complete_links.csv') #Use Pre-made Data File
 baseURL <- 'http://www.hooktheory.com' #Save base URL
 
 #### Scrape Each Decade  ####
-
-#1950s (21 songs)
-sub_links <- links %>%
-              filter(Decade == 1950)
-url_stems <- sub_links %>%
-                  pull(Links) %>%
-                  as.character
-song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
-songs_50s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
-#write.csv(songs_60s, file = 'Data/song_50s.csv')
-
-# 1960s (167 songs)
-sub_links <- links %>%
-              filter(Decade == 1960)
-sub_links <- sub_links%>%
-              slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
-url_stems <- sub_links %>%
-                  pull(Links) %>%
-                  as.character
-song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
-songs_60s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
-#write.csv(songs_60s, file = 'Data/song_60s.csv')
-
-##1970s (131 songs)
-sub_links <- links %>%
-              filter(Decade == 1970)
-url_stems <- sub_links %>%
-                  pull(Links) %>%
-                  as.character
-song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
-songs_70s <- scrape_hook_theory(song_urls = song_urls, 
-                                remDr = remDr) 
-#write.csv(songs_70s, file = 'data/songs_70s.csv')
+# 
+# #1950s (21 songs)
+# sub_links <- links %>%
+#               filter(Decade == 1950)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
+# songs_50s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
+# #write.csv(songs_60s, file = 'Data/song_50s.csv')
+# 
+# # 1960s (167 songs)
+# sub_links <- links %>%
+#               filter(Decade == 1960)
+# sub_links <- sub_links%>%
+#               slice(-grep('hard-days-night', sub_links$Links)) #Hard's Day Night Link Doesn't Work
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
+# songs_60s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
+# #write.csv(songs_60s, file = 'Data/song_60s.csv')
+# 
+# ##1970s (131 songs)
+# sub_links <- links %>%
+#               filter(Decade == 1970)
+# url_stems <- sub_links %>%
+#                   pull(Links) %>%
+#                   as.character
+# song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
+# songs_70s <- scrape_hook_theory(song_urls = song_urls, 
+#                                 remDr = remDr) 
+# #write.csv(songs_70s, file = 'data/songs_70s.csv')
 
 # #1980s (523 songs,  11h 20m)
 sub_links <- links %>%
@@ -72,6 +72,7 @@ url_stems <- sub_links %>%
                   pull(Links) %>%
                   as.character
 half_1 <- round(nrow(sub_links) / 2)
+song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
 songs_80s_1 <- scrape_hook_theory(song_urls = song_urls, 
                                   remDr = remDr, 
                                   end = half_1) 

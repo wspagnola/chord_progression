@@ -425,12 +425,12 @@ scroll_down <- function(min_scroll_time = 15, max_scroll_time = 25, song_parts){
   } else{
     
     #Set Number of Scroll Downs
-    if(length(song_parts) < 5) {
+    if(length(song_parts) < 4) {
       
       scroll_downs <- 1 + length(song_parts)
     } else {
       
-      scroll_downs <- 2 + length(song_parts)
+      scroll_downs <- 5 + length(song_parts)
 
     }
    
