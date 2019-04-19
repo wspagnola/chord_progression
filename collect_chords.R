@@ -76,7 +76,7 @@ song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
 songs_80s_1 <- scrape_hook_theory(song_urls = song_urls, 
                                   remDr = remDr, 
                                   end = half_1) 
-#write.csv(songs_80s_1, file = 'data/songs_80s_1.csv)
+#write.csv(songs_80s_1, file = 'data/songs_80s_1.csv')
 songs_80s_2 <- scrape_hook_theory(song_urls = song_urls, 
                                   remDr = remDr, 
                                   start= half_1 +1) 

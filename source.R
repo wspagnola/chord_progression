@@ -30,8 +30,6 @@ clean_song_contents <- function(x){
     str_replace_all('\\s+sus', 'sus') %>% 
     str_replace_all('\\s+sus2', 'sus2') %>% 
     str_replace_all('\\s_sus4', 'sus4') %>% 
-    str_replace_all('\\s+\\) ', ') ') %>% 
-    str_replace_all('\\s+\\( ', '(') %>% 
     str_replace_all('\\s+2', '2') %>% 
     str_replace_all('\\s+4', '4') %>% 
     str_replace_all('\\s+6', '6') %>% 
@@ -62,10 +60,23 @@ clean_song_contents <- function(x){
     str_replace_all('# 7', '#7') %>% 
     str_replace_all('b 7', 'b7')  %>% 
     str_replace_all('bb\\s+b', 'b bb')  %>% 
+    str_replace_all('Fbb', 'F bb')  %>% 
     str_replace_all('bbb', 'b bb') %>%
-    str_replace_all('B b7', 'Bb7')  
-  
-  
+    str_replace_all(' b7', 'b7') %>% 
+    str_replace_all('a ', 'a') %>% 
+    str_replace_all('c ', 'c') %>% 
+    str_replace_all('d ', 'd') %>% 
+    str_replace_all('e ', 'e') %>% 
+    str_replace_all('f ', 'f') %>% 
+    str_replace_all('g ', 'g') %>% 
+    str_replace_all(' b bm ', 'bbm') %>% 
+    str_replace_all(' b bm7 ', 'bbm7') %>% 
+    str_replace_all('\\s+\\) ', ') ') %>% 
+    str_replace_all('\\s+\\( ', '(') %>% 
+    str_replace_all('\\)', ') ')  %>% 
+    str_replace_all('b5 ', 'b5')
+      
+
   return(clean_x)
 }
 
@@ -96,18 +107,6 @@ extract_song_parts <- function(txt) {
 }
 
 
-remove_dup_seqs <- function(v){
-  #Takes a vector and removes duplicated sequences (e.g. repeated chords)
-  
-  if(sum(is.na(v) > 0)){
-    warning('Vector cannot contain NAs. ')
-    
-  } else if(sum(is.na(v)==0)){
-    idx <- c(NA, v) != c(v, NA)
-    idx <- idx[!is.na(idx)]
-    return(v[idx])
-  }
-}
 
 
 #Input a vector of artist a names 
@@ -243,174 +242,6 @@ get_artist_tracks <- function(artist_name, token){
   return(songs)
 }
 
-# 
-# scroll_down <- function(scroll_time){
-#   
-#   max_scroll_time <- scroll_time + 5
-#   
-#   
-#   if(length(song_parts)==1){
-#     
-# 
-#     remDr$executeScript("window.scrollTo(0,300);")
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     
-#     remDr$executeScript("window.scrollTo(0,600);")
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     
-#     # remDr$executeScript("window.scrollTo(0,900);")
-#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     # print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-#     # Sys.sleep(sleep_time)
-#     
-#     
-#   } else if(length(song_parts)==2){
-#     
-#     
-#     remDr$executeScript("window.scrollTo(0,300);")
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)     
-#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     
-#     remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)     
-#     print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     # remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
-#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)     
-#     # print(paste(' Waiting ', sleep_time, ' seconds to load...'))
-#     # Sys.sleep(sleep_time)
-#     
-#   } else if(length(song_parts) == 3){
-#     
-#     remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     # remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
-#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     # Sys.sleep(sleep_time)
-#     
-#     
-#     
-#   }else if(length(song_parts) >= 3){
-#     
-#     remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     
-#     # remDr$executeScript("window.scrollTo(0,1800);") #Scroll down page
-#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     # Sys.sleep(sleep_time)
-#   }else if(length(song_parts) == 5){
-#     
-#     remDr$executeScript("window.scrollTo(0,0);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,300);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,600);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,900);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,1200);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     remDr$executeScript("window.scrollTo(0,1500);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     
-#     remDr$executeScript("window.scrollTo(0,1800);") #Scroll down page
-#     sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     Sys.sleep(sleep_time)
-#     
-#     
-#     # remDr$executeScript("window.scrollTo(0,2100);") #Scroll down page
-#     # sleep_time <- sample(scroll_time:max_scroll_time, 1)
-#     # print(paste('Scrolling.  Waiting ', sleep_time, ' seconds to load...'))
-#     # Sys.sleep(sleep_time)
-#   }
-# }
-
 
 scroll_down <- function(min_scroll_time = 15, max_scroll_time = 25, song_parts){
   
@@ -425,10 +256,14 @@ scroll_down <- function(min_scroll_time = 15, max_scroll_time = 25, song_parts){
   } else{
     
     #Set Number of Scroll Downs
-    if(length(song_parts) < 4) {
+    if(length(song_parts) < 3) {
       
       scroll_downs <- 1 + length(song_parts)
-    } else {
+      
+    }else if(length(song_parts) >= 3 & length(song_parts) < 5) {
+      
+      scroll_downs <- 4 + length(song_parts)
+    } else{
       
       scroll_downs <- 5 + length(song_parts)
 
@@ -454,174 +289,6 @@ scroll_down <- function(min_scroll_time = 15, max_scroll_time = 25, song_parts){
 }
 
 
-guess_key <- function(x){
-  
-  require(stringr)
-  
-  #Input character string of chords separated by '-'
-  #Return Matrix with Boolean Values for possible keys
-  
-  x <- remove_features(x) #Remove all features except major, minor, and dominant 7th
-  
-  chord_vec <- unlist(str_split(x, pattern = '-'))   #Break chords up into character vector
-
-  #Define Keys
-  C_maj_chords <- c('C', 'dm', 'em', 'F', 'G', 'G7','am', 'B')
-  D_maj_chords <- c('D', 'em', 'f#m', 'G', 'A', 'A7', 'bm', 'C')
-  E_maj_chords <- c('E', 'f#m', 'g#m', 'A', 'B', 'B7', 'c#m', 'D#')
-  F_maj_chords <- c('F', 'gm', 'am', 'Bb', 'C', 'C7', 'dm',  'A')
-  G_maj_chords <- c('G', 'am', 'bm', 'C', 'D', 'D7', 'em', 'F#')
-  A_maj_chords <- c('A', 'bm', 'c#m', 'D', 'E', 'E7', 'f#m', 'G#')
-  B_maj_chords <- c('B', 'c#m', 'd#m', 'E', 'F#', 'F#7', 'g#m', 'A#')
-
-  #Define Flat Keys
-  Db_maj_chords <- c('Db', 'ebm', 'fm', 'Gb', 'Ab', 'Ab7', 'bbm', 'C')
-  Eb_maj_chords <- c('E', 'fm', 'gm', 'Ab', 'Bb', 'Bb7', 'cm', 'D')
-  Gb_maj_chords <- c('Gb', 'abm', 'bbm', 'Cb', 'Db', 'Db7', 'ebm', 'F')
-  Ab_maj_chords <- c('Ab', 'bbm', 'cm', 'Db', 'Eb', 'Eb7', 'fm', 'G')
-  Bb_maj_chords <- c('Bb', 'cm', 'dm', 'Eb', 'F', 'F7', 'gm', 'A')
-  
-  
-  #Guess Key
-  C_maj_pct <- mean(chord_vec %in% C_maj_chords)
-  D_maj_pct <- mean(chord_vec %in% D_maj_chords)
-  E_maj_pct <- mean(chord_vec %in% E_maj_chords)
-  F_maj_pct <- mean(chord_vec %in% F_maj_chords)
-  G_maj_pct <- mean(chord_vec %in% G_maj_chords) 
-  A_maj_pct <- mean(chord_vec %in% A_maj_chords)
-  B_maj_pct <- mean(chord_vec %in% B_maj_chords)
-  
-  #Flats
-  Db_maj_pct <- mean(chord_vec %in% Db_maj_chords)
-  Eb_maj_pct <- mean(chord_vec %in% Eb_maj_chords)
-  Gb_maj_pct <- mean(chord_vec %in% Gb_maj_chords) 
-  Ab_maj_pct <- mean(chord_vec %in% Ab_maj_chords)
-  Bb_maj_pct <- mean(chord_vec %in% Bb_maj_chords)
-  
-  #Note Cb = B & Fb = E
-  
-  #Check C Major
-  if(C_maj_pct==1 ){
-        C_maj <- TRUE
-  } else {
-    C_maj <- FALSE
-    
-  }
-  
-  #Check D Major
-  if(D_maj_pct==1){
-    
-        D_maj <- TRUE
-  } else{
-    D_maj <- FALSE
-  }
-
-  #Check E major
-  if(E_maj_pct==1){
-      
-      E_maj <- TRUE
-  } else{
-    E_maj <- FALSE
-  }
-  
-  #Check F major
-  if(F_maj_pct==1){
-    
-    F_maj <- TRUE
-  } else{
-    F_maj <- FALSE
-  }
-  
-  #Check G Major
-  if(G_maj_pct==1){
-    
-    G_maj <- TRUE
-  } else{
-    G_maj <- FALSE
-  }
-  
-  #Check A major
-  if( A_maj_pct==1){
-    
-    A_maj <- TRUE
-  } else{
-    A_maj <- FALSE
-  }
-  
-  #Check B major
-  if( B_maj_pct ==1){
-    
-    B_maj <- TRUE
-  } else{
-    B_maj <- FALSE
-  }
-  
-  #Check Db Major
-  if(Db_maj_pct==1){
-    
-    Db_maj <- TRUE
-  } else{
-    Db_maj <- FALSE
-  }
-  
-  #Check Eb major
-  if(Eb_maj_pct==1){
-    
-    Eb_maj <- TRUE
-  } else{
-    Eb_maj <- FALSE
-  }
-  
-  #Check G Major
-  if(Gb_maj_pct==1){
-    
-    Gb_maj <- TRUE
-  } else{
-    Gb_maj <- FALSE
-  }
-  
-  #Check A major
-  if( Ab_maj_pct==1){
-    
-    Ab_maj <- TRUE
-  } else{
-    Ab_maj <- FALSE
-  }
-  
-  #Check Bb major
-  if( Bb_maj_pct ==1){
-    
-    Bb_maj <- TRUE
-  } else{
-    Bb_maj <- FALSE
-  }
-      
-  possible_keys <- cbind(C_maj, D_maj, E_maj, F_maj, G_maj, A_maj, B_maj,
-                         Db_maj, Eb_maj, Gb_maj, Ab_maj, Bb_maj )
-  sum_keys <- sum(possible_keys)
-  possible_keys <- as.data.frame(  possible_keys)
-  
-  if(sum_keys == 1){
-    
-    key <- names(possible_keys)[which(possible_keys==T)]
-    return(key)
-    
-  }else if(sum_keys > 1){
-    key <- 'Indeterminate'
-    return(key)
-    
-  } else if(sum_keys == 0){
-   
-    pct_match <- cbind(C_maj_pct, D_maj_pct, E_maj_pct, F_maj_pct, 
-                       G_maj_pct, A_maj_pct, B_maj_pct,
-                       Db_maj_pct, Eb_maj_pct, Gb_maj_pct, Ab_maj_pct, Bb_maj_pct )
-    return(pct_match)
-    
-  }
-
-
-  
-}
 
 remove_features <- function(x){
   
@@ -632,11 +299,11 @@ remove_features <- function(x){
 
  x <- str_remove_all(x, '6')
  x <- str_remove_all(x, 'maj7')
- x <- str_replace_all(x, 'm7', 'm')
+ x <- str_replace_all(x, 'm7-', 'm-')
  x <- str_remove_all(x, 'sus4')
- x <- str_remove_all(x, 'o')
+ #x <- str_remove_all(x, 'o')
  x <- str_remove_all(x, '\\(add9\\)')
- x <- str_remove_all(x, '(b5)')
+ #x <- str_remove_all(x, '(b5)')
  
  return(x)
   
@@ -684,14 +351,17 @@ convert_to_roman <- function(chords, key){
   ##This means the chords are represented according to their scale degree 
   ##Helps to compare songs with same progressions but written in different  keys
   
+  
+  #Test
+  chords <- chords
+  key <- key
+  
   #Remove Features
   chords_base <-  remove_features(chords)
 
   #Split chords into vector
   chord_vec <- unlist(str_split( chords_base , pattern = "-"))
   
-  #Test
-  #key <- 'Cmin' 
   
   #Determine mode
   if(grepl('maj', key)==T){
@@ -705,127 +375,449 @@ convert_to_roman <- function(chords, key){
         
         } else if(grepl('dor', key)==T){
         mode <- 'dor'
-        return(mode)
     
         } else{
-        mode <- 'undetermined mode'
-        return(mode)
+        mode <- 'Indeterminate mode!'
+        warning(mode)
         
   }
 
   reorder_chrom <-  reorder_chrom_key(key)
   
   #Define Intervals
-  minor_interval <- c(1, 3, 4, 6, 8, 9, 11)
   major_interval <- c(seq(1, 5, 2), seq(6, 11, 2), 12)
+  minor_interval <- c(1, 3, 4, 6, 8, 9, 11)
   mix_interval <- c(1, 3, 5, 6, 8, 10, 11)
+  dor_interval <- c(1, 3, 4, 6, 8, 10, 11)
+  
+  #Define minor & dims (lower case)
+  major_lowers <- c(2, 3, 6, 7)
+  minor_lowers <- c(1,2,4, 5)
+  dor_lowers <-c(1,2, 5, 6)
+    
+  #Define Triads (Which chords are major and which are minor in a given mode)
+  major_mode_triads  <- c('', 'm', 'm', '', '', 'm', '' )
+  minor_mode_triads <- c('m', 'm', '', 'm', 'm', '', '')
+  dor_mode_triads <- c('m', 'm', '', '', 'm', 'm', '')
   
   
 #Find chords in each key 
-if(mode == 'major'){
+  if(mode == 'major'){
     scale_chords <-  reorder_chrom[ major_interval]
     scale_chords[c(2, 3, 6, 7)] <- tolower(scale_chords[c(2, 3, 6, 7)])
-    mode_intervals <- c('', 'm', 'm', '', '', 'm', 'm', '' )
-    scale_chords <- paste0( scale_chords , mode_intervals)
+    scale_chords <- paste0( scale_chords , major_mode_triads)
     
-    #Get dominant 7th idx
-    dom_7_idx <- 5
+    #Chord Options
+    dom_7_idx <- 5 #Get dominant 7th idx
+    dim_idx <- 7 #Get diminished idx
     
-    #Borrow IV Scale
-    # root_4 <-scale_chords[4]
-    # key <- paste0(root_4, 'maj')
-    # reorder_chrom_4 <- reorder_chrom_key(key)
-    # borrow_IV_scale <- reorder_chrom_4[major_interval]
-    # borrow_IV_scale[5] <- paste0(borrow_IV_scale[5], '7')
-    # borrow_IV_scale[c(2, 3, 6, 7)] <-  tolower(borrow_IV_scale[c(2, 3, 6, 7)])
-    # borrow_IV_scale <- paste0(  borrow_IV_scale, mode_intervals)
-    # 
-    # #Borrow V Scale
-    # root_5 <-scale_chords[5]
-    # key <- paste0(root_5, 'maj')
-    # reorder_chrom_5 <- reorder_chrom_key(key)
-    # borrow_V_scale <- reorder_chrom_5[major_interval]
-    # borrow_V_scale[5] <- paste0(borrow_V_scale[5], '7')
-    # borrow_V_scale[c(2, 3, 6, 7)] <-  tolower(borrow_V_scale[c(2, 3, 6, 7)])
-    # borrow_V_scale <- paste0(  borrow_V_scale, mode_intervals)
-    # 
-    # #Borrow Minor Scale
-    # borrow_min_scale <- reorder_chrom[minor_interval] 
+    #Borrow Minor Scale
+    root_minor <- scale_chords[1] #Find root of borrowed minor scale
+    borrow_minor_key <-  paste0(root_minor, 'min') #Add mode to root to get key
+    reorder_chrom_min <- reorder_chrom_key(borrow_minor_key) #Reorder chromatic scale according to key
+    borrow_min_scale <- reorder_chrom_min[minor_interval] #Extract minor intervals from chromatic scale
+    borrow_min_scale[c(1,2,4, 5)] <- tolower( borrow_min_scale[c(1,2,4, 5)]) # Make minor chords lowercase
+    borrow_min_scale <- paste0(borrow_min_scale , minor_mode_triads ) #Paste 'm' to minor chords
+    
     
   } else if(mode == 'minor'){
     
-      
     scale_chords <-  reorder_chrom[  minor_interval]
-    scale_chords[c(1,2,4, 7)] <- tolower(scale_chords[c(1,2,4, 7)])
-    scale_chords <- paste0(scale_chords, c('m', 'm', '', 'm', '', '', 'm'))
+    scale_chords[c(1,2,4, 5)] <- tolower(scale_chords[c(1,2,4, 5)])
+    scale_chords <- paste0(scale_chords,   minor_mode_triads )
 
   } else if(mode == 'mix'){
     
     scale_chords <-  reorder_chrom[mix_interval]
     
-}
-  
-  
+  } else if(mode == 'dor'){
+    
+    scale_chords <-  reorder_chrom[dor_interval]
+    scale_chords[c(1,2, 5, 6)] <- tolower(scale_chords[c(1,2, 5, 6)])
+    scale_chords <- paste0(scale_chords,   dor_mode_triads )
+    
+  }
   
 
 
   roman_scale <- as.numeric(match(chord_vec, scale_chords))
   #roman_scale <- unlist(str_split(roman_scale, pattern = ' '))
   
+  
+  #Define Roman Numeral Conversions
+  roman_major <- c('I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii')
+  roman_minor <- c('i', 'ii', 'III', 'iv', 'v', 'VI', 'VII')
+  roman_mix  <- c('I', 'ii', 'III', 'IV', 'v', 'vi', 'VII')
+  roman_dor <- c('i', 'ii', 'III', 'IV', 'v', 'vi', 'VII' )
+  
   #Convert to Roman
   if(mode == 'major'){
-    #Roman Scale Conversion
-    roman <- c('I', 'ii', 'iii', 'IV', 'V', 'vi', 'VII')
-    roman_vec <- roman[roman_scale]
+    roman_vec <-   roman_major[roman_scale]
     
-  } else if (mode == 'minor'){
-    #Roman Scale Conversion
-    roman <- c('i', 'ii', 'III', 'IV', 'V', 'vi', 'vii')
-    roman_vec <- roman[roman_scale]
- } else{
-    return('undetermined mode')
-}
-  
-  
-  #Deal with Dominant 7ths
-  if(mode == 'major'){
-    dom_7 <- paste0(scale_chords[dom_7_idx], '7') 
-    # scale_chords_dom_7 <- scale_chords
-    # 
-    # scale_chords_dom_7[dom_7_idx] <- paste0(scale_chords[dom_7_idx], '|', dom_7)
-    # return( scale_chords_dom_7)
-    #Deal with dominant 7ths
-        dom_7_idx <- NA
-      dom_7_idx <- grep(pattern = dom_7, x = chord_vec)
-      roman_vec[dom_7_idx] <- 'V'
-      
+  } else if(mode == 'minor'){
+    roman_vec <- roman_minor[roman_scale]
+    
+  } else if(mode == 'mix'){
+   roman_vec <-   roman_mix[roman_scale]
+   
+  }else if(mode == 'dor'){
+    roman_vec <-   roman_dor[roman_scale]
+    
+  }else{
+    warning('Indeterminate mode!')
   }
-  # 
-  # borrowed_chords <- chord_vec[is.na(roman_vec)]
-  # if(sum(  borrowed_chords %in% borrow_IV_scale_dom_7)){
-  #   
-  #   
-  #   borrow_idx <- match(borrowed_chords, borrow_IV_scale_dom_7)
-  #   
-  #   if(borrow_idx > 1){
-  #     
-  #     warning('More than 1 borrowed chord!')
-  #     return(borrow_idx)
-  #     }
-  #   
-  #   
-  #   fill_idx <- grep(chord_vec, borrow_IV_scale_dom_7[borrow_idx])
-  #   roman_vec[fill_idx] <- paste0(roman[borrow_idx], 'IV', sep = '/')
-  #  
-  # 
-  # } else if(sum(  borrowed_chords %in% borrow_V_scale_dom_7))
-  #    
   
-  roman_string <- paste(roman_vec, collapse = '-')
   
+ 
+  if(mode == 'major'){
     
+    
+    #Deal with Dominant 7ths
+    dom_7 <- paste0(scale_chords[dom_7_idx], '7') 
+    dom_7_idx <- grep(pattern = dom_7, x = chord_vec)
+    roman_vec[dom_7_idx] <- 'V'
+    
+    
+    #Deal with Dim
+    
+    dim_triad <- str_remove_all(scale_chords[dim_idx], 'm')
+    dim <- paste0(  dim_triad, 'o') 
+    dim_idx <- grep(pattern = dim, x = chord_vec)
+    roman_vec[dim_idx] <- 'vii'
+
+    #Deal with half dim (m7(b5))
+    half_dim <- paste0(dim_triad, 'm7(b5)')
+    half_dim_idx <- which(chord_vec== half_dim)
+    roman_vec[half_dim_idx] <- 'vii'
   
-  return(roman_string)
+  }
+  
+  #### Deal with Borrow Chords
+  
+  
+  #Borrow IV Scale
+  root_4 <- scale_chords[4]
+  root_4 <- str_remove(root_4, 'm')
+  str_sub(root_4, start = 1, end = 1) <- toupper(  str_sub(root_4, start = 1, end = 1))
+  
+  #Borrow V Scale
+  root_5 <-scale_chords[5]
+  root_5 <- str_remove(root_5, 'm')
+  str_sub(root_5, start = 1, end = 1) <- toupper(  str_sub(root_5, start = 1, end = 1))
+
+  #Borrow VI Scale
+  root_6 <-scale_chords[6]
+  root_6 <- str_remove(root_6, 'm')
+  str_sub(root_6, start = 1, end = 1) <- toupper(  str_sub(root_6, start = 1, end = 1))
+  
+  #Borrow Dorian Scale
+  root_dor <- scale_chords[1]
+  root_dor <-  str_remove(root_dor, 'm')
+  str_sub(root_dor, start = 1, end = 1) <- toupper(  str_sub(root_dor, start = 1, end = 1))
+  
+  #Borrow Major Scale
+  root_maj <-  scale_chords[1]
+  root_maj <-  str_remove(root_maj, 'm')
+  str_sub(root_maj, start = 1, end = 1) <- toupper(  str_sub(root_maj, start = 1, end = 1))
+  
+  
+  if(mode == 'major'){
+    borrow_key_4 <- paste0(root_4, 'maj')
+    reorder_chrom_4 <- reorder_chrom_key(borrow_key_4)
+    borrow_IV_scale <- reorder_chrom_4[major_interval]
+    borrow_IV_scale[5] <- paste0(borrow_IV_scale[5], '7')
+    borrow_IV_scale[c(2, 3, 6, 7)] <-  tolower(borrow_IV_scale[c(2, 3, 6, 7)])
+    borrow_IV_scale <- paste0(  borrow_IV_scale,  major_mode_triads )
+    
+    
+    #Borrow V Scale (without Dominant 7)
+    borrow_key_5 <- paste0(root_5, 'maj')
+    reorder_chrom_5 <- reorder_chrom_key(borrow_key_5)
+    borrow_V_scale <- reorder_chrom_5[major_interval]
+    borrow_V_scale[7] <- paste0(borrow_V_scale[7], 'o')
+    borrow_V_scale[c(2, 3, 6, 7)] <-  tolower(borrow_V_scale[c(2, 3, 6, 7)])
+    borrow_V_scale <- paste0( borrow_V_scale,   major_mode_triads)
+    
+    #Borrow V Scale (with Dominant 7)
+    borrow_V_scale_dom_7 <- borrow_V_scale
+    borrow_V_scale_dom_7[5] <- paste0(borrow_V_scale[5], '7')
+
+    
+    #Borrow VI Scale (without Dominant 7th)
+    borrow_key_6 <- paste0(root_6, 'maj')
+    reorder_chrom_6 <- reorder_chrom_key(borrow_key_6)
+    borrow_VI_scale <- reorder_chrom_6[major_interval]
+    #borrow_VI_scale[5] <- paste0(borrow_VI_scale[5], '7')
+    borrow_VI_scale[7] <- paste0(borrow_VI_scale[7], 'o')
+    borrow_VI_scale[major_lowers] <-  tolower(borrow_VI_scale[major_lowers])
+    borrow_VI_scale <- paste0( borrow_VI_scale,   major_mode_triads)
+    
+    #Borrow VI Scale (with Dominant 7)
+    borrow_VI_scale_dom_7 <- borrow_VI_scale
+    borrow_VI_scale_dom_7[5] <- paste0(borrow_VI_scale[5], '7')
+
+    #Lydian vii
+    lydian_vii <- intersect( borrow_V_scale_dom_7, borrow_VI_scale_dom_7 )
+    
+    #Null Scale
+    borrow_maj_scale <- NULL
+    borrow_V_maj_scale <- NULL
+    borrow_dor_scale <- NULL
+    
+    
+    
+  }else if(mode == 'minor'){
+    borrow_key_4 <- paste0(root_4, 'min')
+    reorder_chrom_4 <- reorder_chrom_key(borrow_key_4)
+    borrow_IV_scale <- reorder_chrom_4[minor_interval]
+    borrow_IV_scale[c(1,2,4, 5)] <-  tolower(borrow_IV_scale[c(1,2,4, 5)])
+    borrow_IV_scale <- paste0(  borrow_IV_scale,  minor_mode_triads )
+    
+    borrow_key_5 <- paste0(root_5, 'min')
+    reorder_chrom_5 <- reorder_chrom_key(borrow_key_5)
+    borrow_V_scale <- reorder_chrom_5[minor_interval]
+    borrow_V_scale[minor_lowers] <-  tolower(borrow_V_scale[minor_lowers])
+    borrow_V_scale[7] <- paste0(borrow_V_scale[7], '7')
+    
+    borrow_V_scale <- paste0( borrow_V_scale,   minor_mode_triads)
+    
+    
+    borrow_key_dorian <- paste0(root_dor, 'dor')
+    reorder_chrom_dorian <- reorder_chrom_key( borrow_key_dorian )
+    borrow_dor_scale <-    reorder_chrom_dorian [dor_interval]
+    borrow_dor_scale[  dor_lowers ] <-  tolower(borrow_dor_scale[  dor_lowers ])
+    borrow_dor_scale <- paste0(borrow_dor_scale,   dor_mode_triads)
+    
+    borrow_key_maj <- paste0(root_maj, 'maj')
+    reorder_chrom_maj <- reorder_chrom_key(borrow_key_maj)
+    borrow_maj_scale <-  reorder_chrom_maj[major_interval]
+    borrow_maj_scale[major_lowers] <-  tolower(borrow_maj_scale[major_lowers])
+    #borrow_major_scale[5] <- paste0(    borrow_major_scale[5], '7')
+    #borrow_major_scale[7] <- paste0( borrow_major_scale[7], 'o')
+    borrow_maj_scale <- paste0(borrow_maj_scale, major_mode_triads)
+  
+  
+    #Set NULL scales
+    borrow_V_maj_scale <- NULL
+    borrow_IV_scale_dom_7 <- NULL
+    borrow_V_scale_dom_7 <- NULL
+    borrow_VI_scale <- NULL
+    borrow_VI_scale_dom_7 <- NULL
+    borrow_min_scale <- NULL
+    lydian_vii <- NULL
+    
+  } else if(mode == 'mix'){
+    
+    
+    borrow_IV_scale <- NULL
+    borrow_IV_scale_dom_7 <- NULL
+    borrow_V_scale <- NULL
+    borrow_V_scale_dom_7 <- NULL
+    borrow_V_maj_scale <- NULL
+    borrow_VI_scale <- NULL
+    borrow_VI_scale_dom_7 <- NULL
+    borrow_maj_scale <- NULL
+    borrow_min_scale <- NULL
+    borrow_dor_scale <- NULL
+    lydian_vii <- NULL
+    
+  } else if (mode == 'dor'){
+    
+    
+    
+    borrow_key_5_maj <- paste0(root_5, 'maj')
+    reorder_chrom_5_maj <- reorder_chrom_key(borrow_key_5_maj)
+    borrow_V_maj_scale <- reorder_chrom_5_maj[major_interval]
+    borrow_V_maj_scale[major_lowers] <-  tolower(borrow_V_maj_scale[major_lowers])
+    borrow_V_maj_scale <- paste0(borrow_V_maj_scale,   major_mode_triads)
+    #borrow_V_maj_scale[5] <- paste0(borrow_V_maj_scale[5], '7')
+    
+    #Set NULL scales
+    borrow_IV_scale <- NULL
+    borrow_IV_scale_dom_7 <- NULL
+    borrow_V_scale <- NULL
+    borrow_V_scale_dom_7 <- NULL
+    borrow_VI_scale <- NULL
+    borrow_VI_scale_dom_7 <- NULL
+    borrow_maj_scale <- NULL
+    borrow_min_scale <- NULL
+    borrow_dor_scale <- NULL
+    lydian_vii <- NULL
+}
+
+
+  #Find Chords that are borrowed
+  borrowed_chords <- chord_vec[is.na(roman_vec)]
+  unique_borrow_chords <- unique(borrowed_chords)
+  
+  #Match borrow chords to different scales
+  borrowed_4_chords <- unique_borrow_chords[which(unique_borrow_chords %in% borrow_IV_scale)]
+  borrowed_5_chords <-  unique_borrow_chords[which(unique_borrow_chords %in% borrow_V_scale)]
+  borrowed_5_dom_7_chords <-  unique_borrow_chords[which(unique_borrow_chords %in% borrow_V_scale_dom_7)]
+  borrowed_6_chords <-  unique_borrow_chords[which(unique_borrow_chords %in% borrow_VI_scale)]
+  borrowed_6_dom_7_chords <-  unique_borrow_chords[which(unique_borrow_chords %in% borrow_VI_scale_dom_7)]
+  borrowed_lydian_7_chord  <-   unique_borrow_chords[which(unique_borrow_chords %in% lydian_vii)]
+  
+  borrowed_min_chords <-  unique_borrow_chords[which(unique_borrow_chords %in% borrow_min_scale)]
+  borrowed_maj_chords <-  unique_borrow_chords[which(unique_borrow_chords %in% borrow_maj_scale)]
+  borrowed_dor_chords <-  unique_borrow_chords[which(unique_borrow_chords %in% borrow_dor_scale)]
+  borrowed_5_maj_chords <-  unique_borrow_chords[which(unique_borrow_chords %in% borrow_V_maj_scale)]
+  
+  
+  #Settle Multiple Possibilities
+  if(sum(unique_borrow_chords %in% borrow_IV_scale & 
+           unique_borrow_chords %in% borrow_min_scale) > 0){
+    
+         if(length(  borrowed_4_chords) >=   length(borrowed_min_chords)){
+                 pick_scale <- 'IV'
+         } else if (length(  borrowed_4_chords) <  length(borrowed_min_chords)){
+                  pick_scale <- 'min'
+         } 
+  } else if(sum(unique_borrow_chords %in% borrow_maj_scale & 
+                unique_borrow_chords %in% borrow_dor_scale) > 0){
+    
+    if(length(  borrowed_maj_chords) >=   length(borrowed_dor_chords)){
+      pick_scale <- 'maj'
+    } else if (length(  borrowed_maj_chords) <  length(borrowed_dor_chords)){
+      pick_scale <- 'dor'
+    } 
+    
+  } else {
+    
+        pick_scale <- NA
+  }
+  
+
+  
+  #Borrow IV Scale
+  if(length(borrowed_4_chords) > 0 &
+     (is.na(pick_scale) == TRUE | pick_scale == 'IV')){
+    for(i in 1:length(borrowed_4_chords)){
+      
+        borrow_idx <- match(borrowed_4_chords[i], borrow_IV_scale)
+        fill_idx <- grep(pattern = borrow_IV_scale[borrow_idx], x = chord_vec)
+        roman_vec[fill_idx] <- paste(roman_major[borrow_idx], 'IV', sep = '/')
+      }
+  }
+  
+
+  #Borrow VI Scale
+  if(length(borrowed_6_chords) > 0   ){
+    
+    
+    if(sum(grepl(borrow_VI_scale_dom_7[5], chord_vec)) == 0){
+      for(i in 1:length(borrowed_6_chords)){
+        borrow_idx <- match(borrowed_6_chords[i], borrow_VI_scale)
+        fill_idx <- grep(pattern = borrow_VI_scale[borrow_idx], x = chord_vec)
+        roman_vec[fill_idx] <- paste(roman_major[borrow_idx], 'vi', sep = '/')
+        } 
+      } else{
+        for(i in 1:length(  borrowed_6_dom_7_chords )){
+          borrow_idx <- match(  borrowed_6_dom_7_chords [i], borrow_VI_scale_dom_7)
+          fill_idx <- grep(pattern = borrow_VI_scale_dom_7[borrow_idx], x = chord_vec)
+          roman_vec[fill_idx] <- paste(roman_major[borrow_idx], 'vi', sep = '/')
+        }
+      }
+    }
+
+  
+  
+  
+  #Borrow V Scale
+  if( length(borrowed_5_chords) > 0  ){
+    
+    for(i in 1:length(borrowed_5_chords)){
+      
+      borrow_idx <- match(borrowed_5_chords[i], borrow_V_scale)
+      fill_idx <- grep(pattern = borrow_V_scale[borrow_idx], x = chord_vec)
+      roman_vec[fill_idx] <- paste(roman_major[borrow_idx], 'V', sep = '/')
+    }
+    
+  }
+  
+  
+  
+  
+  #Borrow V Scale (with dom 7)
+  if( length(borrowed_5_dom_7_chords) > 0  ){
+    
+    for(i in 1:length(borrowed_5_dom_7_chords)){
+      
+      borrow_idx <- match(borrowed_5_dom_7_chords[i], borrow_V_scale_dom_7)
+      fill_idx <- grep(pattern =borrow_V_scale_dom_7[borrow_idx], x = chord_vec)
+      roman_vec[fill_idx] <- paste(roman_major[borrow_idx], 'V', sep = '/')
+    }
+    
+  }
+  
+  
+  #Borrow min Scale
+  if( length(borrowed_min_chords) > 0 &
+      (is.na(pick_scale) == TRUE | pick_scale == 'min')){
+    
+      for(i in 1:length(borrowed_min_chords)){
+        borrow_idx <- match(borrowed_min_chords[i], borrow_min_scale)
+        fill_idx <- grep(pattern = borrow_min_scale[borrow_idx], x = chord_vec)
+        
+        #Flat 3, 6, 7
+        if(borrow_idx %in% c(3, 6, 7)){
+          roman_vec[fill_idx] <- paste0( 'b', roman_minor[borrow_idx], '(min)')  
+          
+        } else {
+          roman_vec[fill_idx] <- paste0(roman_minor[borrow_idx], '(min)')  
+        }
+    }
+  }
+  
+  
+  #Borrow maj Scale
+  if( length(borrowed_maj_chords) > 0 &
+      (is.na(pick_scale) == TRUE | pick_scale == 'maj')){
+    
+    for(i in 1:length(borrowed_maj_chords)){
+      borrow_idx <- match(borrowed_maj_chords[i], borrow_maj_scale)
+      fill_idx <- grep(pattern = borrow_maj_scale[borrow_idx], x = chord_vec)
+      roman_vec[fill_idx] <- paste0(roman_major[borrow_idx], '(maj)')
+      
+    }
+  }
+  
+  
+  #Borrow  V(maj) Scale
+  if( length(borrowed_5_maj_chords) > 0 ){
+    
+    for(i in 1:length(borrowed_5_maj_chords)){
+      borrow_idx <- match(borrowed_5_maj_chords[i], borrow_V_maj_scale)
+      fill_idx <- grep(pattern = borrow_V_maj_scale[borrow_idx], x = chord_vec)
+      roman_vec[fill_idx] <- paste(roman_major[borrow_idx], 'v(maj)', sep = '/')
+      
+    }
+  }
+  
+  
+  
+  
+  #Borrow vii chord from lydian
+  if( length(borrowed_lydian_7_chord) > 0 ){
+    fill_idx <-     which(chord_vec == lydian_vii)
+    roman_vec[fill_idx] <- 'vii(lyd)'
+    
+    
+  }
+  
+  
+  #Dorian (not sure what to do with these yest)
+  if(length(borrowed_dor_chords) > 0 &
+     pick_scale == 'dor' & is.na(pick_scale) ==F){
+       
+       warning('Chords borrowed from Dorian scale!')
+  }
+      
+      #Collapse vector into a single string
+      roman_string <- paste(roman_vec, collapse = '-')
+
+
+       return(roman_string)
 }
 
 
@@ -837,21 +829,12 @@ if(mode == 'major'){
 
 
 
-shift_scale <- function(interval, shift){
-  
-  #May not need this function
-  shift <- shift
-  shift_interval <- ifelse(interval + shift <= 12, 
-                                    interval + shift, 
-                                    interval + shift - 12)
-  return(shift_interval)
-}
-
-
 
 reorder_chrom_key <- function(key){
   #Get right chromatic scale (sharp or flat)
-  if(grepl(key, 'Fmaj|Fmix|Fmin|Cmin|Gmin|Dmin|Abmaj|Dbmaj|Ebmaj|Bbmaj|Bbmix|Bbmin')==T){
+  
+  flat_keys <- 'Fmaj|Fmix|Fmin|Cmin|Gmin|Dmin|Dbmin|Abmaj|Dbmaj|Ebmaj|Bbmaj|Bbmix|Bbmin|Gdor|Gbmaj'
+  if(grepl(key, flat_keys )==T){
     
     chromatic <- c('C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb',
                    'G', 'Ab', 'A', 'Bb', 'B')
@@ -869,6 +852,7 @@ reorder_chrom_key <- function(key){
   key <- str_remove_all(key, 'maj')
   key <- str_remove_all(key, 'min')
   key <- str_remove_all(key, 'mix')
+  key <- str_remove_all(key, 'dor')
   
   
   #Match 
@@ -1086,3 +1070,15 @@ scrape_hook_theory <- function(song_urls, remDr, start = 1, end = NULL,
 
 }
 
+
+
+##### NOTES ####
+
+#Clean up code
+#1) Create function to reorder scales in one line
+#2) In chromatic alignment, find rel major first for minor, mix, and dor
+
+
+
+# em7 in the key of F
+##vii(lydian ) or iii in C 
