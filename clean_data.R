@@ -38,24 +38,42 @@ convert_to_roman(chords = blackbird$chords, key = blackbird$key  )
 day_in_life$chord
 beatles$roman <- NA
 beatles[16 ,]
-vec <-  c(1:20)
+vec <-  c(93:100)
 for(i in vec){
   print(i)
   beatles$roman[i] <- convert_to_roman(chords =beatles$chords[i], key = beatles$key[i])
   
 }
 
-beatles$song[vec]
 
-beatles$roman[vec]
-beatles$roman[9]
-beatles$song[19]
-beatles$chords[19]
 
-beatles$song_parts[44]
+#Task 1
+#Look at borrowed Chords from these two songs
+#Lovely Rita
+#"I'm Looking Through You"
 
-beatles$chords[5]
-beatles$roman[1:50] %>%  View
+#Task 2
+#Rescrape
+#All across the Universe
+#Michelle
+
+#Task 3
+#Allow scraper to work without song or artist info  (NA)
+
+
+#Task 4
+#Apply roman numerical analysis to all beatles songs
+#Fix any problems as they come
+
+#Task 5
+#Double check songs (or sample of songs) with borrowed chords
+
+
+#Task 6
+#Add album/song year/Hot100 info to  Beatles songs
+
+#Task 7
+#Group by album and create visualizations
 
 #### Notes ####
 
