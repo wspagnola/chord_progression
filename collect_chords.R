@@ -32,15 +32,15 @@ baseURL <- 'http://www.hooktheory.com' #Save base URL
 
 #### Scrape Each Decade  ####
 # 
-# #1950s (21 songs)
-# sub_links <- links %>%
-#               filter(Decade == 1950)
-# url_stems <- sub_links %>%
-#                   pull(Links) %>%
-#                   as.character
-# song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
-# songs_50s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
-# #write.csv(songs_60s, file = 'Data/song_50s.csv')
+#1950s (21 songs)
+sub_links <- links %>%
+              filter(Decade == 1950)
+url_stems <- sub_links %>%
+                  pull(Links) %>%
+                  as.character
+song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
+songs_50s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
+#write.csv(songs_60s, file = 'Data/song_50s.csv')
 # 
 # # 1960s (167 songs)
 # sub_links <- links %>%

@@ -17,17 +17,25 @@ unique(song_df$artist)
   
   
 #### Process Beatles songs ####
+song_df <- read.csv('Data/songs_60s.csv', stringsAsFactors =  F)
 beatles <- song_df[song_df$artist == 'The Beatles' , ]
-View(beatles)
-blackbird <- beatles[8 , ]
+vec <- 31:40
+beatles$roman <- NA
+for(i in vec){
+  print(i)
+  beatles$roman[i] <- convert_to_roman(chords =beatles$chords[i], key = beatles$key[i])
+  
+}
 
-i <- 10
+beatles[vec ,] %>%  View
+i <- 3
+convert_to_roman(chords =song_df$chords[i], key = song_df$key[i])
 beatles[i ,]$song
 beatles[i ,]$song_parts
 beatles[i ,]$key
 key <- beatles[i ,]$key
 chords <- beatles[i ,]$chords
-convert_to_roman(chords = beatles[i ,]$chords, key = beatles[i ,]$key  )
+convert_to_roman(chords = beatles[i,]$chords, key = beatles[i,]$key  )
 
 rbind(unlist(str_split(beatles[i ,]$chords, '-')),
       unlist(str_split(convert_to_roman(chords = beatles[i ,]$chords, key = beatles[i ,]$key  ), '-'))
@@ -39,12 +47,6 @@ day_in_life$chord
 beatles$roman <- NA
 beatles[16 ,]
 vec <-  c(93:100)
-for(i in vec){
-  print(i)
-  beatles$roman[i] <- convert_to_roman(chords =beatles$chords[i], key = beatles$key[i])
-  
-}
-
 
 
 #Task 1
@@ -75,7 +77,12 @@ for(i in vec){
 #Task 7
 #Group by album and create visualizations
 
-#### Notes ####
+
+#Task 8
+#If the scraper breaks down again, 
+#...check if there is a way to keep scrolling until each song part is complete
+
+#### Notes On Artist Names ####
 
 
 #Notes on 60s Artists
@@ -84,4 +91,25 @@ for(i in vec){
 # Marvin Gaye and Tammi Terrell" "Marvin Gaye"  
 #Hozier and Oleg Berg not from 1960s
 
-beatles <- song_df[song_df$artist == 'The Beatles' , ]
+
+
+#### Notes On Chords ####
+
+
+#Blackbird
+#A7 in Gmaj key listed as V/V
+
+#Here Comes the Sun (Verse)
+#B7/D# in Amaj ke listed as II(lyd)65
+
+
+#Here Comes the Sun (Bridge)
+#G in A maj listed as IV/IV
+
+
+#While My Guitar Gently Weeps
+#IV(maj) in A minor versus IV(dorian)
+
+
+#Come together
+#G7 in D minor key listed as IV(dor)b7 instead of vii/V
