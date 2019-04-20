@@ -13,6 +13,15 @@ for(i in 1:nrow(song_df)){
 
 #Check Discrepancy in Artist Names
 unique(song_df$artist)
+
+
+#### Create Beatles Csv #####
+
+beatles_songs <- song_1960s_df %>% 
+  filter(artist == 'Beatles' | artist == 'The Beatles') %>% 
+  select(-X)
+write.csv(beatles_songs, 'data/input/beatles_songs.csv', row.names = F)
+
   
   
   
@@ -48,6 +57,96 @@ beatles$roman <- NA
 beatles[16 ,]
 vec <-  c(93:100)
 
+
+#### Merge Beatles and Track Info #####
+
+beatles_songs <- read.csv('data/input/beatles_songs.csv', stringsAsFactors = F)
+
+beatles_track_info <- read.csv('data/input/beatles_track_info.csv', stringsAsFactors =  F)
+
+beatles_track_info <- beatles_track_info %>% 
+                        mutate(track_name = str_remove(track_name, ' -.*'),
+                               track_name = tolower(track_name),
+                                track_name = str_remove_all(track_name,'\\.'),
+                               track_name = str_remove(track_name, '\\!'))
+
+#Missing Songs
+missing_songs <-beatles_songs %>% 
+                    mutate(song_join_code = tolower(song)) %>% 
+                    anti_join(beatles_track_info,  by = c('song_join_code'= 'track_name')) 
+
+
+  
+
+#Plot Tracks
+beatles <- beatles_songs %>% 
+              mutate(song_join_code = tolower(song)) %>% 
+              left_join(beatles_track_info,  by = c('song_join_code'= 'track_name'))
+
+#Clean Album Names
+beatles <- beatles %>% 
+      mutate(album_name = str_remove(album_name, '\\s\\(.*'),
+             album_name = str_replace(album_name, 'With The Beatles', 'With the Beatles'),
+             album_name = str_replace(album_name, 'The Beatles', 'White Album')
+) 
+
+
+beatles %>%  
+  group_by(song,album_name, year) %>% 
+  count %>%  
+  group_by(album_name, year) %>% 
+  count %>% 
+  arrange(year)
+
+album_chron_levels <- beatles %>% 
+                    group_by(album_name, album_release_date) %>% 
+                    count %>% 
+                    arrange(album_release_date) %>% 
+                    drop_na %>% 
+                    pull(album_name) 
+
+beatles <- beatles %>% 
+            mutate(phase = if_else(album_release_date <= '1966-06-21', 'Early', 'Late'),
+                   phase = factor(phase, levels = c('Early', 'Late')),
+                    album_name = factor(album_name, levels =album_chron_levels)
+)      
+
+#Plot Song Availability by Phase
+beatles %>% 
+  count(phase, song) %>% 
+  count(phase) %>% 
+  drop_na(phase) %>% 
+  ggplot(aes(x = phase, y = nn, fill = phase)) +
+  geom_col() +
+  scale_fill_manual(values = c('red', 'blue' )) +
+  ylab('Number of Songs') +
+  ggtitle('Beatles Songs Available on Hook Theory')
+
+#Plot Song Availability by Album
+beatles %>% 
+  count(album_name, year, song, phase) %>% 
+  count(album_name, year, phase) %>% 
+  drop_na(album_name) %>% 
+  ggplot(aes(x = album_name, y = nn, fill = phase)) +
+  geom_col() +
+  scale_fill_manual(values = c('red', 'blue' )) +
+  ylab('Number of Songs') +
+  ggtitle('Beatles Songs Available on Hook Theory by Album') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+#### Merge with Hot100 CSV ? #####
+
+hot_100 <- read.csv('data/Hot100.csv')
+hot_100$Song <- tolower(hot_100$Song)
+missing_songs %>% 
+  left_join(hot_100, by = c('song_join_code' = 'Song', 'artist'='Performer')) %>% 
+  distinct(artist, song, song_parts, key, bpm, chords, link, song_join_code, 
+           WeekID) %>%  View
+  
+
+
+#### Tasks to Complete ####
 
 #Task 1
 #Look at borrowed Chords from these two songs
