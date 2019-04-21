@@ -74,7 +74,8 @@ clean_song_contents <- function(x){
     str_replace_all('\\s+\\) ', ') ') %>% 
     str_replace_all('\\s+\\( ', '(') %>% 
     str_replace_all('\\)', ') ')  %>% 
-    str_replace_all('b5 ', 'b5')
+    str_replace_all('b5 ', 'b5') %>% 
+    str_replace_all('c xo', 'cxo')
       
 
   return(clean_x)

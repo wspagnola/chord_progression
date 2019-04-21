@@ -1,9 +1,11 @@
+source('source.R')
+
 #### Process All 60s songs ####
 
 
-song_df <- read.csv('Data/songs_60s.csv', stringsAsFactors =  F)
+songs_1960s_df <- read.csv('Data/songs_60s.csv', stringsAsFactors =  F)
 
-song_df$roman <- NA
+songs_1960s_df$roman <- NA
 for(i in 1:nrow(song_df)){
   print(i)
   song_df$roman[i] <- convert_to_roman(chords =song_df$chords[i], key = song_df$key[i])
@@ -17,7 +19,7 @@ unique(song_df$artist)
 
 #### Create Beatles Csv #####
 
-beatles_songs <- song_1960s_df %>% 
+beatles_songs <- songs_1960s_df %>% 
   filter(artist == 'Beatles' | artist == 'The Beatles') %>% 
   select(-X)
 write.csv(beatles_songs, 'data/input/beatles_songs.csv', row.names = F)
@@ -26,19 +28,22 @@ write.csv(beatles_songs, 'data/input/beatles_songs.csv', row.names = F)
   
   
 #### Process Beatles songs ####
-song_df <- read.csv('Data/songs_60s.csv', stringsAsFactors =  F)
-beatles <- song_df[song_df$artist == 'The Beatles' , ]
-vec <- 31:40
+
+beatles <- read.csv('data/input/beatles_songs.csv', stringsAsFactors = F)
+
+vec <-1:200
 beatles$roman <- NA
 for(i in vec){
   print(i)
   beatles$roman[i] <- convert_to_roman(chords =beatles$chords[i], key = beatles$key[i])
   
 }
-
 beatles[vec ,] %>%  View
-i <- 3
-convert_to_roman(chords =song_df$chords[i], key = song_df$key[i])
+
+
+
+#Check individual Songs
+i <- 3 #Put Song Index number here
 beatles[i ,]$song
 beatles[i ,]$song_parts
 beatles[i ,]$key
@@ -46,16 +51,11 @@ key <- beatles[i ,]$key
 chords <- beatles[i ,]$chords
 convert_to_roman(chords = beatles[i,]$chords, key = beatles[i,]$key  )
 
+#Check Chords next to numerical anaylsis
 rbind(unlist(str_split(beatles[i ,]$chords, '-')),
       unlist(str_split(convert_to_roman(chords = beatles[i ,]$chords, key = beatles[i ,]$key  ), '-'))
 ) %>%  as.data.frame 
 
-
-convert_to_roman(chords = blackbird$chords, key = blackbird$key  )
-day_in_life$chord
-beatles$roman <- NA
-beatles[16 ,]
-vec <-  c(93:100)
 
 
 #### Merge Beatles and Track Info #####
@@ -64,29 +64,33 @@ beatles_songs <- read.csv('data/input/beatles_songs.csv', stringsAsFactors = F)
 
 beatles_track_info <- read.csv('data/input/beatles_track_info.csv', stringsAsFactors =  F)
 
+#Standard Track Names to Facilitate with Merge
 beatles_track_info <- beatles_track_info %>% 
                         mutate(track_name = str_remove(track_name, ' -.*'),
                                track_name = tolower(track_name),
-                                track_name = str_remove_all(track_name,'\\.'),
+                               track_name = str_remove_all(track_name,'\\.'),
                                track_name = str_remove(track_name, '\\!'))
 
-#Missing Songs
+beatles_track_info$album_name %>%  unique
+beatles_track_info %>%  filter(album_name == 'Meet the Beatles!')
+
+
+#Missing Songs: Not Available on Spotify API
 missing_songs <-beatles_songs %>% 
                     mutate(song_join_code = tolower(song)) %>% 
                     anti_join(beatles_track_info,  by = c('song_join_code'= 'track_name')) 
-
-
-  
+missing_songs$song %>%  unique
 
 #Plot Tracks
 beatles <- beatles_songs %>% 
               mutate(song_join_code = tolower(song)) %>% 
-              left_join(beatles_track_info,  by = c('song_join_code'= 'track_name'))
+              left_join(beatles_track_info,  by = c('song_join_code'= 'track_name')
+)
 
 #Clean Album Names
 beatles <- beatles %>% 
       mutate(album_name = str_remove(album_name, '\\s\\(.*'),
-             album_name = str_replace(album_name, 'With The Beatles', 'With the Beatles'),
+             album_name = str_replace(album_name, '\\sThe Beatles', ' the Beatles'),
              album_name = str_replace(album_name, 'The Beatles', 'White Album')
 ) 
 
@@ -106,7 +110,8 @@ album_chron_levels <- beatles %>%
                     pull(album_name) 
 
 beatles <- beatles %>% 
-            mutate(phase = if_else(album_release_date <= '1966-06-21', 'Early', 'Late'),
+            mutate(phase = if_else(album_release_date <= '1966-06-21' |
+                                     year < 1966, 'Early', 'Late'),
                    phase = factor(phase, levels = c('Early', 'Late')),
                     album_name = factor(album_name, levels =album_chron_levels)
 )      
