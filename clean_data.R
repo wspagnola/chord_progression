@@ -1,37 +1,22 @@
 source('source.R')
 
-#### Process All 60s songs ####
 
 
-songs_1960s_df <- read.csv('Data/songs_60s.csv', stringsAsFactors =  F)
-
-songs_1960s_df$roman <- NA
-for(i in 1:nrow(song_df)){
-  print(i)
-  song_df$roman[i] <- convert_to_roman(chords =song_df$chords[i], key = song_df$key[i])
-  
-  
-}
-
-#Check Discrepancy in Artist Names
-unique(song_df$artist)
-
+songs_1960s_df <- read.csv('Data/input/songs_60s.csv', stringsAsFactors =  F)
 
 #### Create Beatles Csv #####
 
 beatles_songs <- songs_1960s_df %>% 
   filter(artist == 'Beatles' | artist == 'The Beatles') %>% 
   select(-X)
-write.csv(beatles_songs, 'data/input/beatles_songs.csv', row.names = F)
+write.csv(beatles_songs, 'data/output/beatles_songs.csv', row.names = F)
 
-  
-  
   
 #### Process Beatles songs ####
 
-beatles <- read.csv('data/input/beatles_songs.csv', stringsAsFactors = F)
+beatles <- read.csv('data/output/beatles_songs.csv', stringsAsFactors = F)
+vec <-202:nrow(beatles)
 
-vec <-1:200
 beatles$roman <- NA
 for(i in vec){
   print(i)
@@ -40,8 +25,28 @@ for(i in vec){
 }
 beatles[vec ,] %>%  View
 
+beatles[grep('NA', beatles$roman) , ] %>%  View
+
+#View Scale Degree with Chords
+bind <- as.list(beatles[vec ,]$chords) %>% 
+  rbind(as.list(beatles[vec, ]$roman))
+
+i <- 
+x <- bind[[i]] %>%  str_split('-') %>%  unlist
+y <- bind[[i+1]] %>%  str_split('-') %>%  unlist
+rbind(x, y)
+beatles[(i+1)/2 ,]$key
+beatles[(i+1)/2 ,]$song
+
+i <- 90
+x <- beatles$chords[i] %>%  str_split('-') %>%  unlist
+y <- beatles$roman[i] %>%  str_split('-') %>%  unlist
+rbind(x,y )
+beatles$song[i]
+beatles$key[i]
 
 
+View(beatles)
 #Check individual Songs
 i <- 3 #Put Song Index number here
 beatles[i ,]$song
@@ -52,9 +57,9 @@ chords <- beatles[i ,]$chords
 convert_to_roman(chords = beatles[i,]$chords, key = beatles[i,]$key  )
 
 #Check Chords next to numerical anaylsis
-rbind(unlist(str_split(beatles[i ,]$chords, '-')),
-      unlist(str_split(convert_to_roman(chords = beatles[i ,]$chords, key = beatles[i ,]$key  ), '-'))
-) %>%  as.data.frame 
+rbind(unlist(str_split(beatles[vec ,]$chords, '-')),
+      unlist(str_split(convert_to_roman(chords = beatles[vec ,]$chords, key = beatles[i ,]$key  ), '-'))
+) %>%  as.list
 
 
 
@@ -140,6 +145,18 @@ beatles %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
+
+#### Process All 60s songs ####
+
+
+songs_1960s_df$roman <- NA
+for(i in 1:nrow(song_df)){
+  print(i)
+  song_df$roman[i] <- convert_to_roman(chords =song_df$chords[i], key = song_df$key[i])
+  
+  
+}
+
 #### Merge with Hot100 CSV ? #####
 
 hot_100 <- read.csv('data/Hot100.csv')
@@ -149,6 +166,14 @@ missing_songs %>%
   distinct(artist, song, song_parts, key, bpm, chords, link, song_join_code, 
            WeekID) %>%  View
   
+
+
+
+
+#Check Discrepancy in Artist Names
+unique(song_df$artist)
+
+
 
 
 #### Tasks to Complete ####

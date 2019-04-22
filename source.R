@@ -69,13 +69,19 @@ clean_song_contents <- function(x){
     str_replace_all('e ', 'e') %>% 
     str_replace_all('f ', 'f') %>% 
     str_replace_all('g ', 'g') %>% 
-    str_replace_all(' b bm ', 'bbm') %>% 
+    str_replace_all(' b\\s+bm ', 'bbm') %>% 
+    str_replace_all('^b\\s+bm ', 'bbm') %>% 
     str_replace_all(' b bm7 ', 'bbm7') %>% 
     str_replace_all('\\s+\\) ', ') ') %>% 
     str_replace_all('\\s+\\( ', '(') %>% 
     str_replace_all('\\)', ') ')  %>% 
     str_replace_all('b5 ', 'b5') %>% 
-    str_replace_all('c xo', 'cxo')
+    str_replace_all('c xo', 'cxo') %>% 
+    str_replace_all('A b6', 'Ab6') %>% 
+    str_replace_all('B b6', 'Bb6') %>% 
+    str_replace_all('D b6', 'Db6') %>% 
+    str_replace_all('E b6', 'Eb6') %>% 
+    str_replace_all('G b6', 'Gb6') 
       
 
   return(clean_x)
