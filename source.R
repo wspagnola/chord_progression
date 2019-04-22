@@ -81,7 +81,8 @@ clean_song_contents <- function(x){
     str_replace_all('B b6', 'Bb6') %>% 
     str_replace_all('D b6', 'Db6') %>% 
     str_replace_all('E b6', 'Eb6') %>% 
-    str_replace_all('G b6', 'Gb6') 
+    str_replace_all('G b6', 'Gb6') %>% 
+    str_replace_all('\\s+bsus4', 'bsus4')
       
 
   return(clean_x)
@@ -878,7 +879,12 @@ convert_to_roman <- function(chords, key){
 reorder_chrom_key <- function(key){
   #Get right chromatic scale (sharp or flat)
   
-  flat_keys <- 'Fmaj|Fmix|Fmin|Cmin|Gmin|Dmin|Dbmin|Abmaj|Dbmaj|Ebmaj|Bbmaj|Bbmix|Bbmin|Gdor|Gbmaj'
+  
+  flat_major_keys <- 'Fmaj|Bbmaj|Ebmaj|Abmaj|Dbmaj|Gbmaj'
+  flat_minor_keys <- 'Dmin|Gmin|Cmin|Fmin|Bbmin|Ebmin||Abmin|Dbmin'
+  flat_mix_keys <- 'Fmix|Bbmix'
+  flat_dor_keys <- 'Gdor'
+  flat_keys <- paste(flat_major_keys, flat_minor_keys, flat_mix_keys, flat_dor_keys, sep = '|')
   if(grepl(key, flat_keys )==T){
     
     chromatic <- c('C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb',

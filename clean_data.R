@@ -15,7 +15,7 @@ write.csv(beatles_songs, 'data/output/beatles_songs.csv', row.names = F)
 #### Process Beatles songs ####
 
 beatles <- read.csv('data/output/beatles_songs.csv', stringsAsFactors = F)
-vec <-202:nrow(beatles)
+vec <-1:nrow(beatles)
 
 beatles$roman <- NA
 for(i in vec){
@@ -23,10 +23,11 @@ for(i in vec){
   beatles$roman[i] <- convert_to_roman(chords =beatles$chords[i], key = beatles$key[i])
   
 }
-beatles[vec ,] %>%  View
+
+write.csv(beatles, 'data/output/beatles_roman_analysis.csv', row.names =F)
 
 beatles[grep('NA', beatles$roman) , ] %>%  View
-
+nrow(beatles[grep('NA', beatles$roman) , ])
 #View Scale Degree with Chords
 bind <- as.list(beatles[vec ,]$chords) %>% 
   rbind(as.list(beatles[vec, ]$roman))
