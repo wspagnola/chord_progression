@@ -11,8 +11,6 @@ require(RCurl)
 #Not sure if I need these
 #require(jsonlite)
 #require(xml2)
-#require(RCurl)
-
 
 #Get Spotify Token
 my_token <- get_spotify_access_token(client_id = 'b7e786e6e51541e7b0e39a1c547e3434', 
@@ -75,6 +73,7 @@ clean_song_contents <- function(x){
     str_replace_all('\\s+\\) ', ') ') %>% 
     str_replace_all('\\s+\\( ', '(') %>% 
     str_replace_all('\\)', ') ')  %>% 
+      str_replace_all('add9\\s+\\)', 'add9\\)')  %>% 
     str_replace_all('b5 ', 'b5') %>% 
     str_replace_all('c xo', 'cxo') %>% 
     str_replace_all('A b6', 'Ab6') %>% 
@@ -926,8 +925,9 @@ reorder_chrom_key <- function(key){
 #### Function to scrape hook theory
 
 scrape_hook_theory <- function(song_urls, remDr, start = 1, end = NULL,
-                               min_load_time = 12, max_load_time = 17, 
-                               min_sleep_time=15, max_sleep_time = 25) {
+                               min_load_time = 17, max_load_time = 23, 
+                               min_sleep_time=25, max_sleep_time = 35, 
+                               artist, songs) {
 
   if(is.null(end)){
     
@@ -1056,8 +1056,8 @@ scrape_hook_theory <- function(song_urls, remDr, start = 1, end = NULL,
       key <- paste0(key_root, mode)
       
       #Store song info as data.frame
-      full_song_info_df <-  data.frame(artist = sub_links$Artist[i], 
-                                       song = sub_links$Songs[i], 
+      full_song_info_df <-  data.frame(artist = artist[i], 
+                                       song = songs[i], 
                                        song_parts,
                                        key = key,
                                        bpm = bpm,

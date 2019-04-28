@@ -51,8 +51,12 @@ url_stems <- sub_links %>%
                   pull(Links) %>%
                   as.character
 song_urls <- paste0(baseURL, url_stems[!is.na(url_stems)])
-songs_60s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr) #Scrape Songs
-write.csv(songs_60s, file = 'Data/input/songs_60s.csv')
+songs_60s <- scrape_hook_theory(song_urls = song_urls, remDr = remDr,
+                                artist = sub_links$Artist, 
+                                songs = sub_links$Songs, start = 22, end = 22) #Scrape Songs
+View(songs_60s)
+songs_60s$chords
+#write.csv(songs_60s, file = 'Data/input/songs_60s.csv')
 # 
 # ##1970s (131 songs)
 # sub_links <- links %>%

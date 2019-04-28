@@ -3,7 +3,7 @@ source('source.R')
 
 
 songs_1960s_df <- read.csv('Data/input/songs_60s.csv', stringsAsFactors =  F)
-
+View(beatles)
 #### Create Beatles Csv #####
 
 beatles_songs <- songs_1960s_df %>% 
@@ -27,6 +27,18 @@ for(i in vec){
 write.csv(beatles, 'data/output/beatles_roman_analysis.csv', row.names =F)
 
 beatles[grep('NA', beatles$roman) , ] %>%  View
+
+
+na_chords <- beatles[grep('NA', beatles$roman) , ]
+na_chords_roman <- na_chords %>%  
+                          select(song, song_parts, key, roman) %>% 
+                          rename(chords = roman) %>% 
+                          mutate(roman = 1)
+na_chords_chords <- na_chords %>%  
+                          select(song, song_parts, key, chords) %>% 
+                          mutate(roman = 0)
+na_df <- rbind(na_chords_roman, na_chords_chords )
+na_df %>%  arrange(song, song_parts, roman) %>% View
 nrow(beatles[grep('NA', beatles$roman) , ])
 #View Scale Degree with Chords
 bind <- as.list(beatles[vec ,]$chords) %>% 
@@ -173,7 +185,6 @@ missing_songs %>%
 
 #Check Discrepancy in Artist Names
 unique(song_df$artist)
-
 
 
 
