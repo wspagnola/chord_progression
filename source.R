@@ -300,6 +300,7 @@ remove_features <- function(x){
   #Returns 'simplified' character string
  x <- str_remove_all(x, '6')
  x <- str_remove_all(x, 'maj7')
+ x <- str_remove_all(x, 'maj9')
  x <- str_replace_all(x, 'm7-', 'm-')
  x <-  str_replace_all(x, 'm7$', 'm')
  x <- str_replace_all(x, 'asus4', 'am')
@@ -356,17 +357,13 @@ convert_to_roman <- function(chords, key){
   ##This means the chords are represented according to their scale degree 
   ##Helps to compare songs with same progressions but written in different  keys
   
-  
   #Test
   chords <- chords
   key <- key
   
-  #Remove Features
+  #Remove Features; Then Split chords into vector
   chords_base <-  remove_features(chords)
-
-  #Split chords into vector
   chord_vec <- unlist(str_split( chords_base , pattern = "-"))
-  
   
   #Determine mode
   if(grepl('maj', key)==T){
@@ -387,61 +384,10 @@ convert_to_roman <- function(chords, key){
         
   }
 
+  #Get chords from main scale and
   reorder_chrom <-  reorder_chrom_key(key)
-  
-  #Define Intervals
-  major_interval <- c(seq(1, 5, 2), seq(6, 11, 2), 12)
-  minor_interval <- c(1, 3, 4, 6, 8, 9, 11)
-  mix_interval <- c(1, 3, 5, 6, 8, 10, 11)
-  dor_interval <- c(1, 3, 4, 6, 8, 10, 11)
-  
-  #Define minor & dims (lower case)
-  major_lowers <- c(2, 3, 6, 7)
-  minor_lowers <- c(1,2,4, 5)
-  dor_lowers <-c(1,2, 5, 6)
-    
-  #Define Triads (Which chords are major and which are minor in a given mode)
-  major_mode_triads  <- c('', 'm', 'm', '', '', 'm', '' )
-  minor_mode_triads <- c('m', 'o', '', 'm', 'm', '', '')
-  dor_mode_triads <- c('m', 'm', '', '', 'm', 'm', '')
-  
-  
-#Find chords in each key 
-  if(mode == 'major'){
-    scale_chords <-  reorder_chrom[ major_interval]
-    scale_chords[c(2, 3, 6, 7)] <- tolower(scale_chords[c(2, 3, 6, 7)])
-    scale_chords <- paste0( scale_chords , major_mode_triads)
-    
-    #Chord Options
-    dom_7_idx <- 5 #Get dominant 7th idx
-    dim_idx <- 7 #Get diminished idx
-    
-    
-  } else if(mode == 'minor'){
-    
-    scale_chords <-  reorder_chrom[  minor_interval]
-    scale_chords[c(1,2,4, 5)] <- tolower(scale_chords[c(1,2,4, 5)])
-    scale_chords <- paste0(scale_chords,   minor_mode_triads )
-    dim_idx <- 2 #Get diminished idx
-    
-
-  } else if(mode == 'mix'){
-    
-    scale_chords <-  reorder_chrom[mix_interval]
-    
-  } else if(mode == 'dor'){
-    
-    scale_chords <-  reorder_chrom[dor_interval]
-    scale_chords[c(1,2, 5, 6)] <- tolower(scale_chords[c(1,2, 5, 6)])
-    scale_chords <- paste0(scale_chords,   dor_mode_triads )
-    
-  }
-  
-
-
-  roman_scale <- as.numeric(match(chord_vec, scale_chords))
-  #roman_scale <- unlist(str_split(roman_scale, pattern = ' '))
-  
+  scale_chords <- get_chords_from_key(notes = reorder_chrom, mode = mode)
+  arabic_scale <- as.numeric(match(chord_vec, scale_chords))
   
   #Define Roman Numeral Conversions
   roman_major <- c('I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii')
@@ -451,41 +397,39 @@ convert_to_roman <- function(chords, key){
   
   #Convert to Roman
   if(mode == 'major'){
-    roman_vec <-   roman_major[roman_scale]
+    roman_vec <-   roman_major[arabic_scale]
     
   } else if(mode == 'minor'){
-    roman_vec <- roman_minor[roman_scale]
+    roman_vec <- roman_minor[arabic_scale]
     
   } else if(mode == 'mix'){
-   roman_vec <-   roman_mix[roman_scale]
-   
+   roman_vec <-   roman_mix[arabic_scale]
+  
   }else if(mode == 'dor'){
-    roman_vec <-   roman_dor[roman_scale]
+    roman_vec <-   roman_dor[ arabic_scale]
     
   }else{
     warning('Indeterminate mode!')
   }
   
   
- 
+ #### Deal with Dominant 7ths and Half-diminished [m7(b5)] Chords 
   if(mode == 'major'){
     
+    #Chord Options
+    dom_7_idx <- 5 #Get dominant 7th idx
+    dim_idx <- 7 #Get diminished idx
     
     #Deal with Dominant 7ths
     dom_7 <- paste0(scale_chords[dom_7_idx], '7') 
     dom_7_idx <- grep(pattern = dom_7, x = chord_vec)
     roman_vec[dom_7_idx] <- 'V'
     
-    
-    #Deal with Dim
-    
-    dim_triad <- str_remove_all(scale_chords[dim_idx], 'm')
-    dim <- paste0(dim_triad, 'o') 
-    dim_idx <- grep(pattern = dim, x = chord_vec)
-    roman_vec[dim_idx] <- 'vii'
+    #Deal with VII minor?
 
     #Deal with half dim (m7(b5))
-    half_dim <- paste0(dim_triad, 'm7(b5)')
+    VII_dim <- str_remove_all(scale_chords[dim_idx], 'o')
+    half_dim <- paste0(VII_dim, 'm7(b5)')
     half_dim_idx <- which(chord_vec== half_dim)
     roman_vec[half_dim_idx] <- 'vii'
   
@@ -498,14 +442,18 @@ convert_to_roman <- function(chords, key){
   
   #### Deal with Borrow Chords
   
+  #Borrow maj, min, dor
+  #Borrow Major Scale
+  root_1 <-  scale_chords[1]
+  root_1 <- str_remove(root_1 , 'm')
+  str_sub(  root_1 , start = 1, end = 1) <- toupper( str_sub(root_1 , start = 1, end = 1))
+  
   #Borrow ii(maj) scale
   root_2 <- scale_chords[2]
   root_2 <- str_remove(root_2, 'm')
   root_2 <- str_remove(root_2, 'o')
   str_sub(root_2, start = 1, end = 1) <- toupper( str_sub(root_2, start = 1, end = 1))
   
-  
-
   #Borrow IV Scale
   root_4 <- scale_chords[4]
   root_4 <- str_remove(root_4, 'm')
@@ -521,77 +469,56 @@ convert_to_roman <- function(chords, key){
   root_6 <- str_remove(root_6, 'm')
   str_sub(root_6, start = 1, end = 1) <- toupper(  str_sub(root_6, start = 1, end = 1))
   
+  
+  #Borrow VII Scale
+  root_7 <-scale_chords[7]
+  root_7 <- str_remove(root_7, 'm')
+  str_sub(root_7, start = 1, end = 1) <- toupper(  str_sub(root_7, start = 1, end = 1))
+  
   #Borrow Dorian Scale
   root_dor <- scale_chords[1]
   root_dor <-  str_remove(root_dor, 'm')
   str_sub(root_dor, start = 1, end = 1) <- toupper(  str_sub(root_dor, start = 1, end = 1))
   
-  #Borrow Major Scale
-  root_maj <-  scale_chords[1]
-  root_maj <-  str_remove(root_maj, 'm')
-  str_sub(root_maj, start = 1, end = 1) <- toupper(  str_sub(root_maj, start = 1, end = 1))
-  
-  
+ 
   if(mode == 'major'){
     
     borrow_key_2 <- paste0(root_2, 'maj')
     reorder_chrom_2 <- reorder_chrom_key(borrow_key_2)
-    borrow_II_scale <- reorder_chrom_2[major_interval]
-    borrow_II_scale[5] <- paste0(borrow_II_scale[5], '7')
-    borrow_II_scale[major_lowers] <-  tolower(borrow_II_scale[major_lowers])
-    borrow_II_scale <- paste0(borrow_II_scale, major_mode_triads)
-                                              
+    borrow_II_scale <- get_chords_from_key(reorder_chrom_2, 'major', T)
+
     borrow_key_4 <- paste0(root_4, 'maj')
     reorder_chrom_4 <- reorder_chrom_key(borrow_key_4)
-    borrow_IV_scale <- reorder_chrom_4[major_interval]
-    borrow_IV_scale[5] <- paste0(borrow_IV_scale[5], '7')
-    borrow_IV_scale[c(2, 3, 6, 7)] <-  tolower(borrow_IV_scale[c(2, 3, 6, 7)])
-    borrow_IV_scale <- paste0(  borrow_IV_scale,  major_mode_triads )
-    
-    
+    borrow_IV_scale <- get_chords_from_key( reorder_chrom_4 , 'major', T)
+   
     #Borrow V Scale (without Dominant 7)
     borrow_key_5 <- paste0(root_5, 'maj')
     reorder_chrom_5 <- reorder_chrom_key(borrow_key_5)
-    borrow_V_scale <- reorder_chrom_5[major_interval]
-    borrow_V_scale[7] <- paste0(borrow_V_scale[7], 'o')
-    borrow_V_scale[c(2, 3, 6, 7)] <-  tolower(borrow_V_scale[c(2, 3, 6, 7)])
-    borrow_V_scale <- paste0( borrow_V_scale,   major_mode_triads)
+    borrow_V_scale <- get_chords_from_key(reorder_chrom_5  , 'major', F)
     
-    #Borrow V Scale (with Dominant 7)
+    #Borrow V Scale (with Dominant 7) (MAY CHANGE THIS LATER)
     borrow_V_scale_dom_7 <- borrow_V_scale
     borrow_V_scale_dom_7[5] <- paste0(borrow_V_scale[5], '7')
 
-    
     #Borrow VI Scale (without Dominant 7th)
     borrow_key_6 <- paste0(root_6, 'maj')
     reorder_chrom_6 <- reorder_chrom_key(borrow_key_6)
-    borrow_VI_scale <- reorder_chrom_6[major_interval]
-    #borrow_VI_scale[5] <- paste0(borrow_VI_scale[5], '7')
-    borrow_VI_scale[7] <- paste0(borrow_VI_scale[7], 'o')
-    borrow_VI_scale[major_lowers] <-  tolower(borrow_VI_scale[major_lowers])
-    borrow_VI_scale <- paste0( borrow_VI_scale,   major_mode_triads)
+    borrow_VI_scale <-  get_chords_from_key(reorder_chrom_6, 'major', F)
     
-    #Borrow VI Scale (with Dominant 7)
+    #Borrow VI Scale (with Dominant 7) (MAY CHANGE THIS LATER)
     borrow_VI_chord_dom_7 <- paste0(borrow_VI_scale[5], '7')
 
     #Borrow Minor Scale
-    root_minor <- scale_chords[1] #Find root of borrowed minor scale
-    borrow_minor_key <-  paste0(root_minor, 'min') #Add mode to root to get key
+    borrow_minor_key <-  paste0(root_1, 'min') #Add mode to root to get key
     reorder_chrom_min <- reorder_chrom_key(borrow_minor_key) #Reorder chromatic scale according to key
-    borrow_min_scale <- reorder_chrom_min[minor_interval] #Extract minor intervals from chromatic scale
-    borrow_min_scale[c(1,2,4, 5)] <- tolower( borrow_min_scale[c(1,2,4, 5)]) # Make minor chords lowercase
-    borrow_min_scale <- paste0(borrow_min_scale , minor_mode_triads ) #Paste 'm' to minor chords
-    borrow_min_dom_7 <- paste0(borrow_min_scale[7], '7')
-    
-    #Borrow Dorian Scale 
-    borrow_key_dorian <- paste0(root_dor, 'dor')
+    borrow_min_scale <- get_chords_from_key(reorder_chrom_min , 'minor', T)
+  
+    borrow_key_dorian <- paste0(root_1, 'dor')
     reorder_chrom_dorian <- reorder_chrom_key( borrow_key_dorian )
-    borrow_dor_scale <-    reorder_chrom_dorian [dor_interval]
-    borrow_dor_scale[  dor_lowers ] <-  tolower(borrow_dor_scale[  dor_lowers ])
-    borrow_dor_scale <- paste0(borrow_dor_scale,   dor_mode_triads)
-    borrow_dor_scale[4]  <- paste0(borrow_dor_scale[4], '7')
+    borrow_dor_scale <-  get_chords_from_key(reorder_chrom_dorian, 'dor', T)
+  
     
-    
+    ### Other CHORDS not Found in listed keys
     #Lydian iv
     lydian_half_dim <- reorder_chrom_key(key)[7]
     lydian_half_dim  <- tolower(lydian_half_dim)
@@ -606,57 +533,48 @@ convert_to_roman <- function(chords, key){
     borrow_IV_IV_chord <- borrow_IV_IV_chord[borrow_IV_IV_chord %in% scale_chords == F] #Remove ii chord
     borrow_IV_IV_chord <- borrow_IV_IV_chord[grepl('m', borrow_IV_IV_chord )==F] #remove v-min chord
     
+    #V/iii
+    borrow_V_iii_chord <- str_remove(scale_chords[7], 'o')
+    borrow_V_iii_chord <- toupper(borrow_V_iii_chord)
+    
     #Null Scale
     borrow_maj_scale <- NULL
     borrow_maj_scale_dom_7 <- NULL
     borrow_ii_maj_scale <- NULL
     borrow_V_maj_scale <- NULL
 
-
-    
     
   }else if(mode == 'minor'){
+    dim_idx <- 2 #Get diminished idx DON'T KNOW IF I NEED THIS
+    
+    borrow_key_maj <- paste0(root_1, 'maj')
+    reorder_chrom_maj <- reorder_chrom_key(borrow_key_maj)
+    borrow_maj_scale <-  get_chords_from_key(reorder_chrom_maj, 'major', F)
+    
+    borrow_key_dorian <- paste0(root_1, 'dor')
+    reorder_chrom_dorian <- reorder_chrom_key(borrow_key_dorian )
+    borrow_key_dorian <- get_chords_from_key( reorder_chrom_dorian , 'dor', F)
     
     borrow_key_2_maj <- paste0(root_2, 'maj')
     reorder_chrom_2 <- reorder_chrom_key( borrow_key_2_maj)
-    borrow_ii_maj_scale <-  reorder_chrom_2[major_interval]
-    borrow_ii_maj_scale[major_lowers] <-  tolower(borrow_ii_maj_scale[major_lowers])
-    borrow_ii_maj_scale <- paste0(borrow_ii_maj_scale, major_mode_triads)
-    
+    borrow_ii_maj_scale <- get_chords_from_key(reorder_chrom_4, 'major', F)
+  
     borrow_key_4 <- paste0(root_4, 'min')
     reorder_chrom_4 <- reorder_chrom_key(borrow_key_4)
-    borrow_IV_scale <- reorder_chrom_4[minor_interval]
-    borrow_IV_scale[c(1,2,4, 5)] <-  tolower(borrow_IV_scale[c(1,2,4, 5)])
-    borrow_IV_scale <- paste0(  borrow_IV_scale,  minor_mode_triads )
-    
+    borrow_IV_scale <- get_chords_from_key(reorder_chrom_4, 'minor', F)
+ 
     borrow_key_5 <- paste0(root_5, 'min')
     reorder_chrom_5 <- reorder_chrom_key(borrow_key_5)
-    borrow_V_scale <- reorder_chrom_5[minor_interval]
-    borrow_V_scale[minor_lowers] <-  tolower(borrow_V_scale[minor_lowers])
-    borrow_V_scale[7] <- paste0(borrow_V_scale[7], '7')
-    borrow_V_scale <- paste0( borrow_V_scale,   minor_mode_triads)
+    borrow_V_scale <- get_chords_from_key(reorder_chrom_5, 'minor', T)
+    
+    borrow_key_7_maj <- paste0(root_7, 'maj')
     
     
-    borrow_key_dorian <- paste0(root_dor, 'dor')
-    reorder_chrom_dorian <- reorder_chrom_key( borrow_key_dorian )
-    borrow_dor_scale <-    reorder_chrom_dorian [dor_interval]
-    borrow_dor_scale[  dor_lowers ] <-  tolower(borrow_dor_scale[  dor_lowers ])
-    borrow_dor_scale <- paste0(borrow_dor_scale,   dor_mode_triads)
     
-    #Borrow Major Key
-    borrow_key_maj <- paste0(root_maj, 'maj')
-    reorder_chrom_maj <- reorder_chrom_key(borrow_key_maj)
-    borrow_maj_scale <-  reorder_chrom_maj[major_interval]
-    borrow_maj_scale[major_lowers] <-  tolower(borrow_maj_scale[major_lowers])
-    #borrow_major_scale[7] <- paste0( borrow_major_scale[7], 'o')
-    borrow_maj_scale <- paste0(borrow_maj_scale, major_mode_triads)
-  
-    # #Borrow Major Scale Dominant 7th Chord
+    # #Borrowed Chords 
     borrow_maj_scale_dom_7 <-  paste0(borrow_maj_scale[5], '7')
-    
     borrow_loc_1 <- str_replace(scale_chords[1], 'm', 'o')
 
-    
     #Set NULL scales'
     borrow_II_scale <- NULL
     borrow_IV_IV_chord <- NULL
@@ -688,15 +606,9 @@ convert_to_roman <- function(chords, key){
     lydian_vii <- NULL
     
   } else if (mode == 'dor'){
-    
-    
-    
     borrow_key_5_maj <- paste0(root_5, 'maj')
     reorder_chrom_5_maj <- reorder_chrom_key(borrow_key_5_maj)
-    borrow_V_maj_scale <- reorder_chrom_5_maj[major_interval]
-    borrow_V_maj_scale[major_lowers] <-  tolower(borrow_V_maj_scale[major_lowers])
-    borrow_V_maj_scale <- paste0(borrow_V_maj_scale,   major_mode_triads)
-    #borrow_V_maj_scale[5] <- paste0(borrow_V_maj_scale[5], '7')
+    borrow_V_maj_scale <- get_chords_from_key(reorder_chrom_5_maj, 'major', F)
     
     #Set NULL scales and chords
     borrow_II_scale <- NULL
@@ -891,6 +803,13 @@ convert_to_roman <- function(chords, key){
   if(length(lydian_half_dim) > 0){
     roman_vec[grep(lydian_half_dim, chord_vec)] <- '#iv/(lyd)'
   }
+  if(length(borrow_VI_chord_dom_7 ) > 0) {
+    roman_vec[grep( borrow_VI_chord_dom_7, chord_vec)] <- 'V/vi'
+  }
+  if(length(borrow_V_iii_chord) > 0){
+    roman_vec[grep(borrow_V_iii_chord, chord_vec)] <- 'V/iii'
+    
+  }
   
   
   #Borrow IV chord from IV
@@ -898,21 +817,14 @@ convert_to_roman <- function(chords, key){
     fill_idx <- which(chord_vec == borrow_IV_IV_chord)
     roman_vec[fill_idx] <- 'IV/IV'
     
-    
-    if(length(borrow_VI_chord_dom_7 ) > 0) {
-      
-      fill_idx <- grep(pattern = borrow_VI_chord_dom_7  , x = chord_vec)
-      roman_vec[fill_idx] <- 'V/vi'
-    }
-    
   }
 
 
-      #Collapse vector into a single string
-      roman_string <- paste(roman_vec, collapse = '-')
+  #Collapse vector into a single string
+  roman_string <- paste(roman_vec, collapse = '-')
 
 
-       return(roman_string)
+  return(roman_string)
 }
 
 
@@ -1170,6 +1082,81 @@ scrape_hook_theory <- function(song_urls, remDr, start = 1, end = NULL,
     }
 
 }
+
+
+
+
+get_chords_from_key <- function(notes, mode, dom = F){
+  #Input
+  #notes: chromatic scale beginning with root (output from reorder_chrom_key)
+  #mode: major, minor, mix, or dor
+  
+  #Output: Chords from Each key
+  #Dom7th refers to optional 7th chord override
+  
+  #Define Intervals
+  major_interval <- c(seq(1, 5, 2), seq(6, 11, 2), 12)
+  minor_interval <- c(1, 3, 4, 6, 8, 9, 11)
+  mix_interval <- c(1, 3, 5, 6, 8, 10, 11)
+  dor_interval <- c(1, 3, 4, 6, 8, 10, 11)
+  
+  #Define minor & dims (lower case)
+  major_lowers <- c(2, 3, 6, 7)
+  minor_lowers <- c(1, 2, 4, 5)
+  mix_lowers <- c(2, 3, 5, 6)
+  dor_lowers <-c(1,2, 5, 6)
+  
+  #Define Triads (Which chords are major and which are minor in a given mode)
+  major_mode_triads  <- c('', 'm', 'm', '', '', 'm', 'o' )
+  minor_mode_triads <- c('m', 'o', '', 'm', 'm', '', '')
+  mix_mode_triads <- c('', 'm', 'o', '', 'm', 'm', '')
+  dor_mode_triads <- c('m', 'm', '', '', 'm', 'm', '')
+  
+  
+  #Select notes from based on mode interval 
+  #Make minor chord root notes lowercase and add 'm' 
+  if(mode == 'major'){
+    notes <- notes[major_interval]
+    notes[major_lowers] <- tolower(notes[major_lowers] )
+    notes <-  paste0(notes , major_mode_triads)
+    
+    #Convert 5th to Dom7 if TRUE
+    if(dom == T){
+      notes[5] <- paste0(notes[5], '7')
+    }
+  } else if(mode == 'minor'){
+    notes <- notes[minor_interval]
+    notes[minor_lowers] <- tolower(notes[minor_lowers] )
+    notes <-  paste0(notes , minor_mode_triads)
+    
+    if(dom == T){
+      notes[7] <-  paste0(notes[7], '7')
+    }
+    
+    
+  } else if(mode == 'mix'){
+    notes <- notes[mix_interval]
+    notes[major_lowers] <- tolower(notes[major_lowers] )
+    notes <-  paste0(notes , major_mode_triads)
+    
+  }else if(mode == 'dor'){
+    notes <- notes[dor_interval]
+    notes[dor_lowers] <- tolower(notes[dor_lowers] )
+    notes <-paste0(notes , dor_mode_triads)
+    
+    if(dom == T){
+      notes[4] <-  paste0(notes[4], '7')
+    }
+    
+
+    
+  } else{
+    warning('Do not recognize mode!')
+  }
+  
+  return(notes)
+  
+}  
 
 
 

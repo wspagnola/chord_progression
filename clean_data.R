@@ -97,7 +97,6 @@ beatles_track_info %>%  filter(album_name == 'Meet the Beatles!')
 missing_songs <-beatles_songs %>% 
                     mutate(song_join_code = tolower(song)) %>% 
                     anti_join(beatles_track_info,  by = c('song_join_code'= 'track_name')) 
-missing_songs$song %>%  unique
 
 #Plot Tracks
 beatles <- beatles_songs %>% 
@@ -113,12 +112,6 @@ beatles <- beatles %>%
 ) 
 
 
-beatles %>%  
-  group_by(song,album_name, year) %>% 
-  count %>%  
-  group_by(album_name, year) %>% 
-  count %>% 
-  arrange(year)
 
 album_chron_levels <- beatles %>% 
                     group_by(album_name, album_release_date) %>% 
@@ -134,28 +127,7 @@ beatles <- beatles %>%
                     album_name = factor(album_name, levels =album_chron_levels)
 )      
 
-#Plot Song Availability by Phase
-beatles %>% 
-  count(phase, song) %>% 
-  count(phase) %>% 
-  drop_na(phase) %>% 
-  ggplot(aes(x = phase, y = nn, fill = phase)) +
-  geom_col() +
-  scale_fill_manual(values = c('red', 'blue' )) +
-  ylab('Number of Songs') +
-  ggtitle('Beatles Songs Available on Hook Theory')
 
-#Plot Song Availability by Album
-beatles %>% 
-  count(album_name, year, song, phase) %>% 
-  count(album_name, year, phase) %>% 
-  drop_na(album_name) %>% 
-  ggplot(aes(x = album_name, y = nn, fill = phase)) +
-  geom_col() +
-  scale_fill_manual(values = c('red', 'blue' )) +
-  ylab('Number of Songs') +
-  ggtitle('Beatles Songs Available on Hook Theory by Album') +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 
