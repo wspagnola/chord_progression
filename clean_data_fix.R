@@ -9,33 +9,38 @@ for(i in 1:nrow(beatles)){
   
 }
 
-i <- 116
+x <- c('A', 'B')
+str_detect(x, "B")
+str_detect(x, NA)
+i <- 99
 convert_to_roman(chords =beatles$chords[i], 
                  key = beatles$key[i])
 
-i <- 116
+i <- 99
 chords =beatles$chords[i]
 key = beatles$key[i]
-#Note
-#Note
-## Doesn't work
-#### Drive My Car
-#### The End
-#### We can work it out (Bridge)
 
-#Rescrape Because
 
-#### Check chords
+####  Check NA chords ####
 
-roman <- beatles %>%  
+#Check number of song parts with missing chords
+nrow(beatles[grep('NA', beatles$roman) , ])
+
+
+#Check Roman Numerical Analysis on top of Chords 
+na_chords <- beatles[grep('NA', beatles$roman) , ]
+na_chords_roman <- na_chords %>%  
   select(song, song_parts, key, roman) %>% 
   rename(chords = roman) %>% 
   mutate(roman = 1)
-chords  <- beatles  %>%  
+na_chords_chords <- na_chords %>%  
   select(song, song_parts, key, chords) %>% 
   mutate(roman = 0)
+na_df <- rbind(na_chords_roman, na_chords_chords )
+na_df %>%  arrange(song, song_parts, roman) %>% View
 
 
+#### Check chords
 
 check_roman <- function(x){
   
@@ -78,26 +83,8 @@ check_roman <- function(x){
   
 }
 class(na_df)
-check_roman(na_df)[[1]] %>%  View
+check_roman(na_df)[[3]] %>%  View
 View(z)
-####  Check NA chords ####
-
-#Check number of song parts with missing chords
-nrow(beatles[grep('NA', beatles$roman) , ])
-
-
-#Check Roman Numerical Analysis on top of Chords 
-na_chords <- beatles[grep('NA', beatles$roman) , ]
-na_chords_roman <- na_chords %>%  
-  select(song, song_parts, key, roman) %>% 
-  rename(chords = roman) %>% 
-  mutate(roman = 1)
-na_chords_chords <- na_chords %>%  
-  select(song, song_parts, key, chords) %>% 
-  mutate(roman = 0)
-na_df <- rbind(na_chords_roman, na_chords_chords )
-na_df %>%  arrange(song, song_parts, roman) %>% View
-
 
 #### Notes ####
 
@@ -106,3 +93,12 @@ na_df %>%  arrange(song, song_parts, roman) %>% View
 #3) Something has a duplicate verse
 #4) Deal with sus4/sus2 chords?
 #5) cxo chord in Because
+
+
+## Doesn't work
+#### Drive My Car
+#### The End
+#### We can work it out (Bridge)
+
+#Rescrape Because
+

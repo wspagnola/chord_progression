@@ -298,16 +298,17 @@ remove_features <- function(x){
   #Input character string of chords separated by '-'
   #Removes all features beyond major and minor and dominant 7
   #Returns 'simplified' character string
-  
-
  x <- str_remove_all(x, '6')
  x <- str_remove_all(x, 'maj7')
- x <- str_replace_all(x, 'm7', 'm')
- #x <- str_replace_all(x, 'm7-', 'm-')
+ x <- str_replace_all(x, 'm7-', 'm-')
+ x <-  str_replace_all(x, 'm7$', 'm')
+ x <- str_replace_all(x, 'asus4', 'am')
  x <- str_remove_all(x, 'sus4')
- #x <- str_remove_all(x, 'o')
  x <- str_remove_all(x, '\\(add9\\)')
+
+ #x <- str_remove_all(x, 'o')
  #x <- str_remove_all(x, '(b5)')
+
  
  return(x)
   
@@ -479,7 +480,7 @@ convert_to_roman <- function(chords, key){
     #Deal with Dim
     
     dim_triad <- str_remove_all(scale_chords[dim_idx], 'm')
-    dim <- paste0(  dim_triad, 'o') 
+    dim <- paste0(dim_triad, 'o') 
     dim_idx <- grep(pattern = dim, x = chord_vec)
     roman_vec[dim_idx] <- 'vii'
 
@@ -503,6 +504,8 @@ convert_to_roman <- function(chords, key){
   root_2 <- str_remove(root_2, 'o')
   str_sub(root_2, start = 1, end = 1) <- toupper( str_sub(root_2, start = 1, end = 1))
   
+  
+
   #Borrow IV Scale
   root_4 <- scale_chords[4]
   root_4 <- str_remove(root_4, 'm')
@@ -588,6 +591,11 @@ convert_to_roman <- function(chords, key){
     borrow_dor_scale <- paste0(borrow_dor_scale,   dor_mode_triads)
     borrow_dor_scale[4]  <- paste0(borrow_dor_scale[4], '7')
     
+    
+    #Lydian iv
+    lydian_half_dim <- reorder_chrom_key(key)[7]
+    lydian_half_dim  <- tolower(lydian_half_dim)
+    lydian_half_dim <- paste0(lydian_half_dim, 'm7\\(b5\\)')
     
     #Lydian vii
     lydian_vii <- intersect( borrow_V_scale_dom_7, borrow_VI_scale )
@@ -766,7 +774,6 @@ convert_to_roman <- function(chords, key){
     
   }
   
-  
   #Borrow IV Scale
   if(length(borrowed_4_chords) > 0 ){
     for(i in 1:length(borrowed_4_chords)){
@@ -777,7 +784,6 @@ convert_to_roman <- function(chords, key){
       }
   }
   
-
   #Borrow VI Scale
   if(length(borrowed_6_chords) > 0 ){
     
@@ -788,9 +794,6 @@ convert_to_roman <- function(chords, key){
       } 
   }
 
-  
-
-  
   #Borrow V Scale
   if( length(borrowed_5_chords) > 0  ){
     
@@ -862,9 +865,6 @@ convert_to_roman <- function(chords, key){
       
     }
   }
-  
-  
-  
   #Borrow  V(maj) Scale
   if( length(borrowed_5_maj_chords) > 0 ){
     
@@ -877,25 +877,22 @@ convert_to_roman <- function(chords, key){
   }
   
   
-  #### Override Chords
-  
-  #Borrow vii chord from lydian
-  if( length(borrowed_lydian_7_chord) > 0 ){
-    fill_idx <-     which(chord_vec == lydian_vii)
-    roman_vec[fill_idx] <- 'vii/(lyd)'
-    
-    
+  #Borrowed Specific Chords (Special cases; ignore scale)
+  if(length(borrowed_lydian_7_chord) > 0 ){
+    roman_vec[grep(lydian_vii, chord_vec)] <- 'vii/(lyd)'
   }
-  
+  if(length(borrow_loc_1) > 0){
+    roman_vec[grep(borrow_loc_1, chord_vec)] <- 'i/(loc)'
+  }
   if(length(borrow_min_dom_7) > 0){
-    fill_idx <-     which(chord_vec == borrow_min_dom_7)
-    roman_vec[fill_idx] <- 'bVII/(min)'
+    roman_vec[grep(borrow_min_dom_7, chord_vec)] <- 'bVII/(min)'
     
+  }
+  if(length(lydian_half_dim) > 0){
+    roman_vec[grep(lydian_half_dim, chord_vec)] <- '#iv/(lyd)'
   }
   
   
-  
-  roman_vec[grep(borrow_loc_1, chord_vec)] <- 'i/(loc)'
   #Borrow IV chord from IV
   if( length(borrow_IV_IV_chord) > 0 ){
     fill_idx <- which(chord_vec == borrow_IV_IV_chord)
