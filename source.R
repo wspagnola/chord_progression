@@ -1160,6 +1160,48 @@ get_chords_from_key <- function(notes, mode, dom = F){
 
 
 
+
+check_roman <- function(x){
+  
+  require(dplyr)
+  require(stringr)
+  
+  #Split X into dataframe: one with roman, one with chords
+  roman <- x %>%  
+    select(song, song_parts, key, roman) %>% 
+    rename(chords = roman) %>% 
+    mutate(roman = 1)
+  chords  <- x %>%  
+    select(song, song_parts, key, chords) %>% 
+    mutate(roman = 0)
+  
+  #Bind dataframes together and rearrange
+  df <- rbind(roman, chords) %>% 
+    as.data.frame %>% 
+    arrange(song, song_parts, roman)
+  
+  #Split dataframes
+  list_df <- split(df,f = list(df$song, df$song_parts), drop =T)
+  
+  z <- list()
+  for(i in 1:length(list_df)){
+    
+    x <- str_split(list_df[[i]][1 , 'chords'], '-') %>%  unlist
+    y <- str_split(list_df[[i]][2 , 'chords'], '-') %>%  unlist
+    w <- rbind(x,y)
+    w <- as.data.frame(w)
+    song_info <- list_df[[i]][1:2 , 1:3]
+    row.names(song_info) <- NULL
+    z[[i]] <- cbind(song_info, w)
+    
+    
+  }
+  
+  return(z)
+  
+}
+
+
 ##### NOTES ####
 
 #Clean up code

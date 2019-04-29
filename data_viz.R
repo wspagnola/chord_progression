@@ -1,9 +1,11 @@
 
-
+source('source.R')
 
 
 beatles <- read.csv( 'data/output/beatles_full.csv', stringsAsFactors = F)
-
+beatles %>% 
+  filter(album_name ==  'Beatles For Sale') %>% 
+   check_roman()
 
 #### Functions
 
