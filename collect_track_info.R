@@ -27,6 +27,14 @@ meet_the_beatles <- data.frame(album_name = 'Meet the Beatles',
                                    "Till There Was You" , "Hold Me Tight", 
                                    "I Wanna Be Your Man", 	"Not a Second Time"))
 
+sgt_peppers_album <-  data.frame(album_name = 'Sgt. Peppers Lonely Hearts Club Band',
+                                 artist_name = 'The Beatles',
+                                 album_release_date = '1967-05-26',
+                                 year = 1967, 
+                                 track_name = 
+                                   'Being For The Benefit Of Mr. Kite')
+
+
 white_album <- data.frame(album_name = 'The Beatles', 
                           artist_name = 'The Beatles',
                           album_release_date = '1968-11-22',
@@ -72,6 +80,7 @@ revolver <- data.frame(album_name = 'Revolver',
 beatles_track_info_clean <- beatles_track_info  %>% 
                           left_join(album_info, by = 'album_name') %>% 
                           mutate(album_name = str_remove_all(album_name, ' \\(Remastered\\)'),
+                                 album_name = str_remove_all(album_name, ' \\(Super Deluxe Edition\\)'),
                                  track_name = str_remove_all(track_name, ' - Remastered 2009'),
                                  year = year(album_release_date),
                                  artist_name = artist_name) %>% 
@@ -83,7 +92,7 @@ beatles_track_info_clean <- beatles_track_info  %>%
 
 beatles_track_info_final <- beatles_track_info_clean %>% 
                                rbind(meet_the_beatles, rubber_soul,
-                                     revolver, magical_mystery_tour, 
+                                     revolver, sgt_peppers_album,  magical_mystery_tour, 
                                      white_album, singles)
 
 

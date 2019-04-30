@@ -1,22 +1,30 @@
 #Clean Data with Fixed Beatles DataSte
 source('source.R')
 beatles <- read.csv('data/output/beatles_fix.csv')
+
+beatles[beatles$song == 'Help' , 'key'] <- 'Amaj' #Chorus has same chords as intro 
+beatles <- beatles[beatles$chords != '' ,]
+#The End, Drive My Car, and We Can Work It Out are missing chords
+View(beatles)
+#### Convert to Roman Numerical Analysis
+
 beatles$roman <- NA
 for(i in 1:nrow(beatles)){
   print(i)
   beatles$roman[i] <- convert_to_roman(chords =beatles$chords[i], 
                                              key = beatles$key[i])
-  
 }
-# View(beatles)
-# 
-i <- 128
-beatles$song[i]
 
+# check_roman(beatles[30 ,])
+# View(beatles)
+# # 
+i <- 90
+beatles$song[i]
+beatles$roman[i]
 convert_to_roman(chords =beatles$chords[i],
                  key = beatles$key[i])
 
-i <- 105
+i <- 90
 chords =beatles$chords[i]
 key = beatles$key[i]
 beatles$song[i]
@@ -41,10 +49,9 @@ na_df <- rbind(na_chords_roman, na_chords_chords )
 
 
 #### Check chords
-check_roman(na_df)[[6]] %>%  View
+check_roman(na_df)[[9]] %>%  View
 
 class(na_df)
-View(z)
 
 
 
@@ -66,7 +73,7 @@ beatles_track_info <- beatles_track_info %>%
          track_name = tolower(track_name),
          track_name = str_remove_all(track_name,'\\.'),
          track_name = str_remove(track_name, '\\!'))
-
+View(beatles_track_info )
 
 #Missing Songs: Not Available on Spotify API
 missing_songs <-beatles_songs %>% 
@@ -75,10 +82,12 @@ missing_songs <-beatles_songs %>%
 
 #Merge
 beatles <- beatles_songs %>% 
-  mutate(song_join_code = tolower(song)) %>% 
+  mutate(song_join_code = tolower(song),
+         song_join_code = str_remove_all(  song_join_code, '\\.')) %>%  
   left_join(beatles_track_info,  by = c('song_join_code'= 'track_name')
 )
 
+View(beatles)
 #Clean Album Names
 beatles <- beatles %>% 
   mutate(album_name = str_remove(album_name, '\\s\\(.*'),
@@ -98,10 +107,12 @@ album_chron_levels <- beatles %>%
 beatles <- beatles %>% 
   mutate(phase = if_else(album_release_date <= '1966-06-21' |
                            year < 1966, 'Early', 'Late'),
+          phase = if_else(year > 1966, 'Late', phase),
+          phase = if_else(song == 'Paperback Writer', 'Early', phase),
          phase = factor(phase, levels = c('Early', 'Late')),
          album_name = factor(album_name, levels =album_chron_levels)
 )      
-
+View(beatles)
 write.csv(beatles, 'data/output/beatles_full.csv', row.names = F)
 
 

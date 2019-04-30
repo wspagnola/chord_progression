@@ -122,26 +122,26 @@
 "The Beatles","Wait","Rubber Soul","1965-12-03",1965
 "The Beatles","If I Needed Someone","Rubber Soul","1965-12-03",1965
 "The Beatles","Run For Your Life","Rubber Soul","1965-12-03",1965
-"The Beatles","Sgt. Pepper's Lonely Hearts Club Band - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","With A Little Help From My Friends - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Lucy In The Sky With Diamonds - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Getting Better - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Fixing A Hole - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","She's Leaving Home - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Being For The Benefit Of Mr. Kite! - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Within You Without You - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","When I'm Sixty-Four - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Lovely Rita - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Good Morning Good Morning - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Sgt. Pepper's Lonely Hearts Club Band (Reprise) - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","A Day In The Life - Remix","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Strawberry Fields Forever - Take 1","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Strawberry Fields Forever - Take 4","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Strawberry Fields Forever - Take 7","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Strawberry Fields Forever - Take 26","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Strawberry Fields Forever - Stereo Mix 2015","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","When I'm Sixty-Four - Take 2","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
-"The Beatles","Penny Lane - Take 6 / Instrumental","Sgt. Peppers Lonely Hearts Club Band (Super Deluxe Edition)","1967-05-26",1967
+"The Beatles","Sgt. Pepper's Lonely Hearts Club Band - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","With A Little Help From My Friends - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Lucy In The Sky With Diamonds - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Getting Better - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Fixing A Hole - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","She's Leaving Home - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Being For The Benefit Of Mr. Kite! - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Within You Without You - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","When I'm Sixty-Four - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Lovely Rita - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Good Morning Good Morning - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Sgt. Pepper's Lonely Hearts Club Band (Reprise) - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","A Day In The Life - Remix","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Strawberry Fields Forever - Take 1","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Strawberry Fields Forever - Take 4","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Strawberry Fields Forever - Take 7","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Strawberry Fields Forever - Take 26","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Strawberry Fields Forever - Stereo Mix 2015","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","When I'm Sixty-Four - Take 2","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
+"The Beatles","Penny Lane - Take 6 / Instrumental","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
 "The Beatles","Back In The U.S.S.R.","The Beatles","1968-11-22",1968
 "The Beatles","Dear Prudence","The Beatles","1968-11-22",1968
 "The Beatles","Glass Onion","The Beatles","1968-11-22",1968
@@ -204,6 +204,7 @@
 "The Beatles","Norwegian Wood","Rubber Soul","1965-12-03",1965
 "The Beatles","Here There And Everywhere","Revolver","1966-08-05",1966
 "The Beatles","Elenor Rigby","Revolver","1966-08-05",1966
+"The Beatles","Being For The Benefit Of Mr. Kite","Sgt. Peppers Lonely Hearts Club Band","1967-05-26",1967
 "The Beatles","Hello Goodbye","Magical Mystery Tour","1967-11-27",1967
 "The Beatles","Lady Madonna","The Beatles","1968-11-22",1968
 "The Beatles","Honey Pie","The Beatles","1968-11-22",1968

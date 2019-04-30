@@ -3,9 +3,20 @@ source('source.R')
 
 
 beatles <- read.csv( 'data/output/beatles_full.csv', stringsAsFactors = F)
-beatles %>% 
-  filter(album_name ==  'Beatles For Sale') %>% 
-   check_roman()
+
+
+album_chron_levels <- beatles %>% 
+  group_by(album_name, album_release_date) %>% 
+  count %>% 
+  arrange(album_release_date) %>% 
+  drop_na %>% 
+  pull(album_name) 
+
+beatles <- beatles %>% 
+  mutate(album_name = factor(album_name, levels =album_chron_levels)
+)
+
+
 
 #### Functions
 
@@ -20,6 +31,31 @@ sum_chords <- function(chords){
   return(length(chord_vec))
 }
 
+beatles$chords[1]
+sum_chords_unique
+sum_chords_unique <- function(chords){
+  
+  require(dplyr)
+  
+  chord_vec <- strsplit(chords, '-') %>%  unlist
+  
+  unique_chords <- unique(  chord_vec )
+  
+  return(length(unique_chords))
+}
+
+
+chord_pct <- function(chords, pattern){
+  
+  require(dplyr)
+  
+  chord_vec <- strsplit(chords, '-') %>%  unlist
+  pct_chord <- sum(grepl(pattern,   chord_vec) ) / length(  chord_vec)
+  
+  return(pct_chord )
+}
+
+
 
 
 borrow_chord_pct <- function(chords){
@@ -28,13 +64,54 @@ borrow_chord_pct <- function(chords){
   
   chord_vec <- strsplit(chords, '-') %>%  unlist
   pct_borrow <- sum(grepl('/',   chord_vec) ) / length(  chord_vec)
-  
-  
-  
+
   return(pct_borrow)
 }
 
 
+#### Plot Chords Per song ####
+
+#Songs with Most Chords
+beatles %>% 
+  group_by(song, phase) %>% 
+  summarize(num_chords = sum(sum_chords_unique(chords))) %>% 
+  arrange(desc(num_chords)) %>% 
+  ungroup %>% 
+  slice(1:20) %>% 
+  ggplot(aes(x = song, y = num_chords, fill = phase)) +
+  geom_col()
+
+#Songs with Most Chords
+beatles %>%
+    group_by(song, phase) %>% 
+    summarize(num_chords = sum(sum_chords_unique(chords))) %>% 
+    filter(num_chords > 0) %>% 
+    arrange(num_chords) %>% 
+    ungroup %>% 
+    slice(1:20)%>% 
+    ggplot(aes(x = song, y = num_chords, fill = phase)) +
+    geom_col()
+
+beatles %>%
+  group_by(song, phase) %>% 
+  summarize(num_chords = sum(sum_chords_unique(chords))) %>% 
+  filter(num_chords > 0) %>% 
+  arrange(num_chords) %>% 
+  ggplot(aes(x = song, y = num_chords, fill = phase)) +
+  geom_col()
+  
+## Number of Unique Chords by Year (Scatter Plot )
+beatles %>%
+  group_by(song, year, phase) %>% 
+  summarize(num_chords = sum(sum_chords_unique(chords))) %>% 
+  filter(num_chords > 0) %>% 
+  arrange(num_chords) %>% 
+  ggplot() +
+  geom_smooth(aes(x = year, y = num_chords))+
+  geom_point(aes(x = year, y = num_chords, color= phase)) 
+
+  sum_chords()
+  
 #### Plot Songs Over Time and by Album # ####
 beatles %>%  
   group_by(song,album_name, year) %>% 
@@ -43,7 +120,7 @@ beatles %>%
   count %>% 
   arrange(year)
 
-#Plot Song Availability by Phase
+#### Plot Song Availability by Phase####
 beatles %>% 
   count(phase, song) %>% 
   count(phase) %>% 
@@ -54,7 +131,7 @@ beatles %>%
   ylab('Number of Songs') +
   ggtitle('Beatles Songs Available on Hook Theory')
 
-#Plot Song Availability by Album
+####Plot Song Availability by Album####
 beatles %>% 
   count(album_name, year, song, phase) %>% 
   count(album_name, year, phase) %>% 
@@ -69,7 +146,7 @@ beatles %>%
 
 
 
-#### Plot 
+#### Plot Percent Borrowed Chords ####
 
 beatles$roman <- as.character(beatles$roman)
 
@@ -80,6 +157,75 @@ beatles$num_chords <- beatles$roman %>%
                               lapply(sum_chords) %>%  unlist
 
 
+
+
+#### Plot Percent Borrowed Chords ####
+pct_borrowed_chord_tab <-beatles %>% 
+                              mutate(wt_pct_borrowed =  borrowed_pct*num_chords  )%>% 
+                              drop_na(album_name) %>% 
+                              group_by(album_name, phase) %>% 
+                              summarize(pct_borrowed_sum = sum(wt_pct_borrowed) / sum(num_chords))
+
+#Plot by album
+pct_borrowed_chord_tab %>% 
+  ggplot(aes(x = album_name, y= pct_borrowed_sum, fill = phase)) + 
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+#Plot by year ()
+beatles %>% 
+  mutate(wt_pct_borrowed =  borrowed_pct*num_chords  )%>% 
+  drop_na(album_name) %>% 
+  group_by(year, song, phase) %>% 
+  summarize(pct_borrowed_sum = sum(wt_pct_borrowed) / sum(num_chords)) %>% 
+  ggplot() + 
+  geom_point(aes(x = year, y= pct_borrowed_sum, color = phase)) +
+  geom_smooth(method = 'loess', aes(x = year, y= pct_borrowed_sum)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#### Major 7th Chords ####
+beatles$major_7_pct <- beatles$chords%>% 
+  lapply(function(x)  chord_pct(x,pattern = 'maj7')) %>%  unlist
+
+#Pct. Songs with Major Chords By Year
+beatles %>% 
+  mutate(num_maj_7 = major_7_pct*num_chords) %>% 
+  group_by(phase, year, song ) %>% 
+  summarize(maj_7 =  if_else(sum(num_maj_7 ) > 0, 1, 0) ) %>% 
+  drop_na(maj_7) %>% 
+  drop_na(year) %>% 
+  group_by(year, phase) %>%  
+  summarize(pct_songs_with_maj_7 = sum(maj_7) / n()) %>%
+  ggplot(aes(x = year, y = pct_songs_with_maj_7, group = phase, color = phase)) +
+  geom_line() +
+  geom_point(pch = 'o')
+
+#Pct. Songs with Major Chords By Album
+beatles %>% 
+  mutate(num_maj_7 = major_7_pct*num_chords) %>% 
+  group_by(phase, album_name, song ) %>% 
+  summarize(maj_7 =  if_else(sum(num_maj_7 ) > 0, 1, 0) ) %>% 
+  drop_na(maj_7, album_name) %>% 
+  group_by(album_name, phase) %>%  
+  summarize(pct_songs_with_maj_7 = sum(maj_7) / n()) %>%
+  ggplot(aes(x = album_name, y = pct_songs_with_maj_7, fill = phase)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+#### DTM #####
+
+library(tm)
+library(tidytext)
+library(tidyverse)
+
+
+
+beatles <- read.csv( 'data/output/beatles_full.csv', stringsAsFactors = F)
+
+
 album_chron_levels <- beatles %>% 
   group_by(album_name, album_release_date) %>% 
   count %>% 
@@ -88,19 +234,114 @@ album_chron_levels <- beatles %>%
   pull(album_name) 
 
 beatles <- beatles %>% 
-  mutate(album_name = factor(album_name, levels =album_chron_levels)
-  )      
+  mutate(album_name = factor(album_name, levels =album_chron_levels),
+         song = as.character(song),
+         artist = as.character(artist)
+)
+
+beatles$song <- as.character()
+l <- beatles %>%  
+  split(f = beatles$song) %>% 
+  lapply(function(x) data.frame(artist = unique(x$artist), 
+                                song = unique(x$song), 
+                                roman = paste(x$roman, collapse = '-')))
+df <- l %>% 
+  bind_rows 
+
+bigrams <- df %>%  
+            mutate(roman = str_replace_all(roman, '-', ' ')) %>% 
+            mutate(roman = str_remove_all(roman, '\\(')) %>% 
+            mutate(roman = str_remove_all(roman, '\\)')) %>% 
+            mutate(roman = str_replace_all(roman, '/', 'BORROWED')) %>% 
+            unnest_tokens(bigram, roman, token = 'ngrams', n = 2) %>%  
+            count(song, bigram) %>% 
+            mutate(bigram = str_replace_all(bigram, 'borrowed', '/')) %>% 
+            select(song, bigram, n) 
 
 
-beatles %>% 
-  mutate(wt_pct_borrowed =  borrowed_pct*num_chords  )%>% 
-  drop_na(album_name) %>% 
-  group_by(album_name) %>% 
-  summarize(pct_borrowed_sum = sum(wt_pct_borrowed) / sum(num_chords)) %>% 
-  ggplot(aes(x = album_name, y= pct_borrowed_sum)) + 
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+#Remove bigrams with same chords
+bigrams <- bigrams %>% 
+              separate(bigram, c('chord_1', 'chord_2'), sep = " ") %>% 
+              filter(chord_1 != chord_2) %>% 
+              unite(bigram, chord_1, chord_2, sep = " ")
+
+top_50_bigrams <- bigrams  %>%
+                      count(bigram, sort = T) %>%
+                      slice(1:50) %>%
+                      select(bigram)
+            
+dtm <- bigrams %>% 
+      inner_join(top_50_bigrams) %>% 
+      cast_dtm(document = song, term = bigram,  value = n)
+            
+
+dtm_tibble <-  cbind(dtm$dimnames$Docs, as.matrix(dtm)) %>% as.tibble()
+
+song_info <-beatles %>% 
+              select(song, album_name, year, phase)
+
+names(dtm_tibble)[grep('V1', names(dtm_tibble))] <- 'song'
+dtm_song_info <- dtm_tibble %>% 
+                    left_join(song_info)
+mean_bigrams <- dtm_song_info %>% 
+                    mutate_if((names(dtm_song_info) %in% 
+                                   c("song","album_name","year", "phase"))== F,  as.numeric) %>% 
+                    group_by(year) %>% 
+                    summarize_if(names(dtm_song_info)[-grep('year', names(dtm_song_info))] %in%
+                                   c("song","album_name", "phase")== F, mean) 
+
+View(mean_bigrams)
+
+mean_bigrams[1:10 ,]  %>% 
+  gather(bigrams, value = mean, -year) %>% 
+  drop_na(year) %>% 
+  ggplot(aes(x = year, y = mean, group = bigrams,
+             color = bigrams))  +
+  geom_line()
+
+mean_bigrams[c(1, 11:20)]  %>% 
+  gather(bigrams, value = mean, -year) %>% 
+  drop_na(year) %>% 
+  ggplot(aes(x = year, y = mean, group = bigrams,
+             color = bigrams))  +
+  geom_line()
+
+mean_bigrams[c(1, 21:30)]  %>% 
+  gather(bigrams, value = mean, -year) %>% 
+  drop_na(year) %>% 
+  ggplot(aes(x = year, y = mean, group = bigrams,
+             color = bigrams))  +
+  geom_line()
 
 
-beatles %>% 
-  filter(album_name == 'Beatles For Sale') 
+
+mean_bigrams[c(1, 31:40)]  %>% 
+  gather(bigrams, value = mean, -year) %>% 
+  drop_na(year) %>% 
+  ggplot(aes(x = year, y = mean, group = bigrams,
+             color = bigrams))  +
+  geom_line()
+
+
+
+mean_bigrams[c(1, 41:50)]  %>% 
+  gather(bigrams, value = mean, -year) %>% 
+  drop_na(year) %>% 
+  ggplot(aes(x = year, y = mean, group = bigrams,
+             color = bigrams))  +
+  geom_line()
+
+
+mean_bigrams[c(1, 51:60)]  %>% 
+  gather(bigrams, value = mean, -year) %>% 
+  drop_na(year) %>% 
+  ggplot(aes(x = year, y = mean, group = bigrams,
+             color = bigrams))  +
+  geom_line()
+
+
+              
+names(dtm_song_info)
+
+View(dtm_song_info)
+?summarize_if
