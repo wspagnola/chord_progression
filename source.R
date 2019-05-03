@@ -365,6 +365,10 @@ convert_to_roman <- function(chords, key){
   chords_base <-  remove_features(chords)
   chord_vec <- unlist(str_split( chords_base , pattern = "-"))
   
+  #Full features
+  chord_vec_full <- unlist(str_split(chords , pattern = "-"))
+  
+  
   #Determine mode
   if(grepl('maj', key)==T){ 
       mode <-'major'
@@ -390,6 +394,7 @@ convert_to_roman <- function(chords, key){
   roman_minor <- c('i', 'ii', 'III', 'iv', 'v', 'VI', 'VII')
   roman_mix  <- c('I', 'ii', 'III', 'IV', 'v', 'vi', 'VII')
   roman_dor <- c('i', 'ii', 'III', 'IV', 'v', 'vi', 'VII' )
+  roman_lower_case <- c('i', 'ii', 'ii', 'iv', 'v', 'vi', 'vii' )
   
   #Convert to Roman
   if(mode == 'major'){
@@ -432,13 +437,21 @@ convert_to_roman <- function(chords, key){
     roman_vec[half_dim_idx] <- 'vii'
   
   } else if(mode == 'minor'){
+    
+    #Deal wth Half diminished 
     half_dim <- str_remove(scale_chords[2], 'o')
-    half_dim <- paste0(half_dim,  'm7(b5)')
-    half_dim_idx <- which(chord_vec== half_dim)
+    half_dim_regex <- paste0(half_dim,  'm7\\(b5\\)', '|', half_dim, 'm\\(b5\\)')
+    half_dim_idx <- grep(half_dim_regex, chord_vec)
     roman_vec[half_dim_idx] <- 'ii'
   }
   
+  #Deal with suspended chords that are substitutes for minor chords th
+  sus_idx <- grep('[a-g]sus4',   chord_vec_full)
+  sus_as_minor_chord <- str_replace(chord_vec_full[sus_idx], 'sus4', 'm') 
+  sus_arabic <- match(sus_as_minor_chord,  scale_chords)
+  roman_vec[sus_idx] <- roman_lower_case[sus_arabic]
   
+  #This function finds the root of each possible borrowed scale 
   convert_to_root <- function(key_chords, root_index){
         #Input: chords in key, root index of borrowed key
         #Outputs: Root as upper case letter; can be used later as a root for a borrowed scale
@@ -527,7 +540,7 @@ convert_to_roman <- function(chords, key){
     borrow_V_iii_chord <- toupper(borrow_V_iii_chord)
     
     #V/VI
-    borrow_V_dom_VI_chord <- paste()
+    #borrow_V_dom_VI_chord <- paste()
     
     #bII 
     borrow_bII_chord <- root_2b
@@ -538,32 +551,45 @@ convert_to_roman <- function(chords, key){
     
     #Null Scale
     borrow_maj_scale <- NULL
-    borrow_maj_scale_dom_7 <- NULL
     borrow_ii_maj_scale <- NULL
+    borrow_ii_maj_scale <- NULL
+    borrow_IV_maj_scale <- NULL
     borrow_V_maj_scale <- NULL
-    borrow_ii_maj_scale <- NULL
+    
+    #NULL chords
+    borrow_VI_maj_dom <- NULL
+    borrow_maj_scale_dom_7 <- NULL
+    borrow_lydian_II_chord  <- NULL
     borrow_loc_1 <- NULL
     mix_dom_7_chord <- NULL
     
   }else if(mode == 'minor'){
-    dim_idx <- 2 #Get diminished idx DON'T KNOW IF I NEED THIS
+   # dim_idx <- 2 #Get diminished idx DON'T KNOW IF I NEED THIS
     
     borrow_key_maj <- paste0(root_1, 'maj')
     reorder_chrom_maj <- reorder_chrom_key(borrow_key_maj)
     borrow_maj_scale <-  get_chords_from_key(reorder_chrom_maj, 'major', F)
-    
+
     borrow_key_dorian <- paste0(root_1, 'dor')
     reorder_chrom_dorian <- reorder_chrom_key(borrow_key_dorian )
     borrow_dor_scale <- get_chords_from_key( reorder_chrom_dorian , 'dor', F)
     
+    
+    
     borrow_key_2_maj <- paste0(root_2, 'maj')
     reorder_chrom_2 <- reorder_chrom_key( borrow_key_2_maj)
-    borrow_ii_maj_scale <- get_chords_from_key(reorder_chrom_2, 'major', F)
+    borow_ii_maj_scale <- get_chords_from_key(reorder_chrom_2, 'major', F)
   
+    #Borrow IV(minor scale)
     borrow_key_4 <- paste0(root_4, 'min')
     reorder_chrom_4 <- reorder_chrom_key(borrow_key_4)
     borrow_IV_scale <- get_chords_from_key(reorder_chrom_4, 'minor', F)
  
+    #Borrow IV(major scale)
+    borrow_key_4_maj <- paste0(root_4, 'maj')
+    reorder_chrom_4_maj <- reorder_chrom_key(borrow_key_4_maj)
+    borrow_IV_maj_scale <- get_chords_from_key( reorder_chrom_4_maj , 'major', T)
+    
     borrow_key_5 <- paste0(root_5, 'min')
     reorder_chrom_5 <- reorder_chrom_key(borrow_key_5)
     borrow_V_scale <- get_chords_from_key(reorder_chrom_5, 'minor', T)
@@ -572,9 +598,7 @@ convert_to_roman <- function(chords, key){
     reorder_chrom_6 <- reorder_chrom_key(borrow_key_6_maj)
     borrow_VI_maj_scale <- get_chords_from_key(reorder_chrom_6, 'major', F)
     
-    borrow_key_7_maj <- paste0(root_7, 'maj')
-    
-    
+    #borrow_key_7_maj <- paste0(root_7, 'maj')
     
     # #Borrowed Chords 
     borrow_maj_scale_dom_7 <-  paste0(borrow_maj_scale[5], '7')
@@ -583,8 +607,10 @@ convert_to_roman <- function(chords, key){
     borrow_VI_maj_dom_7 <- paste0(borrow_VI_maj_scale[5], '9')
     borrow_VI_maj_dom_9 <- paste0(borrow_VI_maj_scale[5], '9')
     borrow_VI_maj_dom <- paste0(borrow_VI_maj_dom_7, '|', borrow_VI_maj_dom_9 )
-    
-    #Set NULL scales'
+    borrow_lydian_II_chord <-  root_2
+
+
+        #Set NULL scales'
     borrow_II_scale <- NULL
     borrow_IV_IV_chord <- NULL
     borrow_V_maj_scale <- NULL
@@ -621,6 +647,7 @@ convert_to_roman <- function(chords, key){
     borrow_IV_IV_chord <- NULL
     borrow_IV_scale <- NULL
     borrow_IV_scale_dom_7 <- NULL
+    borrow_IV_maj_scale <- NULL
     borrow_V_scale <- NULL
     borrow_V_scale_dom_7 <- NULL
     borrow_V_maj_scale <- NULL
@@ -629,9 +656,11 @@ convert_to_roman <- function(chords, key){
     borrow_maj_scale <- NULL
     borrow_maj_scale_dom_7 <- NULL
     borrow_min_scale <- NULL
+    borrow_VI_maj_dom <- NULL
     
-    #Set NULL CHords
+    #Set NULL Chords
     borrow_bII_chord <- NULL
+    borrow_lydian_II_chord  <- NULL
     borrow_ii_min_chord <- NULL
     borrow_V_iii_chord <- NULL
     borrow_loc_1 <- NULL
@@ -639,24 +668,34 @@ convert_to_roman <- function(chords, key){
     lydian_half_dim <- NULL
     lydian_vii <- NULL
     
-  } else if (mode == 'dor'){
+  } else if(mode == 'dor'){
+
+    #Get Borrow from V major scale 
     borrow_key_5_maj <- paste0(root_5, 'maj')
     reorder_chrom_5_maj <- reorder_chrom_key(borrow_key_5_maj)
     borrow_V_maj_scale <- get_chords_from_key(reorder_chrom_5_maj, 'major', F)
     
+    #Borrow Minor Scale
+    borrow_minor_key <-  paste0(root_1, 'min') #Add mode to root to get key
+    reorder_chrom_min <- reorder_chrom_key(borrow_minor_key) #Reorder chromatic scale according to key
+    borrow_min_scale <- get_chords_from_key(reorder_chrom_min , 'minor', T)
+    
+    
     #Set NULL scales and chords
     borrow_ii_maj_scale <- NULL
     borrow_II_scale <- NULL
+    borrow_lydian_II_chord  <- NULL
     borrow_IV_IV_chord <- NULL
     borrow_IV_scale <- NULL
     borrow_IV_scale_dom_7 <- NULL
+    borrow_IV_maj_scale <- NULL
     borrow_V_scale <- NULL
     borrow_V_scale_dom_7 <- NULL
     borrow_VI_scale <- NULL
     borrow_VI_dom <- NULL
+    borrow_VI_maj_dom <- NULL
     borrow_maj_scale <- NULL
     borrow_maj_scale_dom_7 <- NULL
-    borrow_min_scale <- NULL
     borrow_dor_scale <- NULL
     
     #Set NULL Chords
@@ -672,7 +711,6 @@ convert_to_roman <- function(chords, key){
     
     
 }
-
 
   #Find Chords that are borrowed
   borrowed_chords <- chord_vec[is.na(roman_vec)]
@@ -722,6 +760,7 @@ convert_to_roman <- function(chords, key){
   }
   
   
+  #Find Chords Borrowed from Dorian Scale
   if(length(borrowed_dor_chords) > 0 ){
     for(i in 1:length(borrowed_dor_chords))  {
       borrow_idx <- match(borrowed_dor_chords[i], borrow_dor_scale)
@@ -788,7 +827,10 @@ convert_to_roman <- function(chords, key){
         borrow_idx <- match(borrowed_min_chords[i], borrow_min_scale)
         fill_idx <- grep(pattern = borrow_min_scale[borrow_idx], x = chord_vec)
         
-        #Flat 3, 6, 7
+        
+        #NOTE: Minor scales have flat 3rd, 6th, and 7th notes
+        #Example: Cmajor = C  D  E  F  G  A   B 
+                # Cminor = C  D  Eb F  G  Ab  Bb
         if(borrow_idx %in% c(3, 6, 7)){
           roman_vec[fill_idx] <- paste0( 'b', roman_minor[borrow_idx], '/(min)')  
           
@@ -813,17 +855,44 @@ convert_to_roman <- function(chords, key){
   }
   
   
-
-  #Borrow maj Scale (with dominany 7th)
-  if(length(borrowed_maj_dom_7_chords) > 0 ){
+  
+  #Borrow V7 from Major Sale 
+  if(length(  borrow_maj_scale_dom_7 ) > 0 ){
     
-    for(i in 1:length(borrowed_maj_dom_7_chords)){
-      borrow_idx <- match(borrowed_maj_dom_7_chords[i], borrow_maj_scale_dom_7)
-      fill_idx <- grep(pattern =borrow_maj_scale_dom_7[borrow_idx], x = chord_vec)
-      roman_vec[fill_idx] <- paste(roman_major[borrow_idx], '(maj)', sep = '/')
+      fill_idx <- grep(pattern =borrow_maj_scale_dom_7, x = chord_vec)
+      roman_vec[fill_idx] <- paste('V', '(maj)', sep = '/')
+      
+    }
+  
+  
+  if(length(borrow_IV_maj_scale) > 0 ){
+    for(i in 1:length(borrow_IV_maj_scale)){
+      borrow_idx <- match(borrow_IV_maj_scale[i], borrow_IV_maj_scale)
+      fill_idx <- grep(pattern = borrow_IV_maj_scale[borrow_idx], x = chord_vec)
+      roman_vec[fill_idx] <- paste(roman_major[borrow_idx], 'iv(maj)', sep = '/')
       
     }
   }
+  
+
+  
+#   #Borrow maj Scale (with dominany 7th)
+#   if(length(borrowed_maj_dom_7_chords) > 0 ){
+#     
+#     for(i in 1:length(borrowed_maj_dom_7_chords)){
+#       borrow_idx <- match(borrowed_maj_dom_7_chords[i], borrow_maj_scale_dom_7)
+#       fill_idx <- grep(pattern =borrow_maj_scale_dom_7[borrow_idx], x = chord_vec)
+#       roman_vec[fill_idx] <- paste(roman_major[borrow_idx], '(maj)', sep = '/')
+#       
+#     }
+#  }
+  
+  # if(length(borrow_min_dom_7) > 0){
+  #   roman_vec[grep(borrow_min_dom_7, chord_vec)] <- 'bVII/(min)'
+  #   
+  # }
+  
+  
   #Borrow  V(maj) Scale
   if( length(borrowed_5_maj_chords) > 0 ){
     
@@ -843,10 +912,7 @@ convert_to_roman <- function(chords, key){
   if(length(borrow_loc_1) > 0){
     roman_vec[grep(borrow_loc_1, chord_vec)] <- 'i/(loc)'
   }
-  # if(length(borrow_min_dom_7) > 0){
-  #   roman_vec[grep(borrow_min_dom_7, chord_vec)] <- 'bVII/(min)'
-  #   
-  # }
+
   if(length(lydian_half_dim) > 0){
     roman_vec[grep(lydian_half_dim, chord_vec)] <- '#iv/(lyd)'
   }
@@ -890,6 +956,11 @@ convert_to_roman <- function(chords, key){
 
   if(length(borrow_VI_maj_dom) > 0){
     roman_vec[grep(borrow_VI_maj_dom, chord_vec)] <- 'V/VI(maj)'
+  }
+  
+  
+  if(length(borrow_lydian_II_chord) > 0){
+    roman_vec[grep(borrow_lydian_II_chord, chord_vec)] <- 'II/(lydian)'
   }
 
   #Collapse vector into a single string
@@ -1233,17 +1304,34 @@ get_chords_from_key <- function(notes, mode, dom = F){
 
 
 
-check_roman <- function(x){
+check_roman <- function(x, song_name, song_part_name = NULL){
   
   require(dplyr)
   require(stringr)
+  #Input: 
+        #x a dataframe with columns song, song_parts, key, roman
+        #song, songparts are strings  to select specific song and part
+        #Default of song_part is null, so you can simply input song name if there is only one part listed in hooktheory
+  #Output:
+    #Data frame with two rows; one for chords and one with roman numerical analysis
   
+  
+  #Select specific row from dataframe based on song and song part if inputted
+  if(is.null(song_part_name)){
+    
+    song_row <- x[x$song == song_name , ]
+
+      } else {
+    
+            song_row <- x[x$song == song_name & x$song_parts ==  song_part_name , ]
+
+      } 
   #Split X into dataframe: one with roman, one with chords
-  roman <- x %>%  
+  roman <-   song_row %>%  
     select(song, song_parts, key, roman) %>% 
     rename(chords = roman) %>% 
     mutate(roman = 1)
-  chords  <- x %>%  
+  chords  <-   song_row %>%  
     select(song, song_parts, key, chords) %>% 
     mutate(roman = 0)
   

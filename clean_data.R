@@ -2,19 +2,24 @@ source('source.R')
 
 
 
-songs_1960s_df <- read.csv('Data/input/songs_60s.csv', stringsAsFactors =  F)
-View(beatles)
-#### Create Beatles Csv #####
 
-beatles_songs <- songs_1960s_df %>% 
-  filter(artist == 'Beatles' | artist == 'The Beatles') %>% 
-  select(-X)
-write.csv(beatles_songs, 'data/output/beatles_songs.csv', row.names = F)
+#### Clean Beatles Songs ####
+beatles <- read.csv('data/output/beatles_fix.csv', stringsAsFactors = F)
 
+
+#Help should be A major throughout;  
+#the chords match a previous section that was listed as Amaj;
+#In addition I have verified the key from several sources
+beatles[beatles$song == 'Help' & beatles$song_parts == 'Chorus' , ]$key <- 'Amaj'
   
+
+#Remove Songs that did not scrape chords properly
+beatles <- beatles[!beatles$chords =='' ,]
+
+
+
 #### Process Beatles songs ####
 
-beatles <- read.csv('data/output/beatles_songs.csv', stringsAsFactors = F)
 vec <-1:nrow(beatles)
 
 beatles$roman <- NA
@@ -24,7 +29,13 @@ for(i in vec){
   
 }
 
-write.csv(beatles, 'data/output/beatles_roman_analysis.csv', row.names =F)
+
+
+
+
+
+
+#write.csv(beatles, 'data/output/beatles_roman_analysis.csv', row.names =F)
 
 beatles[grep('NA', beatles$roman) , ] %>%  View
 
@@ -40,28 +51,16 @@ na_chords_chords <- na_chords %>%
 na_df <- rbind(na_chords_roman, na_chords_chords )
 na_df %>%  arrange(song, song_parts, roman) %>% View
 nrow(beatles[grep('NA', beatles$roman) , ])
+
+
+
 #View Scale Degree with Chords
-bind <- as.list(beatles[vec ,]$chords) %>% 
-  rbind(as.list(beatles[vec, ]$roman))
-
-i <- 
-x <- bind[[i]] %>%  str_split('-') %>%  unlist
-y <- bind[[i+1]] %>%  str_split('-') %>%  unlist
-rbind(x, y)
-beatles[(i+1)/2 ,]$key
-beatles[(i+1)/2 ,]$song
-
-i <- 90
-x <- beatles$chords[i] %>%  str_split('-') %>%  unlist
-y <- beatles$roman[i] %>%  str_split('-') %>%  unlist
-rbind(x,y )
-beatles$song[i]
-beatles$key[i]
+check_roman( x = beatles, song_name ='Besame Mucho')
 
 
-View(beatles)
+
 #Check individual Songs
-i <- 3 #Put Song Index number here
+i <- 95 #Put Song Index number here
 beatles[i ,]$song
 beatles[i ,]$song_parts
 beatles[i ,]$key

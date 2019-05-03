@@ -119,6 +119,21 @@ songs_2000s <- scrape_hook_theory(song_urls = song_urls,
 
 
 
+
+
+songs_1960s_df <- read.csv('Data/input/songs_60s.csv', stringsAsFactors =  F)
+View(beatles)
+
+
+#### Create Beatles Csv #####
+
+beatles_songs <- songs_1960s_df %>% 
+  filter(artist == 'Beatles' | artist == 'The Beatles') %>% 
+  select(-X)
+write.csv(beatles_songs, 'data/output/beatles_songs.csv', row.names = F)
+
+
+
 #Remove Remote Driver
 rm(remDr)
 
