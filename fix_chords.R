@@ -65,7 +65,7 @@ remDr <- remoteDriver(remoteServerAddr = "localhost",
                       browserName = "chrome")
 
 
-scrape_idx <- which(sub_links$Songs == 'Michelle')
+scrape_idx <- which(sub_links$Songs == 'You Never Give Me Your Money')
 df <- data.frame(Artist = sub_links[scrape_idx ,]$Artist,
                  Songs = sub_links[scrape_idx ,]$Songs,
                  Links = song_urls[scrape_idx] )
@@ -74,38 +74,30 @@ fix_df <- scrape_hook_theory(song_urls = df$Links,
                              songs = df$Songs,
                              remDr = remDr)
 
+clean_song_contents(fix_df$chords)
 
 
+# 
+# scrape_idx <- which(sub_links$Songs %in% c('Dear Prudence', 
+#                              "I'm Looking Through You",
+#                              "Nowhere Man",
+#                              "Ticket to Ride",
+#                              "When I'm Sixty-Four",
+#                              "We Can Work It Out"))
+# 
+# unique_ids <- song_urls[scrape_idx] %>% 
+#                    match(unique(song_urls[scrape_idx]) ) %>% 
+#                     unique
+# 
+# scrape_idx <- scrape_idx[unique_ids]
 
 
-scrape_idx <- which(sub_links$Songs %in% c('Dear Prudence', 
-                             "I'm Looking Through You",
-                             "Nowhere Man",
-                             "Ticket to Ride",
-                             "When I'm Sixty-Four",
-                             "We Can Work It Out"))
-
-unique_ids <- song_urls[scrape_idx] %>% 
-                   match(unique(song_urls[scrape_idx]) ) %>% 
-                    unique
-
-scrape_idx <- scrape_idx[unique_ids]
-sub_links[scrape_idx ,]$Songs
-song_urls[scrape_idx]
-
-df <- data.frame(Artist = sub_links[scrape_idx ,]$Artist,
-                 Songs = sub_links[scrape_idx ,]$Songs,
-                 Links = song_urls[scrape_idx] )
-fix_df <- scrape_hook_theory(song_urls = df$Links, 
-                   artist = df$Artist,
-                   songs = df$Songs,
-                   remDr = remDr)
 #Remove Songs from main df
 beatles_remove <- beatles_fix %>%  
                           anti_join(fix_df, by = c('artist', 'song', 'song_parts')) 
 
 beatles_full <- beatles_remove %>% 
-                      rbind(fix_df, by = c('artist', 'song', 'song_parts'))
+                      rbind(fix_df)
 
 
 #Check Data
@@ -117,10 +109,10 @@ beatles_full %>%
   select(song, link) %>%  View
 
 #Remove Extra row created by previous steps that for some reason adds a row with the column headers
-beatles_full <- beatles_full[-grep('song', beatles_full$song) ,]
+#beatles_full <- beatles_full[-grep('song', beatles_full$song) ,]
 
 #Check Data one last Time
-beatles_fix %>% View
+beatles_full %>% View
 
 #Write data to Csv file
 #write.csv(beatles_full, 'data/output/beatles_fix.csv', row.names =F)

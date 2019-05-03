@@ -34,7 +34,7 @@ for(i in vec){
 
 
 
-
+beatles %>%  select(song, roman) %>%  View
 #write.csv(beatles, 'data/output/beatles_roman_analysis.csv', row.names =F)
 
 beatles[grep('NA', beatles$roman) , ] %>%  View
@@ -55,12 +55,13 @@ nrow(beatles[grep('NA', beatles$roman) , ])
 
 
 #View Scale Degree with Chords
-check_roman( x = beatles, song_name ='Besame Mucho')
+check_roman( x = beatles, song_name ="You Never Give Me Your Money", song_part_name = 'Solo')
 
 
 
 #Check individual Songs
-i <- 95 #Put Song Index number here
+which(beatles$song == "You Never Give Me Your Money"& beatles$song_parts ==  'Solo')
+i <- 197 #Put Song Index number here
 beatles[i ,]$song
 beatles[i ,]$song_parts
 beatles[i ,]$key

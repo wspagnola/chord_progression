@@ -81,7 +81,9 @@ clean_song_contents <- function(x){
     str_replace_all('D b6', 'Db6') %>% 
     str_replace_all('E b6', 'Eb6') %>% 
     str_replace_all('G b6', 'Gb6') %>% 
-    str_replace_all('\\s+bsus4', 'bsus4')
+    str_replace_all('\\s+bsus4', 'bsus4') %>% 
+    str_replace_all('\\s+bmaj7', 'bmaj7') 
+      
       
 
   return(clean_x)
@@ -306,7 +308,7 @@ remove_features <- function(x){
  x <- str_replace_all(x, 'asus4', 'am')
  x <- str_remove_all(x, 'sus4')
  x <- str_remove_all(x, '\\(add9\\)')
-
+ x <- str_remove_all(x, 'sus#4')
  #x <- str_remove_all(x, 'o')
  #x <- str_remove_all(x, '(b5)')
 
@@ -512,7 +514,7 @@ convert_to_roman <- function(chords, key){
     borrow_key_dorian <- paste0(root_1, 'dor')
     reorder_chrom_dorian <- reorder_chrom_key( borrow_key_dorian )
     borrow_dor_scale <-  get_chords_from_key(reorder_chrom_dorian, 'dor', T)
-  
+
     ### Other CHORDS not Found in listed keys
     
     #lydian iv (full dim)
@@ -525,7 +527,10 @@ convert_to_roman <- function(chords, key){
     lydian_half_dim  <- tolower(lydian_half_dim)
     lydian_half_dim <- paste0(lydian_half_dim, 'm7\\(b5\\)')
     
-    
+    #Dorian vi half_dim 
+    borrow_dor_half_dim_chord <-  str_remove(borrow_dor_scale[6], 'o')
+    borrow_dor_half_dim_chord <-paste0(borrow_dor_half_dim_chord, 'm7\\(b5\\)')
+
     #lydian vii
     lydian_vii <- intersect( borrow_V_scale_dom_7, borrow_VI_scale )
     #Intersection of V and VI scale (7th note played as minor chord)
@@ -548,6 +553,14 @@ convert_to_roman <- function(chords, key){
     #ii min 
     borrow_ii_min_chord <-str_remove(borrow_min_scale[2], 'o')
     borrow_ii_min_chord <- paste0(borrow_ii_min_chord, 'm7(b5)')
+    
+    
+    #   #IVb7/(bor) *Don't know what scale this is borrowed form
+    sharp_4th_dom_7_chord <- paste0(reorder_chrom[7], '7')
+    sharp_4th_maj_chord <- reorder_chrom[7]
+    
+    #VIb7/(bor)*
+    flat_6_dom_7_chord <- paste0(borrow_min_scale[6], '7')
     
     #Null Scale
     borrow_maj_scale <- NULL
@@ -574,11 +587,9 @@ convert_to_roman <- function(chords, key){
     reorder_chrom_dorian <- reorder_chrom_key(borrow_key_dorian )
     borrow_dor_scale <- get_chords_from_key( reorder_chrom_dorian , 'dor', F)
     
-    
-    
     borrow_key_2_maj <- paste0(root_2, 'maj')
     reorder_chrom_2 <- reorder_chrom_key( borrow_key_2_maj)
-    borow_ii_maj_scale <- get_chords_from_key(reorder_chrom_2, 'major', F)
+    borrow_ii_maj_scale <- get_chords_from_key(reorder_chrom_2, 'major', F)
   
     #Borrow IV(minor scale)
     borrow_key_4 <- paste0(root_4, 'min')
@@ -589,6 +600,8 @@ convert_to_roman <- function(chords, key){
     borrow_key_4_maj <- paste0(root_4, 'maj')
     reorder_chrom_4_maj <- reorder_chrom_key(borrow_key_4_maj)
     borrow_IV_maj_scale <- get_chords_from_key( reorder_chrom_4_maj , 'major', T)
+    borrow_IV_maj_scale[borrow_IV_maj_scale %in% scale_chords] <- NA #Set chords to NA if in minor scale
+    borrow_IV_maj_scale[borrow_IV_maj_scale %in%   borrow_maj_scale ] <- NA #set chords to NA if in borrowed major scale
     
     borrow_key_5 <- paste0(root_5, 'min')
     reorder_chrom_5 <- reorder_chrom_key(borrow_key_5)
@@ -597,19 +610,17 @@ convert_to_roman <- function(chords, key){
     borrow_key_6_maj <- paste0(root_6, 'maj')
     reorder_chrom_6 <- reorder_chrom_key(borrow_key_6_maj)
     borrow_VI_maj_scale <- get_chords_from_key(reorder_chrom_6, 'major', F)
-    
-    #borrow_key_7_maj <- paste0(root_7, 'maj')
-    
+
     # #Borrowed Chords 
     borrow_maj_scale_dom_7 <-  paste0(borrow_maj_scale[5], '7')
     borrow_loc_1 <- str_replace(scale_chords[1], 'm', 'o')
-    paste0(borrow_VI_maj_scale[5], '7')
-    borrow_VI_maj_dom_7 <- paste0(borrow_VI_maj_scale[5], '9')
+    borrow_VI_maj_dom_7 <- paste0(borrow_VI_maj_scale[5], '7')
     borrow_VI_maj_dom_9 <- paste0(borrow_VI_maj_scale[5], '9')
     borrow_VI_maj_dom <- paste0(borrow_VI_maj_dom_7, '|', borrow_VI_maj_dom_9 )
     borrow_lydian_II_chord <-  root_2
-
-
+    borrow_vii_dim_VII_chord <- paste0(tolower(reorder_chrom[10]), 'm\\(b5\\)', '|', 'm7\\(b5\\)')
+    
+    
         #Set NULL scales'
     borrow_II_scale <- NULL
     borrow_IV_IV_chord <- NULL
@@ -620,7 +631,7 @@ convert_to_roman <- function(chords, key){
     borrow_VI_dom <- NULL
     borrow_min_scale <- NULL
    
-    #SEt NULLChords
+    #Set NULL Chords
     borrow_bII_chord <- NULL
     borrow_V_iii_chord <- NULL
     borrow_ii_min_chord <- NULL
@@ -628,15 +639,29 @@ convert_to_roman <- function(chords, key){
     lydian_dim <- NULL
     lydian_vii <- NULL
     lydian_half_dim <- NULL
+    borrow_dor_half_dim_chord  <- NULL
+    sharp_4th_dom_7_chord <- NULL
+    sharp_4th_maj_chord  <- NULL
+    flat_6_dom_7_chord <- NULL
     
   } else if(mode == 'mix'){
     
+    #Borrow Dorian Scale
     borrow_key_dorian <- paste0(root_1, 'dor')
     reorder_chrom_dorian <- reorder_chrom_key( borrow_key_dorian )
     borrow_dor_scale <-  get_chords_from_key(reorder_chrom_dorian, 'dor', T)
     
+    #Borrow Minor Scale
+    borrow_minor_key <-  paste0(root_1, 'min') #Add mode to root to get key
+    reorder_chrom_min <- reorder_chrom_key(borrow_minor_key) #Reorder chromatic scale according to key
+    borrow_min_scale <- get_chords_from_key(reorder_chrom_min , 'minor', T)
     
+    #Borrow Major Scale
+    borrow_key_maj <- paste0(root_1, 'maj')
+    reorder_chrom_maj <- reorder_chrom_key(borrow_key_maj)
+    borrow_maj_scale <-  get_chords_from_key(reorder_chrom_maj, 'major', F)
     
+    #Mixolydian Dominant 7th chord
     mix_dom_7_chord <- paste0(scale_chords[1], '7')
     
     
@@ -653,9 +678,7 @@ convert_to_roman <- function(chords, key){
     borrow_V_maj_scale <- NULL
     borrow_VI_scale <- NULL
     borrow_VI_dom <- NULL
-    borrow_maj_scale <- NULL
     borrow_maj_scale_dom_7 <- NULL
-    borrow_min_scale <- NULL
     borrow_VI_maj_dom <- NULL
     
     #Set NULL Chords
@@ -667,6 +690,10 @@ convert_to_roman <- function(chords, key){
     lydian_dim <- NULL
     lydian_half_dim <- NULL
     lydian_vii <- NULL
+    borrow_dor_half_dim_chord  <- NULL
+    borrow_vii_dim_VII_chord <- NULL
+    sharp_4th_maj_chord  <- NULL
+    flat_6_dom_7_chord <- NULL
     
   } else if(mode == 'dor'){
 
@@ -707,9 +734,11 @@ convert_to_roman <- function(chords, key){
     lydian_vii <- NULL
     lydian_dim <- NULL
     lydian_half_dim <- NULL
-    
-    
-    
+    borrow_dor_half_dim_chord  <- NULL
+    sharp_4th_dom_7_chord <- NULL
+    borrow_vii_dim_VII_chord <- NULL
+    sharp_4th_maj_chord  <- NULL
+    flat_6_dom_7_chord <- NULL
 }
 
   #Find Chords that are borrowed
@@ -746,7 +775,6 @@ convert_to_roman <- function(chords, key){
     
     
   }
-  
   
   #Borrow ii maj scale
   if(length(borrowed_2_maj_chords) > 0){
@@ -961,6 +989,31 @@ convert_to_roman <- function(chords, key){
   
   if(length(borrow_lydian_II_chord) > 0){
     roman_vec[grep(borrow_lydian_II_chord, chord_vec)] <- 'II/(lydian)'
+  }
+  
+  if(length(borrow_dor_half_dim_chord ) > 0 ){
+    roman_vec[grep(borrow_dor_half_dim_chord, chord_vec)] <- 'vi/(dor)'
+    
+  }
+  
+  if(length(sharp_4th_dom_7_chord) > 0 ){
+    roman_vec[grep(sharp_4th_dom_7_chord, chord_vec)] <- '#IV/(bor)'
+    
+  }
+  
+  
+  if(length(sharp_4th_maj_chord) > 0 ){
+    roman_vec[grep(sharp_4th_maj_chord, chord_vec)] <- '#IV/(bor)'
+    
+  }
+  
+  if( length(borrow_vii_dim_VII_chord ) > 0){
+    
+    roman_vec[grep(borrow_vii_dim_VII_chord, chord_vec)] <- 'vii/VII'
+  }
+  
+  if(length(flat_6_dom_7_chord) > 0){
+    roman_vec[grep(flat_6_dom_7_chord, chord_vec)] <- 'bVI/(bor)'
   }
 
   #Collapse vector into a single string
@@ -1253,7 +1306,7 @@ get_chords_from_key <- function(notes, mode, dom = F){
   major_mode_triads  <- c('', 'm', 'm', '', '', 'm', 'o' )
   minor_mode_triads <- c('m', 'o', '', 'm', 'm', '', '')
   mix_mode_triads <- c('', 'm', 'o', '', 'm', 'm', '')
-  dor_mode_triads <- c('m', 'm', '', '', 'm', 'm', '')
+  dor_mode_triads <- c('m', 'm', '', '', 'm', 'o', '')
   
   
   #Select notes from based on mode interval 
