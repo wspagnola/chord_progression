@@ -12,6 +12,13 @@ beatles <- read.csv('data/output/beatles_fix.csv', stringsAsFactors = F)
 #In addition I have verified the key from several sources
 beatles[beatles$song == 'Help' & beatles$song_parts == 'Chorus' , ]$key <- 'Amaj'
   
+#Note: Ebb = D, Bbb = A, Fb = E
+#May create function later to process other music
+beatles <- beatles %>% 
+                mutate(chords = str_replace_all(chords,'Ebb', 'D'),
+                       chords = str_replace_all(chords,'Bbb', 'A'),
+                       chords = str_replace_all(chords,'fb', 'A')
+) 
 
 #Remove Songs that did not scrape chords properly
 beatles <- beatles[!beatles$chords =='' ,]
@@ -30,50 +37,8 @@ for(i in vec){
 }
 
 
-
-
-
-
-beatles %>%  select(song, roman) %>%  View
-#write.csv(beatles, 'data/output/beatles_roman_analysis.csv', row.names =F)
-
-beatles[grep('NA', beatles$roman) , ] %>%  View
-
-
-na_chords <- beatles[grep('NA', beatles$roman) , ]
-na_chords_roman <- na_chords %>%  
-                          select(song, song_parts, key, roman) %>% 
-                          rename(chords = roman) %>% 
-                          mutate(roman = 1)
-na_chords_chords <- na_chords %>%  
-                          select(song, song_parts, key, chords) %>% 
-                          mutate(roman = 0)
-na_df <- rbind(na_chords_roman, na_chords_chords )
-na_df %>%  arrange(song, song_parts, roman) %>% View
-nrow(beatles[grep('NA', beatles$roman) , ])
-
-
-
-#View Scale Degree with Chords
-check_roman( x = beatles, song_name ="You Never Give Me Your Money", song_part_name = 'Solo')
-
-
-
-#Check individual Songs
-which(beatles$song == "You Never Give Me Your Money"& beatles$song_parts ==  'Solo')
-i <- 197 #Put Song Index number here
-beatles[i ,]$song
-beatles[i ,]$song_parts
-beatles[i ,]$key
-key <- beatles[i ,]$key
-chords <- beatles[i ,]$chords
-convert_to_roman(chords = beatles[i,]$chords, key = beatles[i,]$key  )
-
-#Check Chords next to numerical anaylsis
-rbind(unlist(str_split(beatles[vec ,]$chords, '-')),
-      unlist(str_split(convert_to_roman(chords = beatles[vec ,]$chords, key = beatles[i ,]$key  ), '-'))
-) %>%  as.list
-
+#Uncomment this to create new csv file
+#write.csv(beatles, 'data/output/beatles_roman_basic.csv', row.names =F)
 
 
 #### Merge Beatles and Track Info #####
@@ -93,10 +58,10 @@ beatles_track_info$album_name %>%  unique
 beatles_track_info %>%  filter(album_name == 'Meet the Beatles!')
 
 
-#Missing Songs: Not Available on Spotify API
-missing_songs <-beatles_songs %>% 
-                    mutate(song_join_code = tolower(song)) %>% 
-                    anti_join(beatles_track_info,  by = c('song_join_code'= 'track_name')) 
+# #Missing Songs: Not Available on Spotify API
+# missing_songs <-beatles_songs %>% 
+#                     mutate(song_join_code = tolower(song)) %>% 
+#                     anti_join(beatles_track_info,  by = c('song_join_code'= 'track_name')) 
 
 #Plot Tracks
 beatles <- beatles_songs %>% 
@@ -127,13 +92,7 @@ beatles <- beatles %>%
                     album_name = factor(album_name, levels =album_chron_levels)
 )      
 
-
-
-
-
 #### Process All 60s songs ####
-
-
 songs_1960s_df$roman <- NA
 for(i in 1:nrow(song_df)){
   print(i)
@@ -157,6 +116,45 @@ missing_songs %>%
 
 #Check Discrepancy in Artist Names
 unique(song_df$artist)
+
+
+
+#### Old Code ####
+
+# beatles %>%  select(song, roman) %>%  View
+# 
+# beatles[grep('NA', beatles$roman) , ] %>%  View
+# 
+# 
+# na_chords <- beatles[grep('NA', beatles$roman) , ]
+# na_chords_roman <- na_chords %>%  
+#   select(song, song_parts, key, roman) %>% 
+#   rename(chords = roman) %>% 
+#   mutate(roman = 1)
+# na_chords_chords <- na_chords %>%  
+#   select(song, song_parts, key, chords) %>% 
+#   mutate(roman = 0)
+# na_df <- rbind(na_chords_roman, na_chords_chords )
+# na_df %>%  arrange(song, song_parts, roman) %>% View
+# nrow(beatles[grep('NA', beatles$roman) , ])
+# 
+# 
+# 
+# #View Scale Degree with Chords
+# check_roman( x = beatles, song_name ="The Continuing Story of Bungalow Bill", song_part_name = NULL)
+# 
+# 
+# #Check individual Songs
+# which(beatles$song == "Hey Bulldog")
+# which(beatles$song == "You Never Give Me Your Money"& beatles$song_parts ==  'Solo')
+# i <- 1 #Put Song Index number here
+# beatles[i ,]$song
+# beatles[i ,]$song_parts
+# beatles[i ,]$key
+# key <- beatles[i ,]$key
+# chords <- beatles[i ,]$chords
+# convert_to_roman(chords = beatles[i,]$chords, key = beatles[i,]$key  )
+
 
 
 

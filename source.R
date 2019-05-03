@@ -419,33 +419,36 @@ convert_to_roman <- function(chords, key){
 
  #### Deal with Dominant 7ths and Half-diminished [m7(b5)] Chords 
   if(mode == 'major'){
+    dom_7_idx <- 5 
+    dim_idx <- 7 
+    dom_7_roman <- 'V'
+    dim_roman <- 'vii'
     
-    #Chord Options
-    dom_7_idx <- 5 #Get dominant 7th idx
-    dim_idx <- 7 #Get diminished idx
+  } else if(mode == 'minor'){
+    dom_7_idx <- 7
+    dim_idx <- 2 
+    dom_7_roman <- 'VII'
+    dim_roman <- 'ii'
+    
+  } 
+  
+  
+  if(mode == 'major' | mode == 'minor'){
     
     #Deal with Dominant 7ths
     dom_7 <- paste0(scale_chords[dom_7_idx], '7') 
     dom_7_idx <- grep(pattern = dom_7, x = chord_vec)
-    roman_vec[dom_7_idx] <- 'V'
-    
-    #Deal with VII minor?
-
-    #Deal with half dim (m7(b5))
-    VII_dim <- str_remove_all(scale_chords[dim_idx], 'o')
-    half_dim <- paste0(VII_dim, 'm7(b5)')
-    half_dim_2 <- paste0(VII_dim, 'm(b5)') #Some chords don't have the 7th
-    half_dim_idx <- which(chord_vec== half_dim | chord_vec== half_dim_2)
-    roman_vec[half_dim_idx] <- 'vii'
-  
-  } else if(mode == 'minor'){
+    roman_vec[dom_7_idx] <-  dom_7_roman
     
     #Deal wth Half diminished 
-    half_dim <- str_remove(scale_chords[2], 'o')
+    half_dim <- str_remove(scale_chords[dim_idx], 'o')
     half_dim_regex <- paste0(half_dim,  'm7\\(b5\\)', '|', half_dim, 'm\\(b5\\)')
     half_dim_idx <- grep(half_dim_regex, chord_vec)
-    roman_vec[half_dim_idx] <- 'ii'
+    roman_vec[half_dim_idx] <- dim_roman
+    
   }
+    
+    
   
   #Deal with suspended chords that are substitutes for minor chords th
   sus_idx <- grep('[a-g]sus4',   chord_vec_full)
@@ -575,6 +578,8 @@ convert_to_roman <- function(chords, key){
     borrow_lydian_II_chord  <- NULL
     borrow_loc_1 <- NULL
     mix_dom_7_chord <- NULL
+    borrow_vii_dim_VII_chord <- NULL
+    borrow_vi_chord <- NULL
     
   }else if(mode == 'minor'){
    # dim_idx <- 2 #Get diminished idx DON'T KNOW IF I NEED THIS
@@ -620,8 +625,10 @@ convert_to_roman <- function(chords, key){
     borrow_lydian_II_chord <-  root_2
     borrow_vii_dim_VII_chord <- paste0(tolower(reorder_chrom[10]), 'm\\(b5\\)', '|', 'm7\\(b5\\)')
     
-    
-        #Set NULL scales'
+    #Borrow vi chord (i.e. Make VI minor)
+    borrow_vi_chord <- paste0(tolower(scale_chords[6]), 'm')
+      
+    #Set NULL scales'
     borrow_II_scale <- NULL
     borrow_IV_IV_chord <- NULL
     borrow_V_maj_scale <- NULL
@@ -682,18 +689,20 @@ convert_to_roman <- function(chords, key){
     borrow_VI_maj_dom <- NULL
     
     #Set NULL Chords
-    borrow_bII_chord <- NULL
+    borrow_dor_half_dim_chord  <- NULL
     borrow_lydian_II_chord  <- NULL
-    borrow_ii_min_chord <- NULL
-    borrow_V_iii_chord <- NULL
-    borrow_loc_1 <- NULL
+    lydian_vii <- NULL
     lydian_dim <- NULL
     lydian_half_dim <- NULL
-    lydian_vii <- NULL
-    borrow_dor_half_dim_chord  <- NULL
+    borrow_loc_1 <- NULL
+    borrow_bII_chord <- NULL
+    borrow_ii_min_chord <- NULL
+    borrow_V_iii_chord <- NULL
     borrow_vii_dim_VII_chord <- NULL
     sharp_4th_maj_chord  <- NULL
     flat_6_dom_7_chord <- NULL
+    sharp_4th_dom_7_chord <- NULL
+    borrow_vi_chord <- NULL
     
   } else if(mode == 'dor'){
 
@@ -739,6 +748,7 @@ convert_to_roman <- function(chords, key){
     borrow_vii_dim_VII_chord <- NULL
     sharp_4th_maj_chord  <- NULL
     flat_6_dom_7_chord <- NULL
+    borrow_vi_chord <- NULL
 }
 
   #Find Chords that are borrowed
@@ -901,26 +911,7 @@ convert_to_roman <- function(chords, key){
       
     }
   }
-  
 
-  
-#   #Borrow maj Scale (with dominany 7th)
-#   if(length(borrowed_maj_dom_7_chords) > 0 ){
-#     
-#     for(i in 1:length(borrowed_maj_dom_7_chords)){
-#       borrow_idx <- match(borrowed_maj_dom_7_chords[i], borrow_maj_scale_dom_7)
-#       fill_idx <- grep(pattern =borrow_maj_scale_dom_7[borrow_idx], x = chord_vec)
-#       roman_vec[fill_idx] <- paste(roman_major[borrow_idx], '(maj)', sep = '/')
-#       
-#     }
-#  }
-  
-  # if(length(borrow_min_dom_7) > 0){
-  #   roman_vec[grep(borrow_min_dom_7, chord_vec)] <- 'bVII/(min)'
-  #   
-  # }
-  
-  
   #Borrow  V(maj) Scale
   if( length(borrowed_5_maj_chords) > 0 ){
     
@@ -1000,11 +991,10 @@ convert_to_roman <- function(chords, key){
     roman_vec[grep(sharp_4th_dom_7_chord, chord_vec)] <- '#IV/(bor)'
     
   }
-  
-  
-  if(length(sharp_4th_maj_chord) > 0 ){
-    roman_vec[grep(sharp_4th_maj_chord, chord_vec)] <- '#IV/(bor)'
-    
+  if(!is.null(sharp_4th_maj_chord)){
+    if(sharp_4th_maj_chord %in% unique_borrow_chords){
+      roman_vec[grep(sharp_4th_maj_chord, chord_vec)] <- '#IV/(bor)'
+    }
   }
   
   if( length(borrow_vii_dim_VII_chord ) > 0){
@@ -1015,7 +1005,11 @@ convert_to_roman <- function(chords, key){
   if(length(flat_6_dom_7_chord) > 0){
     roman_vec[grep(flat_6_dom_7_chord, chord_vec)] <- 'bVI/(bor)'
   }
-
+  if(length(borrow_vi_chord) > 0){
+    roman_vec[grep(borrow_vi_chord, chord_vec)] <- 'vi/(bor)'
+  }
+  
+  
   #Collapse vector into a single string
   roman_string <- paste(roman_vec, collapse = '-')
 
