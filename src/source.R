@@ -1403,14 +1403,70 @@ check_roman <- function(x, song_name, song_part_name = NULL){
   
 }
 
+#Function to extract Features
+extract_features <- function(chords, roman ){
+  require(stringr)
+  require(dplyr)
+  
+  #Test
+  chords <- beatles$chords[8]
+  roman <- beatles$roman[8]
+  
+  #Remove Flats
+  features <- chords %>% 
+                str_remove_all(pattern = '[A-Z]b') %>% 
+                str_remove_all(pattern = '[A-Z]#') %>% 
+                str_remove_all(pattern = '[A-Z]') 
+  #Remove minor, keep m's
+  features  <- features %>% 
+                    str_remove_all(pattern = '[a-z]bm')  %>% 
+                    str_remove_all(pattern ='[a-z]m') %>% 
+                    str_remove_all(pattern = '[a-z]#m')
+  
+  #Remove dim
+  features  <- features %>% 
+                    str_replace_all(pattern ='[a-z]#o', 'o') %>% 
+                    str_replace_all(pattern = '[a-z]b', 'o') %>% 
+                    str_replace_all(pattern = '[a-z]o', 'o')  
+              
+  #Split into Vector 
+  feature_vec <- features %>%  str_split(pattern = '-', simplify = T) %>%  as.vector
+  
+  #Split Roman into Vector 
+  roman_vec <- roman %>%  str_split(pattern = '-') %>%  unlist
+  
+  #Find Borrowed Idx
+  borrow_idx <- grep('/',   roman_vec)
+  
+  #Function to Paste features before slash in borrow chords
+  paste_feature_borrow_chords <- function(x, feature){
+    
+    split_chord <- str_split(x, '\\/') %>%  unlist
+    chord_plus_feature <- paste0(split_chord[1], feature, '/', split_chord[2])
+    return(chord_plus_feature)
+  }
+  
+  #Deal with borrowed Chords
+  borrow_roman <- roman_vec[borrow_idx]
+  borrow_features <- feature_vec[borrow_idx]
+  borrow_roman_plus_features <- rep(NA, length(borrow_idx))
+  for(i in seq_along(borrow_idx)){
 
-##### NOTES ####
+    borrow_roman_plus_features[i] <-   paste_feature_borrow_chords(borrow_roman[i], borrow_features[i])
 
-#Clean up code
-#1) Create function to reorder scales in one line
-#2) In chromatic alignment, find rel major first for minor, mix, and dor
+  }
+  
+  #Paste roman numerals and features and store into vector at proper idx 
+  roman_plus_features <- rep(NA, length(feature_vec ))
+  roman_plus_features[-borrow_idx]  <- paste0(roman_vec[-borrow_idx], feature_vec[-borrow_idx])
+                                             
+  #Add roman plus features for borrowed chords
+  roman_plus_features[borrow_idx] <-   borrow_roman_plus_features
+  
+
+  return(roman_plus_features)
+  
+}
 
 
 
-# em7 in the key of F
-##vii(lydian ) or iii in C 
