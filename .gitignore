@@ -1,3 +1,7 @@
+#Hide API Token from github
+api_token.R
+
+
 # mac OS stuff
 .DS_Store
 .DS_Store?
