@@ -1,5 +1,3 @@
-source('source.R')
-options(lubridate.verbose = TRUE)
 
 #Read in Hot100 data set
 #Find Top 30 artists for each decade
@@ -7,7 +5,13 @@ options(lubridate.verbose = TRUE)
 #The artist gets credit for each song she/he had in a given week.  
 #So if in a given week, the artist had 3 songs in the Hot100, she/he would get credit for 3 weeks
 
-hot100 <- read_csv('data/Hot100.csv')
+source('src/source.R')
+options(lubridate.verbose = TRUE)
+
+#Load  in Hot100 csv.  
+#This file was obtain from the internet from https://data.world/kcmillersean/billboard-hot-100-1958-2017
+#Thank you Sean Miller for your contribution. 
+hot100 <- read_csv('data/input/Hot100.csv')
 
 #Extract Decade from Week IDs
 hot100$WeekID <- mdy(hot100$WeekID) #Convert WeekID from Character to Date
@@ -31,7 +35,7 @@ hot100_sub <- hot100_split_list %>%
                     lapply(function(x) slice(x, 1:30)) %>% 
                     bind_rows
 
-#Save data as CSV
-#write.csv(x = hot100_sub, file = 'data/artist_list.csv', row.names = F)
+#You can uncomment the code below to overwrite the current csv file
+#write.csv(x = hot100_sub, file = 'data/input/artist_list.csv', row.names = F)
 
 

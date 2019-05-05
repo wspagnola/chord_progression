@@ -1,11 +1,23 @@
-#Get Links 
+#Main Objective: Get links of songs that are available on Hooktheory.com
 
+'
+Input: This script takes artist_list.csv, which is a list of the top 30 artists for each decade that was the output
+by the collect_top_30_artists.R script.
 
-source(file = 'source.R')
+Process: Then the scrapes the available songs on Hooktheory for each artist.
 
-artist_list <- read.csv('data/artist_list.csv')
+Output: The script outputs a csv file with a list of artist, song, decade, and hooktheory links.
 
+Next Process: These links can be used when running the collect_chords.R to scrape the chords for each song available on 
+hooktheory.com
 
+'
+
+source('src/source.R')
+
+artist_list <- read.csv('data/input/artist_list.csv')
+
+#Clean artist list to match patterns from Hooktheory.com
 artist_list$Performer <- artist_list %>%  
                     pull(Performer) %>% 
                     str_remove_all(pattern = ' With The Jordanaires') %>% 
@@ -20,9 +32,7 @@ artist_list$Performer <- artist_list %>%
                   
 decade_vec <- unique(artist_list$Decade)
 link_list <- list()
-est_time <- (nrow(artist_list) * 5 / 60)
-start_time <- Sys.time()   
-print(paste('Estimated Time:', est_time, 'minutes'))
+
 
 for(i in 1:length(decade_vec)){
 
@@ -74,58 +84,12 @@ for(i in 1:length(decade_vec)){
   link_list[[i]] <-  decade_link_df
 }
 
-end_time <- Sys.time()
-run_time <- start_time - end_time 
-print(paste('Estimated Time:', est_time, 'minutes'))
-print(paste('Actual Run Time:', run_time ))
-
-
 links_df <- bind_rows(link_list)
 links_df <- links_df %>%  dplyr::select(Artist, Songs, Decade, Links) 
 complete_links <- links_df %>% 
                       filter(!is.na(Links)) 
 complete_links <- complete_links %>% 
                         select(Decade, Artist, Songs, Links)
-write.csv(complete_links, file = 'data/complete_links.csv', row.names = F)
 
-
-#### Notes on Missing Links ####
-
-#1) Eliminate ampersands
-#2) Eliminate the
-#3) Eliminate .
-#4) p!nk -> pink
-#5) matchbox twenty -> matchbox 20
-#6) daryl hall john oates - > hall and oates
-#7) ritchie valens -> ritchie valen (SIC)
-
-#These should work but don't
-# ace of base ?
-# 3 doors down ?
-#electric light orchestra ?
-# three dog night ?
-# Boyz ii men?
-
-
-#### Try Again ####
-# missing_links <- links_df[is.na(links_df$Links) , ] 
-# missing_links$Artist <- missing_links %>%  
-#             pull(Artist) %>% 
-#             str_remove_all(pattern = '\\.') %>% 
-#             str_remove_all(pattern = 'the ') %>% 
-#             str_replace_all(pattern = '!', replacement = 'i') %>% 
-#             str_replace_all(pattern = '&', replacement = 'and') %>% 
-#             str_replace_all(pattern = 'twenty', replacement = '20') %>% 
-#             str_replace_all(pattern = 'valens', replacement = 'valen')
-# missing_links <- missing_links %>%  dplyr::select(Artist, Decade)
-# missing_links <- missing_links %>%  arrange(Decade)
-
-#missing_links <-read.csv('data/missing_links.csv')
-
-# rbind(missing_links) %>% 
-
-
-#Create CSV of missing links 
-#write.csv(links_df[is.na(links_df$Links) , ], file = 'data/missing_links.csv')
-
-
+#Uncomment the code below to write over csv file
+#write.csv(complete_links, file = 'data/complete_links.csv', row.names = F)

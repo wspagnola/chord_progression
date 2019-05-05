@@ -1469,4 +1469,55 @@ extract_features <- function(chords, roman ){
 }
 
 
+#### Plotting/Tabulation Functions
+
+
+#### Functions
+
+sum_chords <- function(chords){
+  
+  require(dplyr)
+  
+  chord_vec <- strsplit(chords, '-') %>%  unlist
+  
+  
+  return(length(chord_vec))
+}
+
+sum_chords_unique <- function(chords){
+  
+  require(dplyr)
+  
+  chord_vec <- strsplit(chords, '-') %>%  unlist
+  
+  unique_chords <- unique(  chord_vec )
+  
+  return(length(unique_chords))
+}
+
+
+chord_pct <- function(chords, pattern){
+  
+  require(dplyr)
+  
+  chord_vec <- strsplit(chords, '-') %>%  unlist
+  pct_chord <- sum(grepl(pattern,   chord_vec) ) / length(  chord_vec)
+  
+  return(pct_chord )
+}
+
+
+
+
+borrow_chord_pct <- function(chords){
+  
+  require(dplyr)
+  
+  chord_vec <- strsplit(chords, '-') %>%  unlist
+  pct_borrow <- sum(grepl('/',   chord_vec) ) / length(  chord_vec)
+  
+  return(pct_borrow)
+}
+
+
 

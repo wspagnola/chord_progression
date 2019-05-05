@@ -7,6 +7,9 @@ The file beatles_fix.csv will be cleaned by running clean_data.R script.
 
 '
 
+source('src/source.R')
+
+
 beatles_fix <- read.csv('data/output/beatles_songs.csv', stringsAsFactors = F)
 
 

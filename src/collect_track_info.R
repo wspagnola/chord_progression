@@ -8,8 +8,9 @@
 ###Store the token as an object called my_token using the code below. 
 # my_token <-  get_spotify_access_token(client_id = ,    client_secret = )
 
-source('source.R')
-#source('api_token.R') #This is where I store my api_token 
+source('src/source.R')
+
+#source('src/api_token.R') #This is where I store my api_token 
 
 #Get All Albums Before 1971 (While they were still together)
 artist_name <- 'The Beatles'

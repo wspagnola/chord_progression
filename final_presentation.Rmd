@@ -1,0 +1,36 @@
+---
+title: "APSTA-2017 (Final Presentation)"
+author: "William Spagnola"
+date: "5/4/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Songs Available on Hooktheory
+
+```{r Barplot: Available Hook Theory Songs by Album}
+beatles %>% 
+  count(album_name, year, song, phase) %>% 
+  count(album_name, year, phase) %>% 
+  drop_na(album_name) %>% 
+  ggplot(aes(x = album_name, y = nn, fill = phase)) +
+  geom_col() +
+  scale_fill_manual(values = c('red', 'blue' )) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,20)) +
+  xlab('Album Name') +
+  ylab('Number of Songs') +
+  geom_hline(yintercept = 12, lty = 'dashed', color = 'orange') +
+  ggtitle('Beatles Songs Available on Hook Theory by Album') +
+  my_theme
+```
+
+## Including Plots
+
+```{r pressure, echo=FALSE}
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

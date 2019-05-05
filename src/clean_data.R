@@ -1,4 +1,4 @@
-source('source.R')
+source('src/source.R')
 
 
 #### Clean Beatles Songs ####
@@ -34,7 +34,7 @@ for(i in vec){
 
 
 #Uncomment this to create rewrite csv file
-write.csv(beatles, 'data/output/beatles_roman.csv', row.names =F)
+#write.csv(beatles, 'data/output/beatles_roman.csv', row.names =F)
 
 
 #### Merge Beatles and Track Info #####

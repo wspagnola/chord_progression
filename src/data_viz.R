@@ -1,72 +1,31 @@
+#DATA VISUALIZATION
 
-source('source.R')
+#This is a script for data visualization, processing, and exploratory data analysis. 
+#It takes the clean file beatles_full, which is the output of clean_data.R.
+#It produces graphs and table.
+#There is also some data_processing; namely, objects are created with columns for bigrams and trigrams.
+#Most of these steps are reproduced in RMD Final Presentation file for reproducibility purposes. 
 
-
+source('src/source.R')
 beatles <- read.csv( 'data/output/beatles_full.csv', stringsAsFactors = F)
 
-
+#Relevel album_name factor to be in chronological order
 album_chron_levels <- beatles %>% 
   group_by(album_name, album_release_date) %>% 
   count %>% 
   arrange(album_release_date) %>% 
   drop_na %>% 
   pull(album_name) 
-
 beatles <- beatles %>% 
   mutate(album_name = factor(album_name, levels =album_chron_levels)
 )
 
 
+#### Theme ####
 
-#### Functions
-
-sum_chords <- function(chords){
-  
-  require(dplyr)
-  
-  chord_vec <- strsplit(chords, '-') %>%  unlist
-  
-  
-  
-  return(length(chord_vec))
-}
-
-beatles$chords[1]
-sum_chords_unique
-sum_chords_unique <- function(chords){
-  
-  require(dplyr)
-  
-  chord_vec <- strsplit(chords, '-') %>%  unlist
-  
-  unique_chords <- unique(  chord_vec )
-  
-  return(length(unique_chords))
-}
-
-
-chord_pct <- function(chords, pattern){
-  
-  require(dplyr)
-  
-  chord_vec <- strsplit(chords, '-') %>%  unlist
-  pct_chord <- sum(grepl(pattern,   chord_vec) ) / length(  chord_vec)
-  
-  return(pct_chord )
-}
-
-
-
-
-borrow_chord_pct <- function(chords){
-  
-  require(dplyr)
-  
-  chord_vec <- strsplit(chords, '-') %>%  unlist
-  pct_borrow <- sum(grepl('/',   chord_vec) ) / length(  chord_vec)
-
-  return(pct_borrow)
-}
+my_theme <- theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid = element_blank()) 
 
 
 #### Plot Chords Per song ####
@@ -78,10 +37,19 @@ beatles %>%
   arrange(desc(num_chords)) %>% 
   ungroup %>% 
   slice(1:20) %>% 
-  ggplot(aes(x = song, y = num_chords, fill = phase)) +
-  geom_col()
+  ggplot(aes(x = reorder(song, num_chords), y = num_chords, fill = phase)) +
+  geom_col() +
+  scale_y_continuous(limits = c(0,25), expand = c(0,0)) +
+  ggtitle('Top 20 Beatles Songs by Number of Chords') +
+  xlab('Songs') +
+  ylab('Number of Chords') +
+  my_theme
 
-#Songs with Most Chords
+
+
+
+
+#Songs with Least Unique Chords
 beatles %>%
     group_by(song, phase) %>% 
     summarize(num_chords = sum(sum_chords_unique(chords))) %>% 
@@ -89,15 +57,16 @@ beatles %>%
     arrange(num_chords) %>% 
     ungroup %>% 
     slice(1:20)%>% 
-    ggplot(aes(x = song, y = num_chords, fill = phase)) +
-    geom_col()
+    ggplot(aes(x = reorder(song, num_chords), y = num_chords, fill = phase)) +
+    geom_col() +
+    my_theme
 
 beatles %>%
   group_by(song, phase) %>% 
   summarize(num_chords = sum(sum_chords_unique(chords))) %>% 
   filter(num_chords > 0) %>% 
   arrange(num_chords) %>% 
-  ggplot(aes(x = song, y = num_chords, fill = phase)) +
+  ggplot(aes(x = reorder(song, num_chords), y = num_chords, fill = phase)) +
   geom_col()
   
 ## Number of Unique Chords by Year (Scatter Plot )
@@ -110,8 +79,6 @@ beatles %>%
   geom_smooth(aes(x = year, y = num_chords))+
   geom_point(aes(x = year, y = num_chords, color= phase)) 
 
-  sum_chords()
-  
 #### Plot Songs Over Time and by Album # ####
 beatles %>%  
   group_by(song,album_name, year) %>% 
@@ -129,7 +96,8 @@ beatles %>%
   geom_col() +
   scale_fill_manual(values = c('red', 'blue' )) +
   ylab('Number of Songs') +
-  ggtitle('Beatles Songs Available on Hook Theory')
+  ggtitle('Beatles Songs Available on Hook Theory') +
+  
 
 ####Plot Song Availability by Album####
 beatles %>% 
@@ -139,10 +107,11 @@ beatles %>%
   ggplot(aes(x = album_name, y = nn, fill = phase)) +
   geom_col() +
   scale_fill_manual(values = c('red', 'blue' )) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,20)) +
   ylab('Number of Songs') +
   geom_hline(yintercept = 12, lty = 'dashed', color = 'orange') +
   ggtitle('Beatles Songs Available on Hook Theory by Album') +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  my_theme
 
 
 
