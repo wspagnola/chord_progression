@@ -533,6 +533,7 @@ trigrams_features_info <- trigrams_features %>%
                    left_join(song_info, by = 'song')
 ```
 
+One of the first things I noticed is that the earlier songs had a minor key progression in the top 10 trigrams.  In addition, the second most common trigram in the early period was 'ii-V-I', which actually a chord progression normally associated with jazz music.  On the other hand, there seemed to be more of a variety of borrowed chords in the later phase.  The 'V/(V)' chord (this is when the third chord of the scale is played as a major chord instead of a minor chord) was the only borrowed chord in the top 10 trigrams from the early phase. 
 
 ### Top 10 Trigrams with FEATURES: Early Beatles
 ```{r Top 10 Trigrams with FEATURES: Early Beatles}
