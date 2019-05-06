@@ -25,11 +25,22 @@ beatles <- beatles[!beatles$chords =='' ,]
 #### Process Beatles songs ####
 
 #Create new field for roman numerical analysis
+#### Convert to Roman Numerical Analysis
+
+
+#Create field without features (i.e. only distinguish between major and minor chords, not 7ths and other chords)
 beatles$roman <- NA
-for(i in vec){
+for(i in 1:nrow(beatles)){
   print(i)
-  beatles$roman[i] <- convert_to_roman(chords =beatles$chords[i], key = beatles$key[i])
-  
+  beatles$roman[i] <- convert_to_roman(chords =beatles$chords[i], 
+                                       key = beatles$key[i])
+}
+
+#Retain All Features
+beatles$roman_features <- NA
+for(i in 1:nrow(beatles)){
+  print(i)
+  beatles$roman_features[i] <- extract_features(chords =beatles$chords[i], roman = beatles$roman[i] )
 }
 
 
@@ -40,20 +51,20 @@ for(i in vec){
 #### Merge Beatles and Track Info #####
 
 beatles_songs <- read.csv('data/output/beatles_roman.csv', stringsAsFactors = F)
-beatles_track_info <- read.csv('data/output/beatles_track_info.csv', stringsAsFactors =  F)
+beatles_track_info <- read.csv('data/input/beatles_track_info.csv', stringsAsFactors =  F)
 
-#Standard Track Names to Facilitate with Merge
 beatles_track_info <- beatles_track_info %>% 
-                        mutate(track_name = str_remove(track_name, ' -.*'),
-                               track_name = tolower(track_name),
-                               track_name = str_remove_all(track_name,'\\.'),
-                               track_name = str_remove(track_name, '\\!'))
+                          mutate(track_name = tolower(track_name),
+                                 track_name = str_remove_all(track_name,'\\.'),
+                                 track_name = str_remove(track_name, '\\!'))
 
 #Join Hooktheory data (chords and roman numerical analysis) and  Hot100 data (Album/Song Date)
 beatles <- beatles_songs %>% 
-              mutate(song_join_code = tolower(song)) %>% 
+              mutate(song_join_code = tolower(song),
+                     song_join_code = str_remove_all(song_join_code, '\\.')) %>% 
               left_join(beatles_track_info,  by = c('song_join_code'= 'track_name')
-)
+) 
+
 
 #Clean Album Names Column
 beatles <- beatles %>% 
@@ -72,12 +83,31 @@ album_chron_levels <- beatles %>%
                     pull(album_name) 
 
 #Add column for phase (early vs. late ) and relevel the albums by chronological order
+
 beatles <- beatles %>% 
-            mutate(phase = if_else(album_release_date <= '1966-06-21' |
-                                     year < 1966, 'Early', 'Late'),
-                   phase = factor(phase, levels = c('Early', 'Late')),
-                    album_name = factor(album_name, levels =album_chron_levels)
+  mutate(phase = if_else(album_release_date <= '1966-06-21' |
+                           year < 1966, 'Early', 'Late'),
+         phase = if_else(year > 1966, 'Late', phase),
+         phase = if_else(song == 'Paperback Writer', 'Early', phase),
+         phase = factor(phase, levels = c('Early', 'Late')),
+         album_name = factor(album_name, levels =album_chron_levels)
 )  
+# beatles <- beatles %>% 
+#             mutate(phase = if_else(album_release_date <= '1966-06-21' |
+#                                      year < 1966, 'Early', 'Late'),
+#                    phase = factor(phase, levels = c('Early', 'Late')),
+#                     album_name = factor(album_name, levels =album_chron_levels)
+# )  
+
+#The song 'Real Love' was written by John Lennon after the Beatles broke up.  
+#The song is included on Hooktheory as a Beatles song because the surviving members performed it after John's death
+#However it doesn't belong to either phase, so we'll remove it from the dataset. 
+beatles %>% 
+  filter(is.na(phase))
+
+#Remove 'Real Love' from Dataset
+beatles <- beatles %>% 
+            filter(!is.na(phase))
 
 
 #Uncomment to rewrite CSV file

@@ -100,12 +100,19 @@ beatles_track_info_clean <- beatles_track_info  %>%
                                  album_release_date,
                                  year) 
 
+#Standard Track Names to Facilitate with Merge
+beatles_track_info_clean <- beatles_track_info_clean %>% 
+                            mutate(track_name = str_remove_all(track_name, ' -.*'),
+                                   track_name = str_remove_all(track_name, ' - remix'))
+
+                              
+                                 
 beatles_track_info_final <- beatles_track_info_clean %>% 
                                rbind(meet_the_beatles, rubber_soul,
                                      revolver, sgt_peppers_album,  magical_mystery_tour, 
                                      white_album, singles)
 
 
-write.csv(beatles_track_info_final,
-          file = 'data/input/beatles_track_info.csv',
-          row.names = FALSE)
+
+#Uncomment the code below to overwrite file
+#write.csv(beatles_track_info_final, file = 'data/input/beatles_track_info.csv', row.names = FALSE)

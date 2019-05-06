@@ -1407,10 +1407,13 @@ check_roman <- function(x, song_name, song_part_name = NULL){
 extract_features <- function(chords, roman ){
   require(stringr)
   require(dplyr)
+
   
   #Test
-  chords <- beatles$chords[8]
-  roman <- beatles$roman[8]
+  # i <- 174
+  # chords <- beatles$chords[i]
+  # roman <- beatles$roman[i]
+  
   
   #Remove Flats
   features <- chords %>% 
@@ -1458,13 +1461,16 @@ extract_features <- function(chords, roman ){
   
   #Paste roman numerals and features and store into vector at proper idx 
   roman_plus_features <- rep(NA, length(feature_vec ))
-  roman_plus_features[-borrow_idx]  <- paste0(roman_vec[-borrow_idx], feature_vec[-borrow_idx])
+  diatonic_idx <-   which(1:length(feature_vec) %in% borrow_idx == F) # Select idx from chords in scale
+  roman_plus_features[diatonic_idx]  <- paste0(roman_vec[diatonic_idx], feature_vec[diatonic_idx])
                                              
   #Add roman plus features for borrowed chords
   roman_plus_features[borrow_idx] <-   borrow_roman_plus_features
   
+  #Collapse vector into single string; each chord separated by hyphens
+  roman_plus_features_string <- paste(roman_plus_features,  collapse = '-')
 
-  return(roman_plus_features)
+  return(roman_plus_features_string)
   
 }
 
@@ -1519,5 +1525,14 @@ borrow_chord_pct <- function(chords){
   return(pct_borrow)
 }
 
+
+#### Themes ####
+
+my_theme <- theme_bw() +
+  theme(panel.grid = element_blank()) 
+
+my_theme_tilt <- theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid = element_blank()) 
 
 
