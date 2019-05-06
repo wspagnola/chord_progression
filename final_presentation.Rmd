@@ -37,15 +37,15 @@ beatles <- beatles %>%  filter(song != 'Besame Mucho')
 
 
 #### Research Question
-How did the chord progressions in Beatles songs evolve over time? 
+How did chord progressions in Beatles songs evolve over time? 
 
 #### Research Objective
 Using ngrams, build a model to classify Beatles as an 'early' or 'late' song. 
 
 #### Why this matters?  (Or at the very least, why this matters to me?)
-As I have worked on this project, I have noticed that it very difficult to describe its relevance because music is a very abstract thing.  If this were a research project on the use of color in paintings, for example, it would be more accessible because although many people may not have a deep understanding of color theory, most have at least an understanding of colors.  They know what 'blue', 'red', and 'yellow' mean.  However, even people who listen to a lot of music would probably not understand what a 'I-IV-V' or 'ii-V-I' chord progression means unless they have taken a class in music theory.  In addition, it is hard to express the importance of understanding how chords go together in a sequence unless you have at one point sat down and tried to write a song.
+As I have worked on this project, I have noticed that it very difficult to describe its relevance because music is a very abstract thing.  If this were a research project on the use of color in paintings, for example, it would be more accessible because although many people may not have a deep understanding of color theory, but most have at least an understanding of color (i.e. they know what 'blue', 'red', and 'yellow' mean).  However, most people would probably not understand the meaning of a  'I-IV-V' or 'ii-V-I' chord progression unless they have taken a class in music theory. 
 
-In other words, my intended audience would be someone who already has a background in music theory and would be able to understand a basic chord progression written in roman numerical analysis.  My belief is that understanding how chord progressions in the music of Beatles changed over time will help musical historians help to understand the compositional structure of their songs and will help musicians writing songs understand unique qualities in Beatles music that may inform their own compositions. 
+Consequently, my intended audience would be someone who already has a background in music theory and would be able to understand a basic chord progression written in roman numerical analysis.  My belief is that understanding how chord progressions in the music of Beatles changed over time will help musical historians to understand the compositional structure of their songs.  In addition, it will help musicians understand unique qualities in Beatles music that may inform their own compositions. The ultimate goal would be to present the findings in terms of chord sequences associated with each musical phase.  These findings should be relevant to a musician or music theorist even if they do not understand underlying statistical and machine learning methods that were used to discover these chord sequences. 
 
 #### Early Beatles vs. Later Beatles
 ```{r  out.width = "50%", echo = F}
@@ -53,17 +53,16 @@ include_graphics('img/Beatles_Red_Album.jpg')
 include_graphics('img/Beatles_Blue_Album.jpg') 
 ```
 
-When I was growing up, I was always fascinated by the two images from the Beatles first two compilation albums.  The red album contains songs from 1962 to 1966 and the blue album contains songs from 1967 to 1970.  However, the actual cutoff date  is June 21, 1966.  The cover of album shows the fab four in the same location, but with wildly contrasting images between their clean cut mop-top days and their laster long-haired psychodelic phase.  My goal with this project is to examine the stylistic progression of the Beatles by examining their most common chord progression during each phase.  
+When I was growing up, I was always fascinated by the two images from the Beatles first two compilation albums released after their break up.  The red album contains songs from 1962 to 1966 and the blue album contains songs from 1967 to 1970 (The actual cutoff date  is June 21, 1966).  The album covers show the fab four in the same location, but with wildly different hairstyles and clothing. The two albums contrast their early clean cut mop-top image  with their later long-haired, psychodelic stlye.  My goal with this project is to examine the stylistic progression of the Beatles by examining their most common chord progression during each of these phases.  In other words, I want to classify songs based on their chord progression as either belonging the 'red album' (early phase) or the 'blue album' (later phase).
 
 
 #### Literature Review
-I found two particularly relevant articles.  Douglas J. Mason, a Ph. D. student at Harvard, used hierarchical clustering techniques to examine chords in Beatles songs (2012).  He noticed certain clusters of songs based on the usage of 'borrowed chords', which are chords that do not belong to the key of the song but are in fact 'borrowed' from a different scale.  These clusters generally contained songs that were from different albums.  However, the majority of the songs, which were taken from *Rolling Stone's* list of the Top 100 Beatles songs, seem to be from their later period (1967  to 1970).
+I found two particularly relevant articles.  Douglas J. Mason, a Ph. D. student at Harvard, used hierarchical clustering techniques to examine chords in Beatles songs (2012).  He noticed certain clusters of songs based on the usage of 'borrowed chords'.  Borrowed chords are chords that do not belong to the key of the song but are 'borrowed' from a different scale.  The author noticed that these clusters generally contained songs that were from different albums.  However, the majority of the songs, which were taken from *Rolling Stone's* list of the Top 100 Beatles songs, were from their later period (1967 to 1970).
 
-In another study, Pérez-Sancho et. al employed text analysis techiniques such as bigrams and trigrams to build models for classifying musical pieces according to genre (2009).  Using this method, they were able to classify songs according to genre with 80% accuracy.  However, they did not achieve as high of accuracy when classifying music according to sub-genres (e.g. classifying different types of music within the rock genre).
-
+In another study, Pérez-Sancho et. al employed text analysis techiniques such as bigrams and trigrams to build models for classifying musical pieces according to genre (2009).  Using this method, they were able to classify songs according to genre with 80% accuracy.  However, they did not achieve the same level of accuracy when classifying music according to sub-genres (e.g. classifying different types of music within the rock genre).
 
 #### Data Collection 
-I built a webcrawler to scrape chord from Hooktheory.com.  Hooktheory contains over 12,000 songs. Each song is  divided according to different sections (e.g. Verse, Chorus, etc.).  The site does not contain the entire song but rather just the repeating pattern for each section.  Below, you can see the chords from the  verse from 'Hey Jude', which are repeated throughout the song. I was able to scrape the 'letter' chords but no the roman numerical analysis.  However, using the song key, which I also scraped from the site, I was able to build a function that converted the 'letter' chords into roman numerals.  As I will explain in the next session, the roman numerals represent each chord's position in a given key. 
+To build a dataset of Beatles chord progressions, I created a webcrawler to scrape chords from Hooktheory.com.  Hooktheory contains over 12,000 songs, which includ a large number of Beatles songs. Each song is  divided according to different sections (e.g. Verse, Chorus, etc.).  The site does not contain the entire song but rather just the repeating pattern for each section.  Below, you can see the chords from the  verse from 'Hey Jude', which are repeated throughout the song. I was able to scrape the 'letter' chords but not the roman numerical analysis.  However, using the song key, which I also scraped from the site, I was able to build a function that converted the 'letter' chords into roman numerals.  As I will explain in the next session, the roman numerals represent each chord's position in a given key. 
 ```{r out.width = "100%", echo = F}
 include_graphics('img/Hooktheory_Screen_Shot.png') 
 
@@ -73,11 +72,11 @@ include_graphics('img/Hooktheory_Screen_Shot.png')
 #### Roman Numerical Analysis
 You may notice in the image above, that the chords are represented by both letters and roman numerals.  The roman numerals represent the chord used relative to each key.  'Hey Jude' is written in the key of F major, so the F major chord can be represented with a 'I'.  Notice that when referring to major chords, it is often common practice to simply write a capital letter without writing 'major' (e.g. 'F' means 'F major' and 'C means 'C major').  
 
-The next chord is a C.  The key of F contains the notes F, G, A, Bb, C, D, and E.  Notice that 'C' is the fifth note of the F scale.  Consequently, we can represent C with a V.
+The next chord is a C.  The key of F contains the notes F, G, A, Bb, C, D, and E.  Notice that 'C' is the fifth note of the F scale.  Consequently, we can represent C with a 'V'.
 
-Using roman numerical analysis, we can compare equivalent chord progressions in different keys.  For example, let's say we want to write a song in 'G major'.  Then a G major chord  would now be represented by 'I' and 'D major' would be represented by 'V' because it would be the fifth chord in the key of G (G, A, B, C, D, E, and F#)
+Using roman numerical analysis, we can compare equivalent chord progressions in different keys.  For example, let's say we want to write a song in 'G major'.  Then a G major chord  would now be represented as 'I' and 'D major' would be represented as 'V'.  This is because D would be the fifth chord in the key of G (G, A, B, C, D, E, and F#)
 
-```{r}
+```{r Roman Numerical Analysis}
 
 key <- c('Fmaj', 'Gmaj')
 roman <- c('I', 'ii', 'iii', 'IV', 'V or V7', 'vi', 'viio')
@@ -119,7 +118,7 @@ beatles %>%
 
 ```
 
-There were 37 songs available from the early phase and 63 songs from the later phase.  There were a total of 100 songs, which is the same asthe sample size from the Beatles Genome {roject. 
+There were 37 songs available from the early phase and 63 songs from the later phase.  There were a total of 100 songs, which is the same as the sample size from the Beatles Genome {roject. 
 
 #### Available Hooktheory Songs by Album
 ```{r Barplot: Available Hooktheory Songs by Album}
@@ -225,8 +224,8 @@ beatles %>%
 *Revolver* and *Let It Be* seem to not follow the general linear trend.   It is worth noting that the 'early' phase song in 1966 is 'Paperback Writer', which has only two chords listed on hooktheory. 
 
 
-#### Borrowed Chords: *'Their chords were outrageous, just outrageous..* 
-The Beatles often experimented with using unusual chords in their songs.  In fact, Bob Dylan is quoted as saying that 'their chords were outrageous, just outrageous and their harmonies made it all valid' (Tomasky 2014).  While examining the dataset, I noticed that the Beatles used a lot of **borrowed chords**.  Borrowed chords are chords that are 'borrowed' from other keys.  It is important to distinguish borrowed chords form modulation.   In modulation, the tone or key of the song actually changes, but with borrowed chords the key of the song remains the same despite the fact that the chord is not found in the original key.  Borrowed chords are also know as passing chords, which might be a useful way of thinking about them because they essentially 'pass' before the song has a chance to actually change key.  A good example is the verse 'For No One', which you can explore by clicking the link [here](https://www.hooktheory.com/theorytab/view/the-beatles/for-no-one).  Click 'play', and listen carefully.  You will notice that the *Amaj*, sounds a little bit different from the other chords.  That is because all the other chords belong to *B major*, which is the key of the song.  However, *A major* is not found in the key of *B Major* and is actually borrowed from *B minor*.  However, in my opinion, the surprising presence of this chord adds tension to the song, which mirrors the tension of its lyrical theme of a relationship that is close to its end. 
+#### Borrowed Chords: *Their chords were outrageous, just outrageous* 
+The Beatles often experimented with unusual chords in their songs.  In fact, Bob Dylan is quoted as saying that 'their chords were outrageous, just outrageous and their harmonies made it all valid' (Tomasky 2014).  While examining the dataset, I, like Bob Dylan, noticed that the Beatles used a lot of **borrowed chords**.  Borrowed chords are chords that are 'borrowed' from another key.  It is important to distinguish borrowed chords form modulation.   In modulation, the tone or key of the song actually changes, but with borrowed chords the key of the song remains the same despite the fact that the chord is not found in the original key.  Borrowed chords are also know as passing chords, which might be a useful way of thinking about them because they essentially 'pass' before the song has a chance to actually change key.  A good example is the verse 'For No One', which you can explore by clicking the link **[here](https://www.hooktheory.com/theorytab/view/the-beatles/for-no-one)**.  Click 'play', and listen carefully.  You will notice that the *Amaj*, sounds a little bit different from the other chords.  That is because all the other chords belong to *B major*, which is the key of the song.  However, *A major* is not found in the key of *B Major* and is actually borrowed from *B minor*.  However, in my opinion, the surprising presence of this chord adds tension to the song, which mirrors the tension of its lyrical theme of a relationship that is close to its end. 
 ```{r Calculate Borrowed Chords}
 
 #Calculate Borrowed Chords and Number of Chords in Each Song
@@ -248,6 +247,8 @@ pct_borrowed_chord_tab  %>%
 ```
 
 
+**Important Point**
+I think the particular quality the 'Amajor' chord evokes in the verse of 'For No One' is a perfect example of how the mathematical structure of a song can reveal a particular artistic/emotional quality.  I think that this example provides a much better explanation of the artistic relevance of the statistical analysis of chord progressions than anything I could possibly write. 
 
 #####  Proportion of Borrowed Chords By Album 
 ```{r Barplot: Proportion of Borrowed Chords By Album}
@@ -262,7 +263,7 @@ pct_borrowed_chord_tab %>%
   ylab('Proportion') +
   my_theme_tilt 
 ```
-In general, songs from albums in the later phase tend to have a higher proportion of borrowed chords.  However, *Rubber Soul* has a high proportion of borrowed chords despite being classified in the early phase (although it is the last album before the cutoff) and *Let It Be* has a low proportion of borrowed chords despite being released in 1970.  
+In general, songs from albums in the later phase tend to have a higher proportion of borrowed chords.  However, *Rubber Soul* has a high proportion of borrowed chords despite being classified in the early phase (although it is the last album before the cutoff) and *Let It Be* has a low proportion of borrowed chords despite being released in 1970.  These trends mirror the trends from average number of chords per song plots.
 
 ### Bigrams
 ```{r Construct Bigrams}
