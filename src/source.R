@@ -1526,6 +1526,18 @@ borrow_chord_pct <- function(chords){
 }
 
 
+remove_duplicates <- function(x){
+  #Takes in a character string
+  #Removes duplicate chords in a sequence
+  #Returns character string
+  require(dplyr)
+  require(stringr)
+  x <- x %>%   str_split(pattern = '-')  %>%  unlist
+  x <- x[x != lag(x, default = 1)]
+  x <- paste(x, collapse = '-')
+  return(x)
+}
+
 #### Themes ####
 
 my_theme <- theme_bw() +
