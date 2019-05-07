@@ -1,0 +1,177 @@
+---
+title: "Final Presentation Highlights"
+author: "William Spagnola"
+date: "5/6/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+setwd('..')
+require(knitr)
+require(tidyverse)
+require(kableExtra)
+require(tm)
+require(tidytext)
+require(tidyverse)
+source('src/source.R')
+
+#Read In Data
+beatles <- read.csv( 'data/output/beatles_full.csv', stringsAsFactors = F)
+
+#Relevel album_name factor to be in chronological order
+album_chron_levels <- beatles %>% 
+  group_by(album_name, album_release_date) %>% 
+  count %>% 
+  arrange(album_release_date) %>% 
+  drop_na %>% 
+  pull(album_name) 
+beatles <- beatles %>% 
+  mutate(album_name = factor(album_name, levels =album_chron_levels)
+)
+
+#Drop 'Besame Mucho' because it is a cover song 
+beatles <- beatles %>%  filter(song != 'Besame Mucho')
+```
+
+
+```{r Barplot: Available Hooktheory Songs by Album}
+beatles %>% 
+  count(album_name, year, song, phase) %>% 
+  count(album_name, year, phase) %>% 
+  drop_na(album_name) %>% 
+  ggplot(aes(x = album_name, y = nn, fill = phase)) +
+  geom_col() +
+  scale_fill_manual(values = c('red', 'blue' )) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,20)) +
+  xlab('Album Name') +
+  ylab('Number of Songs') +
+  geom_hline(yintercept = 12, lty = 'dashed', color = 'orange') +
+  ggtitle('Beatles Songs Available on Hook Theory by Album') +
+  my_theme_tilt
+```
+
+
+
+```{r Mean Number of Unique Chords Per Song by Year (Grouped by Phase), echo=FALSE}
+beatles %>%
+  group_by(song, year, phase) %>% 
+  summarize(num_chords = sum_chords_unique(chords)) %>% 
+  group_by(year, phase) %>% 
+  summarize(mean_num_chords = mean(num_chords)) %>% 
+  ggplot(aes(x = year, y = mean_num_chords, color = phase, group = phase)) +
+  geom_vline(xintercept = 1966, lty = 'dashed', color = 'blue') +
+  geom_line() +
+  geom_point(aes(group = phase, color = phase)) +
+  scale_x_discrete( limits =  1963:1970, breaks = 1963:1970) +
+  scale_y_continuous(limits = c(0, 12), breaks = seq(0, 12, 2)) +
+  ggtitle('Mean Number of Unique Chords Per Song by Year (Grouped by Phase)') +
+  xlab('Year') +
+  ylab('Mean Chord Number') +
+  my_theme
+
+```
+
+
+```{r Calculate Borrowed Chords, include = FALSE}
+
+#Calculate Borrowed Chords and Number of Chords in Each Song
+beatles$roman <- as.character(beatles$roman)
+beatles$borrowed_pct <- beatles$roman %>% 
+                      lapply(borrow_chord_pct) %>%  unlist
+beatles$num_chords <- beatles$roman %>% 
+                              lapply(sum_chords) %>%  unlist
+
+#### Plot Percent Borrowed Chords ####
+pct_borrowed_chord_tab <-beatles %>% 
+                              mutate(wt_pct_borrowed =  borrowed_pct*num_chords  )%>% 
+                              drop_na(album_name) %>% 
+                              group_by(album_name, phase) %>% 
+                              summarize(pct_borrowed_sum = sum(wt_pct_borrowed) / sum(num_chords))
+
+```
+
+```{r Barplot: Proportion of Borrowed Chords By Album}
+pct_borrowed_chord_tab %>% 
+  ggplot(aes(x = album_name, y= pct_borrowed_sum, fill = phase)) + 
+  geom_col() +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0, 0.5), 
+                     breaks = seq(0, 0.4, .1)) +
+  ggtitle('Proportion of Borrowed Chords By Album') +
+  xlab('Album Name') +
+  ylab('Proportion') +
+  my_theme_tilt 
+```
+*Borrowed Chords are basically chords that are 'borrowed' from another key.*
+
+```{r Construct Trigrams with FEATURES}
+
+#Split each song into a separate dataframe 
+#Bind Songs into data.frame
+#This creates a data.frame where each row is one song
+#where roman_features represents all the chords in the song
+l <- beatles %>%  
+          split(f = beatles$song) %>% 
+          lapply(function(x) data.frame(artist = unique(x$artist), 
+                                song = unique(x$song), 
+                                roman_features= paste(x$roman_features, collapse = '-')))
+df_features <- suppressWarnings(bind_rows(l)) 
+
+
+#Remove Duplicate chords in sequence 
+df_features$roman_features <- df_features$roman_features %>%  
+                                            sapply(remove_duplicates)
+
+#Deal with borrow chords (slashes will be considered separate ngrams)
+#Then Create trigrams
+trigrams_features <- df_features %>%  
+      mutate(roman_features = str_replace_all(roman_features, '-', ' ')) %>% 
+      mutate(roman_features = str_remove_all(roman_features, '\\(')) %>% 
+      mutate(roman_features = str_remove_all(roman_features, '\\)')) %>% 
+      mutate(roman_features = str_replace_all(roman_features, '/', 'BORROWED')) %>% 
+      unnest_tokens(trigram, roman_features, token = 'ngrams', n = 3,
+                    to_lower = F) %>%  
+      count(song, trigram) %>% 
+      select(song, trigram, n) 
+
+trigrams_features$trigram <-trigrams_features$trigram %>%  
+                      str_split(pattern = '\\s', simplify = F) %>% 
+                      lapply(function(x) paste0(x, ifelse(grepl('BORROWED',x), ')', ''))) %>% 
+                      lapply(function(x) x %>%  str_replace(pattern = 'BORROWED', '/\\(')) %>% 
+                      lapply(function(x) paste(x, collapse = '-')) %>% 
+                      unlist 
+
+#Get Song Info
+song_info <-beatles %>% 
+              select(song, album_name, year, phase)
+
+trigrams_features_info <- trigrams_features %>% 
+                   left_join(song_info, by = 'song')
+```
+### Top 10 Trigrams with FEATURES: Early Beatles
+```{r Top 10 Trigrams with FEATURES: Early Beatles}
+early_trigrams_features_top_10 <- trigrams_features_info %>% 
+                    filter(phase == 'Early') %>% 
+                    group_by(phase, trigram) %>% 
+                    summarize(n = sum(n)) %>% 
+                    arrange(desc(n)) %>% 
+                    slice(1:10)
+early_trigrams_features_top_10  %>% 
+  kable %>% 
+  kable_styling
+
+```
+### Top 10 Trigrams with FEATURES: Late Beatles
+```{r Top 10 Trigrams with FEATURES: Late Beatles}
+late_trigrams_features_top_10 <- trigrams_features_info %>% 
+                                      filter(phase == 'Late') %>% 
+                                      group_by(phase, trigram) %>% 
+                                      summarize(n = sum(n)) %>% 
+                                      arrange(desc(n)) %>% 
+                                      slice(1:10)
+late_trigrams_features_top_10  %>% 
+  kable %>% 
+  kable_styling
+
+```

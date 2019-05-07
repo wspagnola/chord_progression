@@ -190,7 +190,7 @@ beatles %>%
 *Revolver* and *Let it Be* seem to not follow the generally positive trend in the average number of chords per song over time. 
 
 #### Line Graph: Mean Number of Unique Chords Per Song by Year (Grouped by Phase)
-```{r pressure, echo=FALSE}
+```{r Mean Number of Unique Chords Per Song by Year Grouped by Phase, echo=FALSE}
 beatles %>%
   group_by(song, year, phase) %>% 
   summarize(num_chords = sum_chords_unique(chords)) %>% 
