@@ -7,6 +7,7 @@ require(httr)
 require(lubridate)
 require(spotifyr)
 require(RCurl)
+require(wordcloud)
 
 #Not sure if I need these
 #require(jsonlite)
@@ -1546,5 +1547,20 @@ my_theme <- theme_bw() +
 my_theme_tilt <- theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         panel.grid = element_blank()) 
+
+
+#### Color Schemes ####
+
+#Red
+pal_red <- brewer.pal(8,"Reds")
+pal_red <- pal_red[-(1:3)]
+
+#Blue
+pal_blue <- brewer.pal(8,"Blues")
+pal_blue <- pal_blue[-(1:3)]
+
+
+
+
 
 

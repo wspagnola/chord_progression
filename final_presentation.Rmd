@@ -315,30 +315,31 @@ bigram_info <- bigrams %>%
                    left_join(song_info, by = 'song')
 ```
 
-#### Top 10 Bigrams: Early Beatles
+#### Top 10 Bigrams: Early Beatles (NO Features)
 ```{r Top 10 Bigrams: Early Beatles}
-early_bigrams_top_10 <- bigram_info %>% 
+early_bigrams <- bigram_info %>% 
                     filter(phase == 'Early') %>% 
                     group_by(phase, bigram) %>% 
                     summarize(n = sum(n)) %>% 
-                    arrange(desc(n)) %>% 
-                    slice(1:10)
-early_bigrams_top_10 
+                    arrange(desc(n)) 
+
+early_bigrams %>% 
+     slice(1:10)
 
 ```
 
 
-### Top 10 Bigrams: Late Beatles
+### Top 10 Bigrams: Late Beatles (NO Features)
 ```{r Top 10 Bigrams: Late Beatles}
 
-late_bigrams_top_10 <- bigram_info %>% 
-                        filter(phase == 'Late') %>% 
-                        group_by(phase, bigram) %>% 
-                        summarize(n = sum(n)) %>% 
-                        arrange(desc(n)) %>% 
-                        slice(1:10)
+late_bigrams <- bigram_info %>% 
+                    filter(phase == 'Late') %>% 
+                    group_by(phase, bigram) %>% 
+                    summarize(n = sum(n)) %>% 
+                    arrange(desc(n)) 
 
-late_bigrams_top_10 
+late_bigrams %>% 
+  slice(1:10)
 
 ```
 
@@ -380,15 +381,15 @@ trigram_info <- trigrams %>%
 ```
 
 
-### Top 10 Trigrams: Early Beatles
+### Top 10 Trigrams: Early Beatles (No Features)
 ```{r Top 10 Trigrams: Early Beatles}
-early_trigrams_top_10 <- trigram_info %>% 
+early_trigrams<- trigram_info %>% 
                     filter(phase == 'Early') %>% 
                     group_by(phase, trigram) %>% 
                     summarize(n = sum(n)) %>% 
-                    arrange(desc(n)) %>% 
-                    slice(1:10)
-early_trigrams_top_10 %>% 
+                    arrange(desc(n)) 
+early_trigrams  %>% 
+  slice(1:10)%>% 
   kable %>% 
   kable_styling
 
@@ -396,16 +397,15 @@ early_trigrams_top_10 %>%
 
 
 
-###Top 10 Trigrams: Late Beatles
+###Top 10 Trigrams: Late Beatles (No Features)
 ```{r Top 10 Trigrams: Late Beatles}
-
-late_trigrams_top_10 <- trigram_info %>% 
+late_trigrams <- trigram_info %>% 
                     filter(phase == 'Late') %>% 
                     group_by(phase, trigram) %>% 
                     summarize(n = sum(n)) %>% 
-                    arrange(desc(n)) %>% 
-                    slice(1:10)
-late_trigrams_top_10 %>% 
+                    arrange(desc(n))
+late_trigrams %>% 
+  slice(1:10) %>% 
   kable %>% 
   kable_styling
 
@@ -467,13 +467,15 @@ bigrams_features_info <- bigrams_features %>%
 
 #### Top 10 Bigrams (with FEATURES) : Early Beatles
 ```{r Top 10 Bigrams (with FEATURES): Early Beatles}
-early_bigrams_features_top_10 <- bigrams_features_info %>% 
+early_bigrams_features<- bigrams_features_info %>% 
                     filter(phase == 'Early') %>% 
                     group_by(phase, bigram) %>% 
                     summarize(n = sum(n)) %>% 
-                    arrange(desc(n)) %>% 
-                    slice(1:10)
-early_bigrams_features_top_10 %>% 
+                    arrange(desc(n))
+
+
+early_bigrams_features %>% 
+  slice(1:10) %>% 
   kable %>% 
   kable_styling
 
@@ -484,13 +486,13 @@ early_bigrams_features_top_10 %>%
 
 #### Top 10 Bigrams (with FEATURES) : Late Beatles
 ```{r Top 10 Bigrams (with FEATURES): Late Beatles}
-late_bigrams_features_top_10 <- bigrams_features_info %>% 
-                    filter(phase == 'Late') %>% 
-                    group_by(phase, bigram) %>% 
-                    summarize(n = sum(n)) %>% 
-                    arrange(desc(n)) %>% 
-                    slice(1:10)
-late_bigrams_features_top_10 %>% 
+late_bigrams_features <- bigrams_features_info %>% 
+                              filter(phase == 'Late') %>% 
+                              group_by(phase, bigram) %>% 
+                              summarize(n = sum(n)) %>% 
+                              arrange(desc(n))
+late_bigrams_features %>% 
+  slice(1:10) %>% 
   kable %>% 
   kable_styling
 
@@ -537,13 +539,17 @@ One of the first things I noticed is that the earlier songs had a minor key prog
 
 ### Top 10 Trigrams with FEATURES: Early Beatles
 ```{r Top 10 Trigrams with FEATURES: Early Beatles}
-early_trigrams_features_top_10 <- trigrams_features_info %>% 
+
+# Keep early songs; Calculate sum by aggregated by phase and trigram; arrange in descending order
+early_trigrams_features <- trigrams_features_info %>% 
                     filter(phase == 'Early') %>% 
                     group_by(phase, trigram) %>% 
                     summarize(n = sum(n)) %>% 
-                    arrange(desc(n)) %>% 
-                    slice(1:10)
+                    arrange(desc(n)) 
+
+#Plot top 10 early trigrams
 early_trigrams_features_top_10  %>% 
+  slice(1:10) %>% 
   kable %>% 
   kable_styling
 
@@ -552,13 +558,13 @@ early_trigrams_features_top_10  %>%
 
 ### Top 10 Trigrams with FEATURES: Late Beatles
 ```{r Top 10 Trigrams with FEATURES: Late Beatles}
-late_trigrams_features_top_10 <- trigrams_features_info %>% 
+late_trigrams_features <- trigrams_features_info %>% 
                                       filter(phase == 'Late') %>% 
                                       group_by(phase, trigram) %>% 
                                       summarize(n = sum(n)) %>% 
-                                      arrange(desc(n)) %>% 
-                                      slice(1:10)
-late_trigrams_features_top_10  %>% 
+                                      arrange(desc(n)) 
+late_trigrams_features %>% 
+  slice(1:10) %>% 
   kable %>% 
   kable_styling
 
@@ -692,6 +698,86 @@ dtm_trigrams_features[, 1:8] %>%
 
 ```
 
+
+#### Early Beatles Word Cloud  (Bigrams; NO Features)
+```{r}
+wordcloud(early_bigrams$bigram,
+          early_bigrams$n,
+          max.words=20,
+          scale = c(4, 1),
+          random.order = F, 
+          colors=pal_red )
+
+```
+
+#### Late Beatles Word Cloud  (Bigrams; NO Features)
+```{r}
+wordcloud(late_bigrams$bigram,
+          late_bigrams$n,
+          max.words=20,
+          scale = c(4, 1),
+          random.order = F, 
+          colors=pal_blue)
+
+```
+
+
+#### Early Beatles Word Cloud  (Trigrams; NO Features)
+```{r}
+wordcloud(early_trigrams$trigram,
+          early_trigrams$n,
+          max.words=20,
+          scale = c(2.8, 1),
+          random.order = F, 
+          colors=pal_red )
+```
+
+
+
+#### Late Beatles Word Cloud  (Trigrams; NOFeatures)
+```{r}
+wordcloud(late_trigrams$trigram,
+          late_trigrams$n,
+          max.words=20,
+          scale= c(2.8, 1),
+          random.order = F, 
+          colors=pal_blue)
+```
+
+
+#### Late Beatles Word Cloud  (Bigrams with Features)
+```{r}
+wordcloud(late_bigrams_features$bigram,
+          late_bigrams_features$n,
+          max.words=50,
+          random.order = F, 
+          colors=pal_blue)
+
+```
+
+
+#### Early Beatles Word Cloud  (Trigrams with Features)
+```{r Word Cloud}
+#Early Beatles Word Cloud 
+wordcloud(early_trigrams_features$trigram,
+          early_trigrams_features$n,
+          max.words=20,
+          random.order = F, 
+          colors=pal_red )
+```
+
+
+
+#### Late Beatles Word Cloud   (Trigrams with Features)
+```{r}
+wordcloud(late_trigrams_features$trigram,
+         late_trigrams_features$n,
+          scale = c(1, 2.5),
+          max.words=30,
+          random.order = F, 
+          colors=pal_blue)
+
+````
 
 ### Next Step: ANALYSIS
 I'm considering two options:
