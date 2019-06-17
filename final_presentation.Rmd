@@ -548,7 +548,7 @@ early_trigrams_features <- trigrams_features_info %>%
                     arrange(desc(n)) 
 
 #Plot top 10 early trigrams
-early_trigrams_features_top_10  %>% 
+early_trigrams_features %>% 
   slice(1:10) %>% 
   kable %>% 
   kable_styling
@@ -777,7 +777,260 @@ wordcloud(late_trigrams_features$trigram,
           random.order = F, 
           colors=pal_blue)
 
-````
+```
+
+
+
+
+
+
+```{r}
+
+
+
+
+
+
+top_bigrams <- bigram_info %>%
+                     distinct(song, bigram) %>% 
+                      count(bigram, sort = T) %>% 
+                      slice(1:50)
+
+
+
+#Create document-term matrix   
+dtm <- bigrams %>% 
+          inner_join(top_bigrams, by = "bigram") %>% 
+          cast_dtm(document = song, term = bigram,  value = n.x, weighting = tm::weightTfIdf)
+
+
+dtm <- bigrams %>% 
+          cast_dtm(document = song, term = bigram,  value = n, weighting = tm::weightTfIdf)
+
+
+dtm_tibble <-  cbind(dtm$dimnames$Docs, as.matrix(dtm)) %>% as.tibble()
+dtm_tibble <- dtm_tibble %>% 
+                  rename('song' = 'V1')
+
+dtm_tibble <- dtm_tibble %>% 
+                      mutate_if(.predicate = grepl('song', names(dtm_tibble))==F, as.numeric)
+
+phase_info <- song_info %>% 
+                 distinct(song, phase) 
+mod_data <- dtm_tibble %>% 
+                left_join(phase_info) %>% 
+                select(phase, everything(), - song)
+
+
+train_idx <- sample(1:nrow(mod_data), round(.5*nrow(mod_data)))
+train_data <- mod_data[train_idx ,]
+test_data <- mod_data[-train_idx ,]
+
+require(glmnet)
+require(naivebayes)
+
+x_train <- train_data %>%  
+        select(-phase) %>% 
+         mutate_all(.funs = function(.) ifelse(. > 0, as.integer(1), as.integer(0))) %>% 
+        as.matrix 
+x_test <- test_data %>%  
+        select(-phase) %>% 
+         mutate_all(.funs = function(.) ifelse(. > 0, as.integer(1), as.integer(0))) %>% 
+        as.matrix 
+bernoulli_mod <- bernoulli_naive_bayes(x = x_train, 
+                                       y =train_data$phase,
+                                       laplace = .8)
+predict(bernoulli_mod )
+preds <- predict(bernoulli_mod, newdata = x_test)
+table(test_data$phase, preds)
+colnames(x_train) %>%  length
+colnames(x_test) %>%  length
+mean(x_train ==1)
+
+lambda <- cv.glmnet(x = x_train, y = as.factor(train_data$phase), family = "binomial", alpha = 0)
+fit_ridge <- glmnet(x = x_train, y = as.factor(train_data$phase),
+                   lambda = lambda$lambda.1se, family = "binomial", alpha = 0)
+predict(fit_ridge, newx = x_train, type = "response")
+
+
+lambda <- cv.glmnet(x = x_train, y = as.factor(train_data$phase), family = "binomial", alpha = 1)
+fit_lasso <- glmnet(x = x_train, y = as.factor(train_data$phase),
+                   lambda = lambda$lambda.1se, family = "binomial", alpha = 1)
+predict(fit_lasso, newx = x_train, type = "response")
+fit_lasso %>% coef
+
+predict(fit_ridge, newx = x_train, type = "class")
+x_test  <- test_data %>% 
+                select(-phase) %>% 
+                as.matrix
+predict(fit_ridge, newx = x_test, type = "class" )
+
+?glmnet
+nb_mod <- naiveBayes(as.factor(phase)~., train_data, laplace = 1)
+pred <- predict(nb_mod, newdata = test_data, type = 'raw') %>%  
+                tidy %>% 
+                round(3) %>% 
+                mutate(pred = if_else(Late > Early, 'Late', 'Early')) %>% 
+                pull(pred)
+
+
+table(test_data$phase, pred)
+```
+
+```{r}
+#Remove Duplicate chords in sequence 
+df_features$roman_features <- df_features$roman_features %>%  
+                                            sapply(remove_duplicates)
+
+#Deal with borrow chords (slashes will be considered separate ngrams)
+#Then Create trigrams
+one_grams_features <- df_features %>%  
+      mutate(roman_features = str_replace_all(roman_features, '-', ' ')) %>% 
+      mutate(roman_features = str_remove_all(roman_features, '\\(')) %>% 
+      mutate(roman_features = str_remove_all(roman_features, '\\)')) %>% 
+      mutate(roman_features = str_replace_all(roman_features, '/', 'BORROWED')) %>% 
+      unnest_tokens(one_gram, roman_features, token = 'ngrams', n = 1,
+                    to_lower = F) %>%  
+      count(song, one_gram) %>% 
+      select(song, one_gram, n) 
+
+one_grams_features$one_gram <-trigrams_features$trigram %>%  
+                      str_split(pattern = '\\s', simplify = F) %>% 
+                      lapply(function(x) paste0(x, ifelse(grepl('BORROWED',x), ')', ''))) %>% 
+                      lapply(function(x) x %>%  str_replace(pattern = 'BORROWED', '/\\(')) %>% 
+                      lapply(function(x) paste(x, collapse = '-')) %>% 
+                      unlist 
+
+dtm <- one_grams_features %>% 
+  cast_dtm(term = one_gram , document = song, value = n, weighting = tm::weightTf)
+
+dtm_tibble <-  cbind(dtm$dimnames$Docs, as.matrix(dtm)) %>% as.tibble()
+
+?cast_dtm
+one_gram_info <- dtm_tibble %>%  
+                    left_join(song_info, c('V1' = 'song')) %>% 
+                    rename(song = V1) %>% 
+                    distinct(song, .keep_all =T) %>% 
+                    select(song, phase, everything()) %>% 
+                    select(-album_name, - year)
+x_data <- one_gram_info %>% 
+                select(-song, -phase) %>% 
+                mutate_all(function(.) if_else(. > 0, 1, 0)) %>% 
+                mutate_all(as.integer) %>% 
+                as.matrix
+train_idx <- sample(1:nrow(mod_data), round(.5*nrow(mod_data)))
+x_train <-x_data[train_idx ,]
+x_test <-x_data[-train_idx ,]         
+y_train <- mod_data[train_idx , ]$phase
+y_test <-  mod_data[-train_idx , ]$phase
+nb_mod <- bernoulli_naive_bayes(x = x_train, y = y_train, laplace = 1)
+preds <- predict(nb_mod, newdata = x_test)
+table(y_train, preds)
+accuracy(table(preds, y_train))
+accuracy <- function(tab){
+  
+  correct <- tab %>%  diag %>%  sum
+  total  <- tab %>%   sum
+  return(correct / total)
+
+}
+?distinct
+```
+```{r}
+
+
+df <- one_grams_features %>% 
+  select(song, one_gram) %>% 
+  left_join(phase_info) 
+
+
+phase_list <- split(x = df$one_gram, f = df$phase)
+early_ngrams <- phase_list[[1]]
+late_ngrams <- phase_list[[2]]
+anti_list <- (early_ngrams %in% late_ngrams) ==F
+early_ngrams[anti_list]
+
+
+anti_list <- (late_ngrams %in% early_ngrams ) ==F
+late_ngrams[anti_list]
+```
+
+
+```{r}
+
+df_phase <- bigrams_features_info %>%
+                distinct(song, bigram, .keep_all = T) %>% 
+                count(phase, bigram, sort = T) 
+
+df_phase %>% 
+  spread(key = phase, value =nn, fill = 0)%>% 
+      mutate(diff = Early - Late) %>% 
+      arrange(desc(diff))
+
+
+
+df_phase <- trigrams_features_info %>%
+                distinct(song, trigram, .keep_all = T) %>% 
+                count(phase, trigram, sort = T) 
+
+
+diff_df <- df_phase %>% 
+  spread(key = phase, value =nn, fill = 0)%>% 
+      mutate(diff = Early - Late) %>% 
+      arrange(desc(diff)) 
+
+trigram_vec <- diff_df[c(1:25, (nrow(diff_df)-25):nrow(diff_df)) , ]$trigram
+
+
+trigram_
+
+df_phase <- trigram_info %>%
+                distinct(song, trigram, .keep_all = T) %>% 
+                count(phase, trigram, sort = T) 
+
+
+diff_df <- df_phase %>% 
+  spread(key = phase, value =nn, fill = 0)%>% 
+      mutate(diff = Early - Late) %>% 
+      arrange(desc(diff)) 
+
+trigram_vec <- diff_df[c(1:25, (nrow(diff_df)-25):nrow(diff_df)) , ]$trigram
+
+
+```
+
+
+```{r}
+
+
+#Calculate Borrowed Chords and Number of Chords in Each Song
+beatles$roman <- as.character(beatles$roman)
+beatles$borrowed_pct <- beatles$roman %>% 
+                      lapply(borrow_chord_pct) %>%  unlist
+beatles$num_chords <- beatles$roman %>% 
+                              lapply(sum_chords) %>%  unlist
+
+beatles$minor_pct <- beatles$roman %>% 
+                          str_split('-') %>% 
+                          lapply(function(x) sum(str_detect(x, 'i|v') ))  %>% 
+                          unlist
+beatles$song
+#### Plot Percent Borrowed Chords ####
+pct_chord_tab <-beatles %>% 
+                              mutate(wt_pct_borrowed =  borrowed_pct*num_chords,
+                                     wt_pct_minor =  minor_pct*num_chords )%>% 
+                              drop_na(album_name) %>% 
+                              group_by(song, phase) %>% 
+                              summarize(pct_borrowed_sum = sum(wt_pct_borrowed) / sum(num_chords),
+                                        pct_minor_sum = sum(wt_pct_minor) / sum(num_chords))
+  
+
+pct_chord_tab %>% 
+  ggplot(aes(x = pct_minor_sum, y = pct_borrowed_sum, color = phase )) +
+  geom_point()
+  
+
+```
 
 ### Next Step: ANALYSIS
 I'm considering two options:
