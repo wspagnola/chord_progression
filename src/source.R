@@ -1495,7 +1495,7 @@ detect_minor_7 <- function(x){
                 return(sum(x))
 }
 
-s<- function(x){
+detect_dom_7 <- function(x){
                 x <- str_remove_all(x, "/.*") 
                 x <- str_detect(x, 'I7|V7') == T 
   return(sum(x))
