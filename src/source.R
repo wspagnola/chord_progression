@@ -1481,16 +1481,28 @@ extract_features <- function(chords, roman ){
 
 #### Functions
 
-sum_chords <- function(chords){
-  
-  require(dplyr)
-  
-  chord_vec <- strsplit(chords, '-') %>%  unlist
-  
-  
-  return(length(chord_vec))
+#Detects Minor Chords in a Song
+detect_minor <- function(x){
+                      x <- str_remove_all(x, "/.*") 
+                      x<- str_detect(x, 'i|v')  == T &  str_detect(x, '7')   == F  
+                      return(sum(x))
 }
 
+
+detect_minor_7 <- function(x){
+                x <- str_remove_all(x, "/.*") 
+                x <- str_detect(x, 'i7|v7')
+                return(sum(x))
+}
+
+s<- function(x){
+                x <- str_remove_all(x, "/.*") 
+                x <- str_detect(x, 'I7|V7') == T 
+  return(sum(x))
+}
+
+
+#Detects Number of Unique Chords in a Song
 sum_chords_unique <- function(chords){
   
   require(dplyr)
@@ -1503,10 +1515,11 @@ sum_chords_unique <- function(chords){
 }
 
 
+#Detects Perctange of chords matching a given string pattern
 chord_pct <- function(chords, pattern){
   
   require(dplyr)
-  
+  require(stingr)
   chord_vec <- strsplit(chords, '-') %>%  unlist
   pct_chord <- sum(grepl(pattern,   chord_vec) ) / length(  chord_vec)
   
@@ -1515,7 +1528,7 @@ chord_pct <- function(chords, pattern){
 
 
 
-
+#Detects Borrowed Chord Percentages
 borrow_chord_pct <- function(chords){
   
   require(dplyr)
@@ -1558,6 +1571,7 @@ pal_red <- pal_red[-(1:3)]
 #Blue
 pal_blue <- brewer.pal(8,"Blues")
 pal_blue <- pal_blue[-(1:3)]
+
 
 
 

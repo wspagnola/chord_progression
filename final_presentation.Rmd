@@ -233,7 +233,8 @@ beatles$roman <- as.character(beatles$roman)
 beatles$borrowed_pct <- beatles$roman %>% 
                       lapply(borrow_chord_pct) %>%  unlist
 beatles$num_chords <- beatles$roman %>% 
-                              lapply(sum_chords) %>%  unlist
+                              str_split('-') %>% 
+                              sapply(function(x) length(x))
 
 #### Plot Percent Borrowed Chords ####
 pct_borrowed_chord_tab <-beatles %>% 
@@ -786,11 +787,6 @@ wordcloud(late_trigrams_features$trigram,
 
 ```{r}
 
-
-
-
-
-
 top_bigrams <- bigram_info %>%
                      distinct(song, bigram) %>% 
                       count(bigram, sort = T) %>% 
@@ -1002,33 +998,318 @@ trigram_vec <- diff_df[c(1:25, (nrow(diff_df)-25):nrow(diff_df)) , ]$trigram
 
 ```{r}
 
+l <- beatles %>%  
+          split(f = beatles$song) %>% 
+          lapply(function(x) data.frame(artist = unique(x$artist), 
+                                song = unique(x$song), 
+                                roman_features= paste(x$roman_features, collapse = '-')))
+df_features <- suppressWarnings(bind_rows(l)) 
+  
 
+
+beatles_song_info <- beatles %>% 
+                          distinct(song, year, phase, album_name)
+beatles_song_features <-  df_features %>% 
+                                left_join(beatles_song_info) %>% 
+                                distinct(song, .keep_all = T)
+
+```
+
+
+```{r}
 #Calculate Borrowed Chords and Number of Chords in Each Song
-beatles$roman <- as.character(beatles$roman)
-beatles$borrowed_pct <- beatles$roman %>% 
+beatles_song_features$borrowed_pct <-beatles_song_features $roman_features %>% 
                       lapply(borrow_chord_pct) %>%  unlist
-beatles$num_chords <- beatles$roman %>% 
-                              lapply(sum_chords) %>%  unlist
+beatles_song_features$num_chords <- beatles_song_features$roman_features %>% 
+                              str_split('-') %>% 
+                              sapply(function(x) length(x)) 
 
-beatles$minor_pct <- beatles$roman %>% 
+beatles_song_features$minor_pct <-beatles_song_features $roman_features %>% 
                           str_split('-') %>% 
-                          lapply(function(x) sum(str_detect(x, 'i|v') ))  %>% 
+                          sapply(detect_minor)
+
+
+beatles_song_features$dom_pct <- beatles_song_features$roman_features %>% 
+                          str_split('-') %>% 
+                          sapply(detect_dom_7)
+
+
+beatles_song_features $maj_7_pct <- beatles_song_features$roman_features %>% 
+                          str_split('-') %>% 
+                          lapply(function(x) sum(str_detect(x, 'maj7') ))  %>% 
                           unlist
-beatles$song
+
+
+beatles_song_features$min_7_pct <- beatles_song_features$roman_features %>% 
+                          str_split('-') %>% 
+                          sapply(detect_minor_7 )
+
 #### Plot Percent Borrowed Chords ####
-pct_chord_tab <-beatles %>% 
-                              mutate(wt_pct_borrowed =  borrowed_pct*num_chords,
-                                     wt_pct_minor =  minor_pct*num_chords )%>% 
-                              drop_na(album_name) %>% 
-                              group_by(song, phase) %>% 
-                              summarize(pct_borrowed_sum = sum(wt_pct_borrowed) / sum(num_chords),
-                                        pct_minor_sum = sum(wt_pct_minor) / sum(num_chords))
+pct_chord_tab <-  beatles_song_features  %>% 
+                              mutate(wt_pct_borrowed =  borrowed_pct*num_chords) %>% 
+                              distinct(song, .keep_all = T) %>% 
+                              group_by(song, album_name, phase, year) %>% 
+                              summarize(num_chords = sum(num_chords),
+                                        pct_borrowed_sum = sum(wt_pct_borrowed) / num_chords,
+                                        pct_minor_sum = sum(minor_pct) / num_chords,
+                                        pct_dom_sum = sum(dom_pct) /  num_chords,
+                                        pct_maj_7_sum =sum( maj_7_pct) / num_chords,
+                                        pct_min_7_sum = sum(min_7_pct) / num_chords,) 
   
 
 pct_chord_tab %>% 
-  ggplot(aes(x = pct_minor_sum, y = pct_borrowed_sum, color = phase )) +
+  drop_na(album_name) %>% 
+  ggplot(aes(x = pct_dom_sum, y = pct_borrowed_sum, 
+             color = album_name)) +
   geom_point()
+```
+
+
+```{r}
+pct_chord_tab %>% 
+  drop_na(album_name) %>% 
+  ggplot(aes(x = pct_dom_sum, y = pct_borrowed_sum)) +
+  geom_point()  +
+  facet_wrap(~ album_name)
+ 
+```
+
+```{r}
+pct_chord_tab %>% 
+  drop_na(album_name) %>% 
+  ggplot(aes(x = pct_minor_sum, y = pct_borrowed_sum)) +
+  geom_point()  +
+  facet_wrap(~ album_name)
+ 
+```
+
+
+
+```{r}
+pct_chord_tab %>% 
+  drop_na(album_name) %>% 
+  ggplot(aes(x = pct_minor_sum, y = pct_dom_sum)) +
+  geom_point()  +
+  facet_wrap(~ album_name)
+ 
+```
+
+
+```{r}
+pct_chord_tab %>% 
+  drop_na(album_name) %>% 
+  ggplot(aes(x = pct_dom_sum, y = pct_maj_7_sum)) +
+  geom_point()  +
+  facet_wrap(~ album_name)
+ 
+```
+
+
+```{r}
+# pct_df <- pct_chord_tab  %>% 
+#                 ungroup %>%
+#                 dplyr::select(song, starts_with('pct_')) 
+
+
+pct_df <- pct_chord_tab  %>% 
+                ungroup %>%
+                dplyr::select(pct_borrowed_sum, pct_dom_sum, pct_minor_sum)
+
+hc <- pct_df %>% 
+          dplyr::select(starts_with('pct_')) %>% 
+          dist() %>% 
+          hclust(method = 'complete')
+
+plot(hc)
+h_cut <- .5
+abline(h = h_cut , lty = 'dashed', col = 'red')
+groups <- cutree(hc, h = h_cut )
+
+
+
+# More than one album?
+pct_chord_tab %>% 
+  ungroup %>% 
+  count(song) %>% 
+  filter(n > 1)
+
+pct_chord_tab$group <- groups
+pct_chord_tab %>% 
+  ungroup %>% 
+  count(year, group) %>% 
+  ggplot(aes(x = year, y = n, fill = as.factor(group))) +
+  geom_col(position = 'fill')
+
+
+
+```
+
+```{r}
+pct_chord_tab %>% 
+  ggplot(aes(x = year, y = as.factor(groups), color = as.factor(groups))) +
+  geom_point() +
+  geom_jitter()
+```
+
+```{r}
+# distinct_songs <- pct_chord_tab %>% 
+#                   ungroup %>% 
+#                   distinct(song, groups)
+# 
+# 
+# 
+# group_1  %>% 
+#   full_join(beatles, by = 'song')
+# beatles
+
+for(i in 1:length(unique(pct_chord_tab$group))){
+      group_i <- pct_chord_tab %>% filter(group == i)
+      print(group_i)
   
+}
+
+
+
+```
+
+
+
+
+```{r}
+plot_groups <- distinct_songs %>% 
+                  left_join(pct_df, by = 'song') %>%
+                  mutate(groups = as.factor(groups))
+ plot_groups %>% 
+   ggplot(aes(x = pct_borrowed_sum, y = pct_dom_sum, 
+             color = groups)) +
+    geom_point()
+ 
+ 
+  plot_groups %>% 
+   ggplot(aes(x = pct_minor_sum, y = pct_dom_sum, 
+             color = groups)) +
+    geom_point()
+
+  
+  plot_groups %>% 
+   ggplot(aes(x = pct_minor_sum, y = pct_maj_7_sum, 
+             color = groups)) +
+    geom_point()
+  
+  
+plot_groups %>% 
+   ggplot(aes(x = pct_min_7_sum, y = pct_maj_7_sum, 
+             color = groups)) +
+    geom_point() +
+    geom_jitter()
+  
+  
+  plot_groups %>% 
+    count(groups)
+```
+
+
+
+
+
+
+```{r}
+
+pct_df <- pct_chord_tab  %>% 
+                ungroup %>%
+                dplyr::select(song, starts_with('pct_')) 
+
+pct_features <- pct_df %>% 
+          dplyr::select(starts_with('pct_')) 
+
+
+k_cluster <- kmeans(pct_features, centers = 6)
+length(k_cluster$cluster)
+pct_chord_tab$cluster <- k_cluster$cluster
+pct_chord_tab %>% 
+  mutate(cluster = cluster) %>% 
+  ggplot(aes(x = year, y = cluster, color = as.factor(cluster))) +
+  geom_point() +
+  geom_jitter()
+
+
+```
+
+
+```{r}
+
+k_cluster$centers %>% 
+      as.data.frame %>% 
+      mutate(cluster = row_number()) %>% 
+      select(cluster, everything()) %>%
+      gather(key = pct_feature, value = pct_value, - cluster) %>% 
+      ggplot(aes(x = cluster, y = pct_value)) +
+      geom_line() +
+      facet_wrap(~pct_feature)
+
+
+
+```
+
+
+
+
+```{r}
+
+unique(bigram_info$bigram) 
+
+
+trigrams_binary <- dtm_trigrams %>% 
+                        select(-album_name, -year, - phase) %>% 
+                        mutate_if(is.numeric, function(.) if_else(. > 0, 1, 0))
+
+trigram_dist <- trigrams_binary %>% 
+                        distinct(song, .keep_all = T) %>% 
+                        select(-song) %>% 
+                        dist(method = 'manhattan')
+
+hclust(trigram_dist) %>% 
+  plot
+bigram_info
+
+
+```
+
+
+```{r}
+mod <- glm(as.factor(phase) ~  pct_borrowed_sum, data = pct_chord_tab, family = binomial(link = 'logit') ) 
+
+mod1 <- glm(as.factor(phase) ~ 
+                      pct_borrowed_sum + pct_dom_sum , data = pct_chord_tab, family = binomial(link = 'logit') ) 
+
+
+
+mod2 <- glm(as.factor(phase) ~ pct_dom_sum+ 
+                      pct_borrowed_sum +
+                      pct_minor_sum, data = pct_chord_tab, family = binomial(link = 'logit') ) 
+anova(mod, mod1, test = 'Chisq')
+
+
+
+mod3 <- glm(as.factor(phase) ~ 
+                      pct_borrowed_sum*pct_dom_sum , data = pct_chord_tab, family = binomial(link = 'logit') ) 
+
+
+mod4 <- glm(as.factor(phase) ~ 
+                      pct_borrowed_sum*pct_dom_sum + num_chords, data = pct_chord_tab, family = binomial(link = 'logit') ) 
+
+
+mod5 <- glm(as.factor(phase) ~ 
+                      pct_borrowed_sum +pct_dom_sum + num_chords, data = pct_chord_tab, family = binomial(link = 'logit') ) 
+
+mod %>%  summary
+mod1 %>%  summary
+mod2 %>%  summary
+mod3 %>%  summary
+mod4 %>%  summary
+mod5 %>%  summary
+
+anova(mod, mod3, test = 'Chisq')
 
 ```
 
