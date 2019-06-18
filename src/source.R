@@ -1552,6 +1552,141 @@ remove_duplicates <- function(x){
   return(x)
 }
 
+
+#Merge Roman Numerical Anaylsis Chords from Song Parts into single string for each song
+merge_song_parts <- function(df, features){
+  
+  require(dplyr)
+  
+  #Input: 
+  # Dataframe with Factor column called song & string column called roman or roman_features
+  #Process:
+  #Splits data.frame into list of dataframes whose rows are the song parts of each song
+  #Pastes roman string vectors into one long vector  
+  #Bind rows
+  #Output:
+  #Data.frame where each row is a song, with roman 
+  
+  #Warnings 
+  if(is.data.frame(df) == F){
+    warning('The "df" arg must be a data.frame!',
+            immediate. = T) 
+    
+  } 
+  if(sum(names(beatles) == 'roman') != 1 | 
+     sum(names(beatles) == 'roman_features') != 1){
+    
+    warning('"df" must contain a column called "roman" or "roman_features"!', 
+            immediate. = T )
+    
+  }
+  if(sum(names(beatles) == 'song') !=1){
+    warning('"df" must contain a column called "song"!', immediate. = T )
+    
+  }
+  if(is.logical(features) == F) {
+    warning('"feature" must be TRUE or FALSE!', immediate. = T )
+    
+  }
+  if(features & sum(names(beatles) == 'roman_features')!= 1 |
+     !features & sum(names(beatles) == 'roman') != 1){
+    warning('"features" arg must match col name', immediate. = T)
+    
+  }
+  
+  #Process
+  l <- df %>%
+    split(f = df$song)
+  
+  if(features){
+            l <- l %>%
+              lapply(function(x) data.frame(
+                song = unique(x$song),
+                roman_features= paste(x$roman_features, collapse = '-')))
+  }else if(!features){
+
+    l <- l %>%
+      lapply(function(x) data.frame(artist = unique(x$artist),
+                                    song = unique(x$song),
+                                    roman = paste(x$roman, collapse = '-')))
+  } 
+  
+  df_song_chords <- suppressWarnings(bind_rows(l)) 
+  return(df_song_chords)
+  
+}
+
+#Creates n_grams
+convert_to_ngrams <- function(df, n, features){
+  require(tm)
+  require(dplyr)
+  
+  #Temporarily rename 'roman_features' col 
+  if(features){
+    df <- df %>% 
+      rename(roman = roman_features)
+     
+  }
+  
+  #Replace /(Borrowed Scale) with "BORROWED"
+  #Create ngrams
+  df_ngrams <- df %>% 
+    mutate(roman = str_replace_all(roman, '/', 'BORROWED'),
+           roman = str_remove_all(roman, '\\('),
+           roman= str_remove_all(roman, '\\)')) %>% 
+    unnest_tokens(n_gram, roman, token = 'ngrams', n = n, to_lower = F)  
+
+  #Restore Original Borrowed scale 
+  df_ngrams$n_gram <-   df_ngrams$n_gram %>% 
+    lapply(function(x) {
+      x_chord <- str_split(x, pattern = '\\s', simplify = T)
+      borrow_logical <- grepl('BORROWED', x_chord)
+      x_chord[borrow_logical] <- paste0(x_chord[borrow_logical], ')')
+      new_x <- paste(x_chord, collapse = ' ')
+      new_x <- str_replace_all(new_x, "BORROWED", "/(")
+      return( new_x)}) %>% 
+    unlist
+
+  
+  #Rename n_gram field
+  if(n== 2){
+    df_ngrams <- df_ngrams %>%
+      rename(bigram = n_gram)
+      return(df_ngrams)
+    
+    
+  } else if(n == 3){
+    df_ngrams <- df_ngrams %>%
+      rename(trigram = n_gram)
+    
+  } else {
+    warning('"n" must equal 2 or 3!' )
+  }
+  
+  
+  return(df_ngrams)
+  
+}
+
+
+#Convert from DTM into Tibble 
+convert_to_tibble <- function(dtm){
+  
+  dtm_tibble <-  cbind(dtm$dimnames$Docs, 
+                       as.matrix(dtm)) %>% 
+    as.tibble()
+  
+  #Rename song column 
+  dtm_tibble <- dtm_tibble %>% rename(song = V1) 
+  
+  #Convert n_gram columns to integer 
+  n_gram_cols <- grepl('song',names(dtm_tibble)) == F
+  dtm_tibble <- dtm_tibble %>%  mutate_if(.predicate = n_gram_cols, as.integer)
+  return(dtm_tibble)
+}
+
+
+
 #### Themes ####
 
 my_theme <- theme_bw() +

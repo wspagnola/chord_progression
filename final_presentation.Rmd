@@ -350,35 +350,35 @@ late_bigrams %>%
 ###Trigrams
 ```{r Construct Trigrams}
 
-#Remove Duplicate chords in sequence 
-df$roman <- df$roman %>%  
-                sapply(remove_duplicates)
-
-#Deal with borrow chords (slashes will be considered separate ngrams)
-#Then Create trigrams
-trigrams <- df %>%  
-      mutate(roman = str_replace_all(roman, '-', ' ')) %>% 
-      mutate(roman = str_remove_all(roman, '\\(')) %>% 
-      mutate(roman = str_remove_all(roman, '\\)')) %>% 
-      mutate(roman = str_replace_all(roman, '/', 'BORROWED')) %>% 
-      unnest_tokens(trigram, roman, token = 'ngrams', n = 3,
-                    to_lower = F) %>%  
-      count(song, trigram) %>% 
-      select(song, trigram, n) 
-
-trigrams$trigram <- trigrams$trigram %>%  
-                      str_split(pattern = '\\s', simplify = F) %>% 
-                      lapply(function(x) paste0(x, ifelse(grepl('BORROWED',x), ')', ''))) %>% 
-                      lapply(function(x) x %>%  str_replace(pattern = 'BORROWED', '/\\(')) %>% 
-                      lapply(function(x) paste(x, collapse = '-')) %>% 
-                      unlist 
-
-#Get Song Info
-song_info <-beatles %>% 
-              select(song, album_name, year, phase)
-
-trigram_info <- trigrams %>% 
-                   left_join(song_info, by = 'song')
+# #Remove Duplicate chords in sequence 
+# df$roman <- df$roman %>%  
+#                 sapply(remove_duplicates)
+# 
+# #Deal with borrow chords (slashes will be considered separate ngrams)
+# #Then Create trigrams
+# trigrams <- df %>%  
+#       mutate(roman = str_replace_all(roman, '-', ' ')) %>% 
+#       mutate(roman = str_remove_all(roman, '\\(')) %>% 
+#       mutate(roman = str_remove_all(roman, '\\)')) %>% 
+#       mutate(roman = str_replace_all(roman, '/', 'BORROWED')) %>% 
+#       unnest_tokens(trigram, roman, token = 'ngrams', n = 3,
+#                     to_lower = F) %>%  
+#       count(song, trigram) %>% 
+#       select(song, trigram, n) 
+# 
+# trigrams$trigram <- trigrams$trigram %>%  
+#                       str_split(pattern = '\\s', simplify = F) %>% 
+#                       lapply(function(x) paste0(x, ifelse(grepl('BORROWED',x), ')', ''))) %>% 
+#                       lapply(function(x) x %>%  str_replace(pattern = 'BORROWED', '/\\(')) %>% 
+#                       lapply(function(x) paste(x, collapse = '-')) %>% 
+#                       unlist 
+# 
+# #Get Song Info
+# song_info <-beatles %>% 
+#               select(song, album_name, year, phase)
+# 
+# trigram_info <- trigrams %>% 
+#                    left_join(song_info, by = 'song')
 ```
 
 
@@ -527,7 +527,6 @@ trigrams_features$trigram <-trigrams_features$trigram %>%
                       lapply(function(x) x %>%  str_replace(pattern = 'BORROWED', '/\\(')) %>% 
                       lapply(function(x) paste(x, collapse = '-')) %>% 
                       unlist 
-
 #Get Song Info
 song_info <-beatles %>% 
               select(song, album_name, year, phase)
@@ -1274,8 +1273,480 @@ bigram_info
 
 
 ```
+```{r}
+l <- beatles %>%  
+          split(f = beatles$song) %>% 
+          lapply(function(x) data.frame(artist = unique(x$artist), 
+                                song = unique(x$song), 
+                                roman= paste(x$roman, collapse = '-')))
+df_triads <- suppressWarnings(bind_rows(l)) 
 
 
+
+df_triad_bigrams <- df_triads %>% 
+                         mutate(roman = str_replace_all(roman, '/', 'BORROWED'),
+                                roman = str_remove_all(roman, '\\('),
+                                roman = str_remove_all(roman, '\\)')) %>% 
+                        unnest_tokens(bigram, roman, token = 'ngrams', n = 2,
+                                        to_lower = F)  
+#Replace as /(*)
+df_triad_bigrams$bigram <- df_triad_bigrams$bigram %>% 
+                        lapply(function(x) {
+                                  x_chord <- str_split(x, pattern = '\\s', simplify = T)
+                             
+                                  borrow_logical <- grepl('BORROWED',x_chord)
+                               
+                                  x_chord[borrow_logical] <- paste0(x_chord[borrow_logical], ')')
+                                  new_x <- paste(x_chord, collapse = ' ')
+                                  new_x <- str_replace_all(new_x, "BORROWED", "/(")
+                                  return(   new_x)}) %>% 
+                                   unlist
+        
+
+top_20_triad_bigrams <- df_triad_bigrams  %>% 
+                            distinct(song, bigram) %>% 
+                            count( bigram, sort = T) %>% 
+                            slice(1:25)
+
+
+
+dtm_triad_bigrams <- df_triad_bigrams %>%
+                          distinct(song, bigram) %>% 
+                          inner_join(top_20_triad_bigrams, by = 'bigram') %>% 
+                          mutate(n = 1) %>% 
+                          cast_dtm(document = song, 
+                                   term = bigram,
+                                   value = n, 
+                                   weighting = tm::weightTf)
+
+ 
+#Convert from DTM into Tibble (WRITE FUNCTION FOR THIS)
+dtm_triad_bigrams_tibble <-  cbind(dtm_triad_bigrams $dimnames$Docs, 
+                                      as.matrix(dtm_triad_bigrams )) %>% 
+                                      as.tibble()
+dtm_triad_bigrams_tibble <- dtm_triad_bigrams_tibble %>% 
+                                  rename(song = V1)
+bigram_cols <- grepl('song',names(dtm_triad_bigrams_tibble)) == F
+dtm_triad_bigrams_tibble<- dtm_triad_bigrams_tibble %>% 
+                                      mutate_if(.predicate = bigram_cols,
+                                                as.integer)
+
+dtm_triad_bigram_dist <- dtm_triad_bigrams_tibble %>% 
+                                select(-song) %>% 
+                                dist(method = 'manhattan')
+
+hc <- hclust(dtm_triad_bigram_dist)
+plot(hc)
+h_cut <- 14.5
+abline(h = h_cut, lty = 'dashed', col = 'red')
+
+groups <- cutree(hc, h = h_cut)
+dtm_triad_bigrams_tibble$group  <- groups
+
+distinct_song_info <- song_info %>%  distinct(song, .keep_all = T)
+dtm_triad_bigrams_tibble %>% 
+  left_join(distinct_song_info) %>% 
+  ggplot(aes(x= year, y = group, color = as.factor(group))) +
+  geom_point() +
+  geom_jitter()
+
+```
+
+
+#Triad Bigrams 
+```{r}
+
+#Merge Chords from each song_part into single vector for each song  
+df_triads <- beatles %>% 
+                merge_song_parts(features = F)
+
+#Remove chords repeated in sequence 
+df_triads$roman <- df_triads$roman %>% 
+                          lapply(remove_duplicates) %>%  unlist
+
+#Convert to bigrams
+df_triad_bigrams <- convert_to_ngrams(df = df_triads, n = 2, features = F)
+
+
+#Number of Bigrams
+n_bigrams <- 20
+
+#Get top bigrams (By Number of Songs that contain each bigram)
+top_triads_bigrams <- df_triad_bigrams  %>% 
+                              distinct(song, bigram) %>% 
+                              count( bigram, sort = T) %>% 
+                              slice(1:n_bigrams)
+
+#Create DTM object 
+dtm_triad_bigrams <- df_triad_bigrams %>%
+                          inner_join(top_20_triad_bigrams, by = 'bigram') %>% 
+                          mutate(n = 1) %>% 
+                          cast_dtm(document = song, 
+                                   term = bigram,
+                                   value = n, 
+                                   weighting = tm::weightTf)
+
+dtm_tibble_triad_bigrams <- convert_to_tibble(dtm_triad_bigrams )
+
+```
+
+
+#Hierarchical Clustering 
+```{r}
+
+#Calculate Distance Matrix
+dtm_triad_bigram_dist <- dtm_tibble_triad_bigrams %>% 
+                                select(-song) %>% 
+                                dist(method = 'manhattan')
+?hclust
+hc <- hclust(dtm_triad_bigram_dist )
+h_cut <- 13.5 #Determine height cutpoint
+plot(hc)
+abline(h = h_cut, lty = 'dashed', col = 'red')
+groups <- cutree(hc, h = h_cut)
+
+#### Dendrogram Code ? 
+# hc_dendrogram <- as.dendrogram(hc)
+# hc_dendrogram <- cut(x =hc_dendrogram, h = 13)
+# plot(hc_dendrogram)
+```
+
+## Merge Clusters
+```{r}
+#Label Groups 
+dtm_tibble_triad_bigrams$group  <- groups
+
+#Merge DTM_Tibble with song info 
+distinct_song_info <- song_info %>%  distinct(song, .keep_all = T)
+full_tibble_triad_bigrams <- dtm_tibble_triad_bigrams  %>% 
+                                  left_join(full_distinct_song_info, by = 'song')
+
+dtm_tibble_triad_bigrams %>% 
+  count(group)
+```
+
+
+
+#Plot Clusters by year
+```{r}
+#Plot Clusters by year
+full_tibble_triad_bigrams %>% 
+  ggplot(aes(x= year, y = group, color = as.factor(group))) +
+  geom_jitter()
+```
+
+
+#Plot Clusters by Composer
+```{r}
+#Plot Clusters by Composer
+full_tibble_triad_bigrams %>% 
+  ggplot(aes(x= composer, y = group, color = as.factor(group))) +
+  geom_jitter()
+```
+
+
+```{r}
+
+# NOTE: CREATE FUNCTION TO LOOK AT MEANS 
+
+# dtm_tibble_triad_bigrams  %>% 
+#   filter(group == i) %>% 
+#   select(- group) %>% 
+#   gather(key = bigram, value = n, - song) %>% 
+#   group_by(bigram) %>% 
+#   summarize(bigram_mean = mean(n)) %>% 
+#   arrange(desc(bigram_mean))
+
+
+
+```
+
+
+
+#Features Bigrams 
+```{r}
+
+#Merge Chords from each song_part into single vector for each song  
+df_features <- beatles %>% 
+                merge_song_parts(features = T)
+
+#Remove chords repeated in sequence 
+df_features$roman_features <- df_features$roman_features %>% 
+                          lapply(remove_duplicates) %>%  unlist
+
+#Convert to bigrams
+df_feature_bigrams <- convert_to_ngrams(df = df_features, n = 2, features = T)
+#Number of Bigrams
+n_bigrams <- 20
+
+#Get top bigrams (By Number of Songs that contain each bigram)
+top_feature_bigrams <- df_feature_bigrams  %>% 
+                              distinct(song, bigram) %>% 
+                              count( bigram, sort = T) %>% 
+                              slice(1:n_bigrams)
+
+#Create DTM object 
+dtm_feature_bigrams <- df_feature_bigrams %>%
+                          inner_join(top_feature_bigrams, by = 'bigram') %>% 
+                          mutate(n = 1) %>% 
+                          cast_dtm(document = song, 
+                                   term = bigram,
+                                   value = n, 
+                                   weighting = tm::weightTf)
+
+dtm_tibble_feature_bigrams <- convert_to_tibble(dtm_feature_bigrams )
+
+```
+
+
+#Hierarchical Clustering 
+```{r}
+
+#Calculate Distance Matrix
+bigram_feature_dist <- dtm_tibble_feature_bigrams %>% 
+                                select(-song) %>% 
+                                dist(method = 'manhattan')
+
+hc <- hclust(bigram_feature_dist  )
+h_cut <- 13.2 #Determine height cutpoint
+plot(hc)
+abline(h = h_cut, lty = 'dashed', col = 'red')
+groups <- cutree(hc, h = h_cut)
+```
+
+## Merge Clusters
+```{r}
+#Label Groups 
+dtm_tibble_feature_bigrams$group  <- groups
+
+#Merge DTM_Tibble with song info 
+distinct_song_info <- song_info %>%  distinct(song, .keep_all = T)
+full_feature_bigrams <- dtm_tibble_feature_bigrams  %>% 
+                                  left_join(full_distinct_song_info, by = 'song')
+
+full_feature_bigrams %>% 
+  count(group)
+```
+
+
+
+#Plot Clusters by Composer
+```{r}
+#Plot Clusters by Composer
+full_feature_bigrams %>% 
+  ggplot(aes(x= composer, y = group, color = as.factor(group))) +
+  geom_jitter()
+```
+
+
+### Triad Trigrams
+```{r}
+l <- beatles %>%  
+          split(f = beatles$song) %>% 
+          lapply(function(x) data.frame(artist = unique(x$artist), 
+                                song = unique(x$song), 
+                                roman= paste(x$roman, collapse = '-')))
+df_triads <- suppressWarnings(bind_rows(l)) 
+
+df_triads$roman_triads <- df_triads$romans %>% 
+                                  lapply(remove_duplicates) %>%  unlist
+
+df_triad_trigrams <- df_triads %>% 
+                         mutate(roman= str_replace_all(roman, '/', 'BORROWED'),
+                                roman  = str_remove_all(roman, '\\('),
+                                roman = str_remove_all(roman, '\\)')) %>% 
+                        unnest_tokens(trigram, roman, token = 'ngrams', n = 3,
+                                        to_lower = F)  
+#Replace as /(*)
+df_triad_trigrams$trigram <- df_triad_trigrams$trigram %>% 
+                        lapply(function(x) {
+                                  x_chord <- str_split(x, pattern = '\\s', simplify = T)
+                             
+                                  borrow_logical <- grepl('BORROWED',x_chord)
+                               
+                                  x_chord[borrow_logical] <- paste0(x_chord[borrow_logical], ')')
+                                  new_x <- paste(x_chord, collapse = ' ')
+                                  new_x <- str_replace_all(new_x, "BORROWED", "/(")
+                                  return(   new_x)}) %>% 
+                                   unlist
+
+
+
+```
+
+
+```{r}
+
+top_triad_trigrams <- df_triad_trigrams  %>% 
+                            count(trigram, sort = T) %>% 
+                            slice(1:20)
+
+
+dtm_triad_trigrams <- df_triad_trigrams  %>%
+                          distinct(song, trigram) %>% 
+                          inner_join(top_triad_trigrams , by = 'trigram') %>% 
+                          mutate(n = 1) %>% 
+                          cast_dtm(document = song, 
+                                   term = trigram,
+                                   value = n, 
+                                   weighting = tm::weightTf)
+
+ 
+#Convert from DTM into Tibble (WRITE FUNCTION FOR THIS)
+dtm_triad_trigram_tibble <-  cbind(dtm_triad_trigrams$dimnames$Docs, 
+                                      as.matrix(dtm_triad_trigrams)) %>% 
+                                      as.tibble()
+dtm_triad_trigram_tibble <- dtm_triad_trigram_tibble %>% 
+                                  rename(song = V1)
+trigram_cols <- grepl('song',names(dtm_triad_trigram_tibble )) == F
+dtm_triad_trigram_tibble <- dtm_triad_trigram_tibble  %>% 
+                                      mutate_if(.predicate = trigram_cols,
+                                                as.integer)
+```
+
+
+
+```{r}
+dtm_triad_trigram_dist <- dtm_triad_trigram_tibble %>% 
+                                select(-song) %>% 
+                                dist(method = 'manhattan')
+
+hc <- hclust(dtm_triad_trigram_dist)
+plot(hc)
+h_cut <- 12.5
+abline(h = h_cut, lty = 'dashed', col = 'red')
+
+groups <- cutree(hc, h = h_cut)
+dtm_triad_trigram_tibble$group  <- groups
+```
+
+
+```{r}
+
+full_triad_trigram <- dtm_triad_trigram_tibble %>% 
+  left_join(full_distinct_song_info, by = 'song')
+full_triad_trigram %>% 
+  count(group)
+
+```
+
+```{r}
+full_triad_trigram %>% 
+  ggplot(aes(x= year, y = group, color = as.factor(group))) +
+  geom_jitter()
+```
+
+
+
+```{r}
+full_triad_trigram %>% 
+  ggplot(aes(x= composer, y = group, color = as.factor(group))) +
+  geom_jitter()
+```
+
+
+### Features Trigrams
+```{r}
+
+df_features <- beatles %>%  
+                  merge_song_parts(features = T)
+      
+df_triads$roman <- df_triads$roman %>% 
+                                lapply(remove_duplicates) %>%  unlist
+
+df_triad_trigrams <- df_triads %>% 
+                         mutate(roman = str_replace_all(roman, '/', 'BORROWED'),
+                                roman = str_remove_all(roman, '\\('),
+                                roman = str_remove_all(roman, '\\)')) %>% 
+                        unnest_tokens(trigram, roman, token = 'ngrams', n = 3,
+                                        to_lower = F)  
+#Replace as /(*)
+df_triad_trigrams$trigram <- df_triad_trigrams$trigram %>% 
+                        lapply(function(x) {
+                                  x_chord <- str_split(x, pattern = '\\s', simplify = T)
+                             
+                                  borrow_logical <- grepl('BORROWED',x_chord)
+                               
+                                  x_chord[borrow_logical] <- paste0(x_chord[borrow_logical], ')')
+                                  new_x <- paste(x_chord, collapse = ' ')
+                                  new_x <- str_replace_all(new_x, "BORROWED", "/(")
+                                  return(   new_x)}) %>% 
+                                   unlist
+```
+
+
+
+# Triad Trigrams:K-means 
+```{r}
+
+k_mod <- dtm_triad_trigram_tibble %>% 
+          select(-song) %>% 
+          kmeans(centers = 4)
+dtm_triad_trigram_tibble$cluster <- k_mod$cluster
+dtm_triad_trigram_tibble_info <-   dtm_triad_trigram_tibble %>% 
+                                        inner_join(full_distinct_song_info, by = 'song') 
+
+```
+
+
+
+```{r}
+dtm_triad_trigram_tibble_info %>% 
+      ggplot(aes(x= year, y= cluster, color = as.factor(cluster))) +
+      geom_jitter()
+``` 
+
+```{r}
+dtm_triad_trigram_tibble_info %>% 
+      ggplot(aes(x= composer, y= cluster, color = as.factor(cluster))) +
+
+      geom_jitter()
+
+```
+
+
+#Look at Clusters
+```{r}
+dtm_triad_trigram_tibble_info %>% 
+  filter(cluster == 1)
+
+dtm_triad_trigram_tibble_info %>% 
+  filter(cluster == 2)
+
+
+dtm_triad_trigram_tibble_info %>% 
+  filter(cluster == 3)
+
+
+dtm_triad_trigram_tibble_info %>% 
+  filter(cluster == 4)
+
+
+dtm_triad_trigram_tibble_info %>% 
+  filter(cluster == 5)
+```
+
+
+```{r}
+for(i in 1:length(unique(dtm_triad_trigram_tibble$cluster))){
+  x <- dtm_triad_trigram_tibble %>% 
+  filter(cluster == i) %>%  
+  gather(key = trigram, value = n, -song, -cluster) %>% 
+  group_by(cluster, trigram) %>% 
+  summarize(trigram_mean = mean(n)) %>% 
+  arrange(desc(trigram_mean))
+  print(x)
+  
+  
+}
+
+
+```
+
+
+
+
+#Try Binomial Logistic Regression based on Chord Group Percentages
 ```{r}
 mod <- glm(as.factor(phase) ~  pct_borrowed_sum, data = pct_chord_tab, family = binomial(link = 'logit') ) 
 
